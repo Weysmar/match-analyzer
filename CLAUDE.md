@@ -136,7 +136,7 @@ Points à ne pas oublier, mesurés sur replays réels :
 
 - **Pondérer par `dt_s`**, jamais par nombre de frames : elles sont irrégulières malgré `RecordFPS` = 30.
 - **`demolished`** : fenêtre de 3,2 s après `DemolishInfo`, arrêtée au changement de phase. Une voiture démolie reste « présente » avec une position fausse.
-- **Pads** : dédupliquer les événements bruts par pad, séquence et joueur.
+- **Pads** : dédupliquer les événements bruts par pad et séquence, en bornant par le temps de réapparition du pad (10 s et 4 s) : une séquence revient après une vraie réapparition.
 - **Pas de `on_ground`** dans les données : bandes d'altitude à l'analyse, la conduite sur un mur compte comme de l'air.
 - **Pas de `StatsCollector` ni de timeline `subtr-actor` en production** (jusqu'à 197 s et 663 Mo sur un long replay). Ils servent de référence de test.
 - **`rl-parse` n'émet que ses propres codes d'erreur** : les erreurs de `subtr-actor` peuvent citer des pseudos.

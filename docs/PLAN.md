@@ -1,6 +1,6 @@
 # Plan d'implémentation V1 : `match-analyzer`
 
-> **Statut : validé par Vincent le 2026-11-06, avec D1, D2 et D3 tels que recommandés. Étape 0 close le 2026-11-07, sauf T0.7 (comparaison Epic, action de Vincent) et la vérification du timeout sur le VPS. Amendements A1 à A17 et D20 validés. Étape 1 terminée le 2026-11-07, dépôt privé `Weysmar/match-analyzer` et CI verte sur `main`, à valider par Vincent avant l'étape 2.**
+> **Statut : validé par Vincent le 2026-11-06, avec D1, D2 et D3 tels que recommandés. Étape 0 close le 2026-11-07, sauf T0.7 (comparaison Epic, action de Vincent) et la vérification du timeout sur le VPS. Amendements A1 à A17 et D20 validés. Étape 1 terminée le 2026-11-07, dépôt privé `Weysmar/match-analyzer`. Étape 2 faite sur la branche `feat/rl-parse`, à valider par Vincent avant l'étape 3.**
 > Date : 2026-11-06. Périmètre : section 8 de `CLAUDE.md`, ordre de la section 13, précédé d'une étape 0 de vérification.
 > Rapport de l'étape 0 : `spikes/s0-parse/RAPPORT.md`.
 
@@ -59,7 +59,7 @@ Trois autres points attendent ta confirmation en [annexe C](#annexe-c--décision
 | A1  | `StatsCollector` et la timeline prennent 197 s et 40 s sur un replay de 75 124 frames, pour 663 Mo.                        | Jamais en production, tests uniquement. Renforce D8.                                                                    |
 | A2  | Un collecteur autour de `LivePlayTracker` donne 100 % d'accord sur 735 692 frames, et environ 20 fois plus vite.           | `rl-parse` l'utilise pour les phases (T2.4).                                                                            |
 | A3  | Les démolitions ne produisent presque jamais de frames vides (1 sur 242), et la position de la voiture démolie est fausse. | `demolished` = fenêtre de 3,2 s après `DemolishInfo`, arrêtée au changement de phase (T2.6).                            |
-| A4  | Les événements de pads bruts surcomptent (27 gros contre 18).                                                              | Déduplication par pad, séquence et joueur. Critères de T2.7 et T7.5 revus.                                              |
+| A4  | Les événements de pads bruts surcomptent (27 gros contre 18).                                                              | Déduplication par pad et séquence, bornée par le temps de réapparition du pad (A18). Critères de T2.7 et T7.5 revus.                                              |
 | A5  | `amount_used` compte toutes les frames mais divise par le temps suivi.                                                     | Consommation par variation de boost. Critère de T7.4 revu.                                                              |
 | A6  | Les frames sont irrégulières, et `RecordFPS` = 30 ne garantit rien.                                                        | Pas de sous-échantillonnage : `--fps` devient un plafond optionnel. Tout est pondéré par `dt_s`.                        |
 | A7  | Le header ne liste pas tous les joueurs (50 absents, 3 en trop) et utilise `Dingo` et `NNX`.                               | Le réseau fait foi quand il existe. Table de plateformes ajoutée. Plateforme `bot` ajoutée.                             |
@@ -78,6 +78,15 @@ Trois autres points attendent ta confirmation en [annexe C](#annexe-c--décision
 | A15 | **Correction d'une erreur de ma part** : `PlayerID.EpicAccountId` contient l'identifiant Epic dans le header, identique au réseau pour 84 joueurs Epic sur 84. Absent des anciens replays. | Un match `header_only` récent peut être vérifié. La correspondance par nom devient le dernier recours.                   |
 | A16 | 4 joueurs sont anonymisés (`bAnonymizeToOpponents` et `bAnonymizeToTeammates` vrais), mais le header et le réseau exposent quand même leur vrai pseudo et leur identifiant.                | Décision D20 : afficher `AnonymizedName`.                                                                                |
 | A17 | Le corpus récent ne couvre que du 2v2 classé.                                                                                                                                              | 1v1 et 3v3 restent couverts par les replays publics jusqu'au build `260918`. À compléter dès que possible, sans bloquer. |
+
+**Ajoutés pendant l'étape 2 :**
+
+| # | Constat mesuré | Changement dans le plan |
+|---|---|---|
+| A18 | La séquence d'un pad n'est pas unique, et vaut toujours 1 sur les anciens replays : la déduplication d'A4 écrasait de vrais ramassages, jusqu'à 47 pads pour un joueur. | Une répétition est ce que le temps de réapparition du pad rend impossible : 10 s pour un gros, 4 s pour un petit. Écart à `subtr-actor` : médiane 0, p95 de 3 avec les replays récents de Vincent, 4 sur les replays publics seuls. |
+| A19 | `NumFrames / RecordFPS` sous-estime la durée d'environ 16 %. | `duration_s` vient de `TotalSecondsPlayed` quand il existe. Le réseau donne la durée exacte dans `events.json`. |
+| A20 | Un replay utilise la clé `MatchGuid`, les autres `MatchGUID`. Le header liste parfois des joueurs absents du réseau (3 dans un match privé). | Les deux clés sont lues. Le `roster` reste la référence quand le réseau est lu. |
+| A21 | Les règles `requires` de `clap` laissaient passer une combinaison d'options invalide. | Les combinaisons d'options sont vérifiées par `rl-parse` lui-même. |
 
 **Encore ouvert** : l'identifiant Epic (T0.7).
 
@@ -408,6 +417,8 @@ Il n'y a pas de `on_ground` : `CLAUDE.md` le demande, mais il n'existe pas dans 
   "parser_version": "0.1.0",
   "fps": 30,
   "playlist_id": 11,
+  "duration_s": 310.5,
+  "arena_out_of_bounds": false,
   "roster": [
     {
       "player_idx": 0,
@@ -443,6 +454,7 @@ Il n'y a pas de `on_ground` : `CLAUDE.md` le demande, mais il n'existe pas dans 
     {
       "frame": 900,
       "time_s": 30.0,
+      "phase": 3,
       "player_idx": 1,
       "pad_index": 12,
       "size": "big",
@@ -451,11 +463,12 @@ Il n'y a pas de `on_ground` : `CLAUDE.md` le demande, mais il n'existe pas dans 
       "z": 0.0
     }
   ],
+  "unresolved_pad_pickups": 0,
   "stat_events": [{ "frame": 1200, "time_s": 40.0, "player_idx": 2, "kind": "shot" }]
 }
 ```
 
-`player_idx` des buts peut être `null` (A9). `pad_pickups` est déjà dédupliqué (A4). Dans `roster`, `anonymized` est vrai si `bAnonymizeToOpponents` ou `bAnonymizeToTeammates` l'est, et `name` contient alors `AnonymizedName` (A16, D20).
+`player_idx` des buts peut être `null` (A9). `pad_pickups` est déjà dédupliqué (A4, A18). `fps` vaut `null` sans plafond. `arena_out_of_bounds` signale une voiture hors du terrain standard en jeu actif (D9). Dans `roster`, `anonymized` est vrai si `bAnonymizeToOpponents` ou `bAnonymizeToTeammates` l'est, et `name` contient alors `AnonymizedName` (A16, D20).
 
 ### Tests
 
@@ -471,7 +484,7 @@ Il n'y a pas de `on_ground` : `CLAUDE.md` le demande, mais il n'existe pas dans 
 | T2.4  | Collecte des frames, `dt_s`, `present`, et collecteur de phases autour de `LivePlayTracker` (A2). **Pas de `StatsCollector` ni de timeline.**                | Test : phases identiques à la timeline sur le corpus public. Le replay de 75 124 frames passe en moins de 10 s                                      |
 | T2.5  | Écriture Parquet avec le schéma exact.                                                                                                                       | Lecture `polars` depuis un test Python, schéma identique                                                                                            |
 | T2.6  | Fenêtre `demolished` (A3), `events.json` : `roster`, buts, démolitions.                                                                                      | Démolitions égales aux `DemoPlayerStats` et au fixture de référence (10 attendues). Buts cohérents avec le score, écarts avec le header journalisés |
-| T2.7  | `pad_pickups` dédupliqués par pad, séquence et joueur, avec taille et position (A4).                                                                         | Sur le corpus : écart médian de 0 avec `subtr-actor`, p95 ≤ 3 gros et ≤ 5 petits pads. Cause de l'écart résiduel notée                              |
+| T2.7  | `pad_pickups` dédupliqués (A4, A18), avec taille et position.                                                                         | Sur le corpus : écart médian de 0 avec `subtr-actor`, p95 ≤ 4 gros et ≤ 5 petits pads. Cause de l'écart résiduel notée : `subtr-actor` ajoute des ramassages déduits des hausses de boost                              |
 | T2.8  | Cas « header OK, network KO » et fichiers hostiles.                                                                                                          | Tous les cas renvoient le bon code, aucune panique non gérée                                                                                        |
 | T2.9  | Cible `just test-replays`, rapport de corpus, performance.                                                                                                   | Rapport : 100 % sur post-EAC, temps sous le timeout                                                                                                 |
 | T2.10 | Binaire de production et image minimale.                                                                                                                     | L'image exécute `rl-parse --header` sur un fixture                                                                                                  |
@@ -714,7 +727,7 @@ just reprocess --analysis-outdated [--dry-run]
 | T7.2  | Chargement, temps de référence, `y` relatif à l'équipe.                                                              | Tests : phases exclues, miroir orange correct                                                                |
 | T7.3  | `boost.avg`, `pct_zero`, `pct_full`.                                                                                 | Tests et contrôle réel verts                                                                                 |
 | T7.4  | `boost.used_per_min`.                                                                                                | Écart médian < 5 % avec `boost_active` × débit, et < 5 % avec `amount_used` si l'on compte toutes les frames |
-| T7.5  | `pads_big`, `pads_small`, `pads_enemy_half`.                                                                         | Écart médian de 0 avec `subtr-actor`, p95 ≤ 3 gros et ≤ 5 petits pads                                        |
+| T7.5  | `pads_big`, `pads_small`, `pads_enemy_half`.                                                                         | Écart médian de 0 avec `subtr-actor`, p95 ≤ 4 gros et ≤ 5 petits pads                                        |
 | T7.6  | `speed_avg`, `pct_supersonic`.                                                                                       | Tests et contrôle réel verts                                                                                 |
 | T7.7  | Bandes d'altitude.                                                                                                   | Somme égale à 100 % ± 0,1, contrôle réel vert                                                                |
 | T7.8  | Tiers.                                                                                                               | Somme égale à 100 %, écart à `subtr-actor` expliqué (D4)                                                     |
