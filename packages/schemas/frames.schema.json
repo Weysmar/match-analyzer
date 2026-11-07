@@ -1,0 +1,91 @@
+{
+  "title": "frames.parquet",
+  "description": "One row per frame and player, the ball repeated on each, compressed with zstd. Not a JSON Schema: Parquet columns, in order. Weigh every metric by dt_s, never by counting frames. No platform id in here: player_idx refers to the roster of events.json.",
+  "schema_version": 1,
+  "columns": [
+    {
+      "name": "frame",
+      "type": "uint32",
+      "nullable": false,
+      "description": "Frame number in the replay."
+    },
+    { "name": "time_s", "type": "float32", "nullable": false, "description": "Replay time." },
+    {
+      "name": "dt_s",
+      "type": "float32",
+      "nullable": false,
+      "description": "Time since the previous kept frame, 0 on the first."
+    },
+    {
+      "name": "phase",
+      "type": "uint8",
+      "nullable": false,
+      "description": "0 unknown, 1 kickoff countdown, 2 waiting for the kickoff touch, 3 live play, 4 after a goal."
+    },
+    {
+      "name": "ball_x",
+      "type": "float32",
+      "nullable": true,
+      "description": "Null when the replay has no ball on this frame."
+    },
+    { "name": "ball_y", "type": "float32", "nullable": true, "description": "" },
+    { "name": "ball_z", "type": "float32", "nullable": true, "description": "" },
+    { "name": "ball_vx", "type": "float32", "nullable": true, "description": "" },
+    { "name": "ball_vy", "type": "float32", "nullable": true, "description": "" },
+    { "name": "ball_vz", "type": "float32", "nullable": true, "description": "" },
+    {
+      "name": "player_idx",
+      "type": "uint8",
+      "nullable": false,
+      "description": "The player's row in the roster of events.json."
+    },
+    {
+      "name": "team",
+      "type": "uint8",
+      "nullable": false,
+      "description": "0 blue, which defends y < 0; 1 orange."
+    },
+    {
+      "name": "present",
+      "type": "boolean",
+      "nullable": false,
+      "description": "False when the player is absent on this frame. Unrelated to demolitions."
+    },
+    {
+      "name": "x",
+      "type": "float32",
+      "nullable": true,
+      "description": "Null when not present. Wrong while demolished."
+    },
+    { "name": "y", "type": "float32", "nullable": true, "description": "" },
+    { "name": "z", "type": "float32", "nullable": true, "description": "" },
+    { "name": "qx", "type": "float32", "nullable": true, "description": "" },
+    { "name": "qy", "type": "float32", "nullable": true, "description": "" },
+    { "name": "qz", "type": "float32", "nullable": true, "description": "" },
+    { "name": "qw", "type": "float32", "nullable": true, "description": "" },
+    {
+      "name": "vx",
+      "type": "float32",
+      "nullable": true,
+      "description": "Can be null even when present: 0.6 % of the samples."
+    },
+    { "name": "vy", "type": "float32", "nullable": true, "description": "" },
+    { "name": "vz", "type": "float32", "nullable": true, "description": "" },
+    {
+      "name": "boost",
+      "type": "float32",
+      "nullable": true,
+      "description": "From 0 to 100, already normalized."
+    },
+    { "name": "boost_active", "type": "boolean", "nullable": false, "description": "" },
+    { "name": "jumped", "type": "boolean", "nullable": false, "description": "" },
+    { "name": "double_jumped", "type": "boolean", "nullable": false, "description": "" },
+    { "name": "dodged", "type": "boolean", "nullable": false, "description": "" },
+    {
+      "name": "demolished",
+      "type": "boolean",
+      "nullable": false,
+      "description": "From the demolition to the respawn: the car's position is wrong meanwhile."
+    }
+  ]
+}

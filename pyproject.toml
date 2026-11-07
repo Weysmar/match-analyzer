@@ -3,7 +3,7 @@
 name = "match-analyzer-workspace"
 version = "0.0.0"
 requires-python = ">=3.14"
-dependencies = ["ma-api", "ma-db", "ma-worker", "rl-analysis"]
+dependencies = ["ma-api", "ma-db", "ma-schemas", "ma-worker", "rl-analysis"]
 
 [dependency-groups]
 dev = [
@@ -20,11 +20,18 @@ dev = [
 package = false
 
 [tool.uv.workspace]
-members = ["db", "games/rocket-league/analysis", "services/api", "services/worker"]
+members = [
+    "db",
+    "games/rocket-league/analysis",
+    "packages/schemas",
+    "services/api",
+    "services/worker",
+]
 
 [tool.uv.sources]
 ma-api = { workspace = true }
 ma-db = { workspace = true }
+ma-schemas = { workspace = true }
 ma-worker = { workspace = true }
 rl-analysis = { workspace = true }
 
@@ -37,7 +44,7 @@ extend-exclude = ["spikes"]
 select = ["B", "C4", "E", "F", "I", "N", "PT", "PTH", "RUF", "SIM", "TID", "UP", "W"]
 
 [tool.ruff.lint.isort]
-known-first-party = ["ma_api", "ma_db", "ma_worker", "rl_analysis"]
+known-first-party = ["ma_api", "ma_db", "ma_schemas", "ma_worker", "rl_analysis"]
 
 [tool.mypy]
 strict = true
@@ -47,6 +54,8 @@ files = [
     "db/tests",
     "games/rocket-league/analysis/src",
     "games/rocket-league/analysis/tests",
+    "packages/schemas/src",
+    "packages/schemas/tests",
     "scripts",
     "services/api/src",
     "services/api/tests",
@@ -57,13 +66,14 @@ files = [
 ]
 
 [[tool.mypy.overrides]]
-module = ["boto3", "boto3.*", "botocore", "botocore.*"]
+module = ["boto3", "boto3.*", "botocore", "botocore.*", "jsonschema", "jsonschema.*"]
 ignore_missing_imports = true
 
 [tool.pytest.ini_options]
 testpaths = [
     "db/tests",
     "games/rocket-league/analysis/tests",
+    "packages/schemas/tests",
     "services/api/tests",
     "services/worker/tests",
     "tests/replays",

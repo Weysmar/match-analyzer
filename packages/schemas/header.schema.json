@@ -1,0 +1,131 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "header.schema.json",
+  "title": "header.json",
+  "description": "What a replay's header says, written by `rl-parse --header`. Unknown fields are accepted: a game patch can add some.",
+  "type": "object",
+  "required": [
+    "schema_version",
+    "parser_version",
+    "game_build",
+    "build_id",
+    "changelist",
+    "replay_version",
+    "game_class",
+    "match_guid",
+    "replay_id",
+    "map",
+    "played_at",
+    "played_at_source",
+    "duration_s",
+    "match_type",
+    "playlist",
+    "team_size",
+    "score",
+    "goals",
+    "players"
+  ],
+  "properties": {
+    "schema_version": { "const": 1 },
+    "parser_version": { "type": "string", "minLength": 1 },
+    "game_build": { "type": ["string", "null"] },
+    "build_id": { "type": ["integer", "null"] },
+    "changelist": { "type": ["integer", "null"] },
+    "replay_version": {
+      "type": "object",
+      "required": ["major", "minor", "net"],
+      "properties": {
+        "major": { "type": "integer" },
+        "minor": { "type": "integer" },
+        "net": { "type": ["integer", "null"] }
+      }
+    },
+    "game_class": {
+      "type": "string",
+      "description": "Does not tell the game modes apart: Dropshot replays are Soccar too."
+    },
+    "match_guid": { "type": ["string", "null"] },
+    "replay_id": { "type": ["string", "null"] },
+    "map": { "type": ["string", "null"] },
+    "played_at": {
+      "description": "ISO 8601. In UTC with a Z when it comes from the epoch, without an offset otherwise.",
+      "type": ["string", "null"],
+      "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z?$"
+    },
+    "played_at_source": { "enum": ["epoch", "date_without_timezone", null] },
+    "duration_s": {
+      "description": "TotalSecondsPlayed when the replay has it, an underestimate from the frame count otherwise.",
+      "type": ["number", "null"],
+      "minimum": 0
+    },
+    "match_type": { "type": ["string", "null"] },
+    "playlist": {
+      "description": "Only the network stream knows it: see playlist_id in events.json.",
+      "type": ["string", "null"]
+    },
+    "team_size": { "type": ["integer", "null"] },
+    "score": {
+      "type": "object",
+      "required": ["blue", "orange"],
+      "properties": {
+        "blue": { "type": "integer", "minimum": 0 },
+        "orange": { "type": "integer", "minimum": 0 }
+      }
+    },
+    "goals": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["frame", "time_s", "player_name", "team"],
+        "properties": {
+          "frame": { "type": "integer", "minimum": 0 },
+          "time_s": {
+            "description": "Estimated from the frame number. events.json gives the exact time.",
+            "type": ["number", "null"],
+            "minimum": 0
+          },
+          "player_name": { "type": ["string", "null"] },
+          "team": { "enum": [0, 1, null] }
+        }
+      }
+    },
+    "players": {
+      "description": "Those who played: spectators are left out. Can miss players who left. The roster of events.json is the reference when it exists.",
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "platform",
+          "platform_id",
+          "name",
+          "team",
+          "score",
+          "goals",
+          "assists",
+          "saves",
+          "shots",
+          "is_bot"
+        ],
+        "properties": {
+          "platform": { "enum": ["steam", "epic", "psn", "xbox", "switch", "bot", "unknown"] },
+          "platform_id": {
+            "description": "Null for bots and when the replay does not carry it, like Epic players of old replays.",
+            "type": ["string", "null"],
+            "minLength": 1
+          },
+          "name": {
+            "description": "The real name, even for a player anonymized in the game: see the roster of events.json before showing it.",
+            "type": "string"
+          },
+          "team": { "enum": [0, 1, null] },
+          "score": { "type": "integer" },
+          "goals": { "type": "integer" },
+          "assists": { "type": "integer" },
+          "saves": { "type": "integer" },
+          "shots": { "type": "integer" },
+          "is_bot": { "type": "boolean" }
+        }
+      }
+    }
+  }
+}

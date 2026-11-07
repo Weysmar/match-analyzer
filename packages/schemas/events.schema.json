@@ -1,0 +1,141 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "events.schema.json",
+  "title": "events.json",
+  "description": "Who played and what happened at an exact time, written by `rl-parse --frames`. Unknown fields are accepted: a game patch can add some.",
+  "type": "object",
+  "required": [
+    "schema_version",
+    "parser_version",
+    "fps",
+    "playlist_id",
+    "duration_s",
+    "arena_out_of_bounds",
+    "roster",
+    "goals",
+    "demolitions",
+    "pad_pickups",
+    "unresolved_pad_pickups",
+    "stat_events"
+  ],
+  "$defs": {
+    "player_idx": {
+      "description": "The player's row in the roster, and player_idx in frames.parquet.",
+      "type": "integer",
+      "minimum": 0
+    },
+    "optional_player_idx": {
+      "description": "A player_idx, or null when the replay does not tell who it was.",
+      "type": ["integer", "null"],
+      "minimum": 0
+    },
+    "frame": { "type": "integer", "minimum": 0 },
+    "time_s": { "type": "number", "minimum": 0 },
+    "team": { "enum": [0, 1] },
+    "phase": {
+      "description": "0 unknown, 1 kickoff countdown, 2 waiting for the kickoff touch, 3 live play, 4 after a goal.",
+      "enum": [0, 1, 2, 3, 4]
+    }
+  },
+  "properties": {
+    "schema_version": { "const": 1 },
+    "parser_version": { "type": "string", "minLength": 1 },
+    "fps": {
+      "description": "The --fps cap, null without one.",
+      "type": ["number", "null"],
+      "exclusiveMinimum": 0
+    },
+    "playlist_id": { "type": ["integer", "null"] },
+    "duration_s": { "type": "number", "minimum": 0 },
+    "arena_out_of_bounds": {
+      "description": "A car left the standard arena in live play: the metrics should not be trusted.",
+      "type": "boolean"
+    },
+    "roster": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["player_idx", "platform", "platform_id", "name", "team", "anonymized"],
+        "properties": {
+          "player_idx": { "$ref": "#/$defs/player_idx" },
+          "platform": { "enum": ["steam", "epic", "psn", "xbox", "switch", "bot", "unknown"] },
+          "platform_id": { "type": ["string", "null"], "minLength": 1 },
+          "name": {
+            "description": "The anonymized name for a player who asked for anonymity in the game.",
+            "type": "string"
+          },
+          "team": { "$ref": "#/$defs/team" },
+          "anonymized": { "type": "boolean" }
+        }
+      }
+    },
+    "goals": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["frame", "time_s", "team", "player_idx", "score_blue", "score_orange"],
+        "properties": {
+          "frame": { "$ref": "#/$defs/frame" },
+          "time_s": { "$ref": "#/$defs/time_s" },
+          "team": { "$ref": "#/$defs/team" },
+          "player_idx": { "$ref": "#/$defs/optional_player_idx" },
+          "score_blue": { "type": ["integer", "null"], "minimum": 0 },
+          "score_orange": { "type": ["integer", "null"], "minimum": 0 }
+        }
+      }
+    },
+    "demolitions": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["frame", "time_s", "attacker_idx", "victim_idx", "x", "y", "z"],
+        "properties": {
+          "frame": { "$ref": "#/$defs/frame" },
+          "time_s": { "$ref": "#/$defs/time_s" },
+          "attacker_idx": { "$ref": "#/$defs/optional_player_idx" },
+          "victim_idx": { "$ref": "#/$defs/optional_player_idx" },
+          "x": { "type": "number" },
+          "y": { "type": "number" },
+          "z": { "type": "number" }
+        }
+      }
+    },
+    "pad_pickups": {
+      "description": "Real pickups only: the raw events' repeats are removed.",
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["frame", "time_s", "phase", "player_idx", "pad_index", "size", "x", "y", "z"],
+        "properties": {
+          "frame": { "$ref": "#/$defs/frame" },
+          "time_s": { "$ref": "#/$defs/time_s" },
+          "phase": { "$ref": "#/$defs/phase" },
+          "player_idx": { "$ref": "#/$defs/player_idx" },
+          "pad_index": { "type": "integer", "minimum": 0 },
+          "size": { "enum": ["big", "small"] },
+          "x": { "type": "number" },
+          "y": { "type": "number" },
+          "z": { "type": "number" }
+        }
+      }
+    },
+    "unresolved_pad_pickups": {
+      "description": "Pickups of a pad the layout does not resolve. They are not in pad_pickups.",
+      "type": "integer",
+      "minimum": 0
+    },
+    "stat_events": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["frame", "time_s", "player_idx", "kind"],
+        "properties": {
+          "frame": { "$ref": "#/$defs/frame" },
+          "time_s": { "$ref": "#/$defs/time_s" },
+          "player_idx": { "$ref": "#/$defs/player_idx" },
+          "kind": { "enum": ["shot", "save", "assist"] }
+        }
+      }
+    }
+  }
+}
