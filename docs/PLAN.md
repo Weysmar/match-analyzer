@@ -1,6 +1,6 @@
 # Plan d'implémentation V1 : `match-analyzer`
 
-> **Statut : validé par Vincent le 2026-11-06, avec D1, D2 et D3 tels que recommandés. Étape 0 close le 2026-11-07, sauf T0.7 (comparaison Epic, action de Vincent) et la vérification du timeout sur le VPS. Amendements A1 à A17 et D20 validés. Étape 1 terminée le 2026-11-07, dépôt privé `Weysmar/match-analyzer`. Étapes 2 et 3 fusionnées le 2026-11-07. Étape 4 fusionnée le 2026-11-07. Étape 5 en cours : socle T5.1 à T5.4 sur la branche `feat/api-foundation`.**
+> **Statut : validé par Vincent le 2026-11-06, avec D1, D2 et D3 tels que recommandés. Étape 0 close le 2026-11-07, sauf T0.7 (comparaison Epic, action de Vincent) et la vérification du timeout sur le VPS. Amendements A1 à A17 et D20 validés. Étape 1 terminée le 2026-11-07, dépôt privé `Weysmar/match-analyzer`. Étapes 2 et 3 fusionnées le 2026-11-07. Étape 4 fusionnée le 2026-11-07. Étape 5 en cours : T5.1 à T5.4 fusionnées, T5.5 et T5.6 sur la branche `feat/api-steam`.**
 > Date : 2026-11-06. Périmètre : section 8 de `CLAUDE.md`, ordre de la section 13, précédé d'une étape 0 de vérification.
 > Rapport de l'étape 0 : `spikes/s0-parse/RAPPORT.md`.
 
@@ -91,6 +91,8 @@ Trois autres points attendent ta confirmation en [annexe C](#annexe-c--décision
 | A24 | L'annexe A autorisait un `match_player_id` d'un autre match, et un événement nommant un joueur d'un autre match. | Clés étrangères composées `(match_id, player)`, rôles `ma_api` et `ma_worker` aux droits minimaux, plateformes et cohérence des rejets contrôlées par la base. `arena_out_of_bounds` conservé dans `matches`. |
 | A25 | Par défaut, FastAPI termine une dépendance après l'envoi de la réponse. | La transaction est validée avant la réponse (`scope="function"`), pour qu'un client puisse lire aussitôt ce qu'il vient d'écrire. |
 | A26 | Une adresse IP est une donnée personnelle, et `X-Forwarded-For` est écrit en partie par le client. | Les compteurs de débit stockent un HMAC de l'adresse. Seule l'entrée posée par le dernier proxy de confiance compte. |
+| A27 | Starlette a déprécié `httpx` pour son client de test, au profit de `httpx2`. | L'API utilise `httpx2`, pour les tests comme pour ses appels à Steam et à Epic. |
+| A28 | Steam ne donne aucun pseudo sans clé Web API (section 8.1), or `users.display_name` est obligatoire. | Un compte Steam commence avec un nom par défaut. L'étape T5.8 le remplacera par le pseudo d'un replay vérifié. |
 | A21 | Les règles `requires` de `clap` laissaient passer une combinaison d'options invalide. | Les combinaisons d'options sont vérifiées par `rl-parse` lui-même. |
 
 **Encore ouvert** : l'identifiant Epic (T0.7).
@@ -560,7 +562,7 @@ Le dossier s'écarte de `db/migrations/` pour suivre le paquet Python (`db/src/.
 
 **Fichiers** : `services/api/src/ma_api/{app,settings,db,errors,owner,ratelimit,sessions,steam,epic,attach,uploads,matches,stats,account}.py`, `services/api/tests/`.
 
-**Dépendances** : `fastapi`, `uvicorn`, `httpx`, `psycopg`, `psycopg-pool`, `boto3` (D1). Les types TypeScript du front sont générés depuis l'OpenAPI.
+**Dépendances** : `fastapi`, `uvicorn`, `httpx2` (A27), `psycopg`, `psycopg-pool`, `boto3` (D1). Les types TypeScript du front sont générés depuis l'OpenAPI.
 
 ### Contrats
 
