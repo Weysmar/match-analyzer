@@ -481,12 +481,8 @@ fn header_and_network_ids_agree() {
         compared.get("steam").copied().unwrap_or(0) > 0,
         "{compared:?}"
     );
-    // The header can list players the network stream never shows: 3 in the corpus, all in one
-    // private match. A mismatch of ids would show up as many more.
-    assert!(
-        absent <= 3,
-        "{absent} players of the header are not on the network: {compared:?}"
-    );
+    // Spectators are filtered out: every player of the header is on the network.
+    assert_eq!(absent, 0, "{compared:?}");
 }
 
 #[test]

@@ -249,6 +249,16 @@ fn player(entry: &[(String, HeaderProp)]) -> HeaderPlayer {
     }
 }
 
+/// The people who played. Spectators of a private match are listed too, with team -1 and nothing
+/// on the network stream: they did not play, and their ids have no reason to be kept.
+fn players(props: &[(String, HeaderProp)]) -> Vec<HeaderPlayer> {
+    entries(props, "PlayerStats")
+        .iter()
+        .map(|entry| player(entry))
+        .filter(|player| matches!(player.team, None | Some(0 | 1)))
+        .collect()
+}
+
 pub fn extract(replay: &Replay) -> Header {
     let props = &replay.properties;
     let fps = float(props, "RecordFPS").filter(|value| *value > 0.0);
@@ -293,10 +303,7 @@ pub fn extract(replay: &Replay) -> Header {
             orange: integer(props, "Team1Score").unwrap_or(0),
         },
         goals,
-        players: entries(props, "PlayerStats")
-            .iter()
-            .map(|entry| player(entry))
-            .collect(),
+        players: players(props),
     }
 }
 
@@ -384,6 +391,22 @@ mod tests {
             duration(&props(vec![("NumFrames", HeaderProp::Int(3000))])),
             None
         );
+    }
+
+    #[test]
+    fn spectators_are_not_players() {
+        let entry = |team: i32| {
+            vec![
+                ("Team".to_owned(), HeaderProp::Int(team)),
+                ("Name".to_owned(), HeaderProp::Str(format!("team {team}"))),
+            ]
+        };
+        let props = props(vec![(
+            "PlayerStats",
+            HeaderProp::Array(vec![entry(0), entry(-1), entry(1)]),
+        )]);
+        let names: Vec<String> = players(&props).into_iter().map(|p| p.name).collect();
+        assert_eq!(names, ["team 0", "team 1"]);
     }
 
     fn platform(value: &str) -> HeaderProp {

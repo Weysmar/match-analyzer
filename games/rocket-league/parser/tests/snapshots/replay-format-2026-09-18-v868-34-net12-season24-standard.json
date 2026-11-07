@@ -7,37 +7,37 @@
   "goals": [
     {
       "frame": 544,
-      "player_name": "player1",
+      "player_name": "player0",
       "team": 1,
       "time_s": 18.133333206176758
     },
     {
       "frame": 844,
-      "player_name": "player8",
+      "player_name": "player5",
       "team": 1,
       "time_s": 28.133333206176758
     },
     {
       "frame": 3144,
-      "player_name": "player3",
+      "player_name": "player1",
       "team": 0,
       "time_s": 104.80000305175781
     },
     {
       "frame": 3415,
-      "player_name": "player3",
+      "player_name": "player1",
       "team": 0,
       "time_s": 113.83333587646484
     },
     {
       "frame": 3715,
-      "player_name": "player3",
+      "player_name": "player1",
       "team": 0,
       "time_s": 123.83333587646484
     },
     {
       "frame": 3975,
-      "player_name": "player5",
+      "player_name": "player2",
       "team": 0,
       "time_s": 132.5
     }
@@ -51,21 +51,9 @@
   "players": [
     {
       "assists": 0,
-      "goals": 0,
-      "is_bot": false,
-      "name": "player0",
-      "platform": "steam",
-      "platform_id": "<id>",
-      "saves": 0,
-      "score": 0,
-      "shots": 0,
-      "team": -1
-    },
-    {
-      "assists": 0,
       "goals": 1,
       "is_bot": false,
-      "name": "player1",
+      "name": "player0",
       "platform": "steam",
       "platform_id": "<id>",
       "saves": 1,
@@ -74,22 +62,10 @@
       "team": 1
     },
     {
-      "assists": 0,
-      "goals": 0,
-      "is_bot": false,
-      "name": "player2",
-      "platform": "epic",
-      "platform_id": "<id>",
-      "saves": 0,
-      "score": 0,
-      "shots": 0,
-      "team": -1
-    },
-    {
       "assists": 1,
       "goals": 3,
       "is_bot": false,
-      "name": "player3",
+      "name": "player1",
       "platform": "steam",
       "platform_id": "<id>",
       "saves": 1,
@@ -98,22 +74,10 @@
       "team": 0
     },
     {
-      "assists": 0,
-      "goals": 0,
-      "is_bot": false,
-      "name": "player4",
-      "platform": "epic",
-      "platform_id": "<id>",
-      "saves": 0,
-      "score": 0,
-      "shots": 0,
-      "team": -1
-    },
-    {
       "assists": 2,
       "goals": 1,
       "is_bot": false,
-      "name": "player5",
+      "name": "player2",
       "platform": "steam",
       "platform_id": "<id>",
       "saves": 1,
@@ -125,7 +89,7 @@
       "assists": 0,
       "goals": 0,
       "is_bot": false,
-      "name": "player6",
+      "name": "player3",
       "platform": "steam",
       "platform_id": "<id>",
       "saves": 0,
@@ -137,7 +101,7 @@
       "assists": 1,
       "goals": 0,
       "is_bot": false,
-      "name": "player7",
+      "name": "player4",
       "platform": "epic",
       "platform_id": "<id>",
       "saves": 1,
@@ -149,7 +113,7 @@
       "assists": 0,
       "goals": 1,
       "is_bot": false,
-      "name": "player8",
+      "name": "player5",
       "platform": "steam",
       "platform_id": "<id>",
       "saves": 2,
