@@ -13,8 +13,10 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Any
 
+from psycopg.types.json import Jsonb
+
 import ma_schemas
-from ma_schemas import HeaderDocument
+from ma_schemas import EventsDocument, HeaderDocument
 from ma_worker import dedupe, identify, load, sandbox
 from ma_worker.queue import Connection, Job
 from ma_worker.runner import PermanentError
@@ -25,9 +27,13 @@ log = logging.getLogger("ma_worker")
 
 _INPUT = "input.replay"
 _HEADER = "header.json"
+_OUTPUT_FOLDER = "out"
+_FRAMES = "frames.parquet"
+_EVENTS = "events.json"
 _CLASS_PREFIX = b"TAGame.Replay_"
 _CLASS_SEARCH_BYTES = 256
 _HEADER_MAX_BYTES = 5_242_880
+_EVENTS_MAX_BYTES = 268_435_456
 _HASH_CHUNK_BYTES = 1_048_576
 _OVER = ("done", "duplicate", "rejected", "failed")
 
@@ -36,6 +42,8 @@ _EXIT_BAD_ARGUMENTS = 2
 _EXIT_NOT_A_REPLAY = 10
 _EXIT_CORRUPT = 11
 _EXIT_OUTPUT_ERROR = 15
+# What a failed read of the network stream is called in `matches.error_code`.
+_FRAMES_FAILURES = {12: "network_failed", 13: "processor_failed", 14: "unsupported_mode"}
 
 
 class ParserOutputError(Exception):
@@ -158,6 +166,64 @@ def _run_header(
     return None
 
 
+def frames_key(match_id: uuid.UUID) -> str:
+    return f"frames/{match_id}.parquet"
+
+
+def events_key(match_id: uuid.UUID) -> str:
+    return f"events/{match_id}.json"
+
+
+def _read_events(output: Path) -> EventsDocument | None:
+    """None when the files are not what they should be: a patch can do this, and it must not cost
+    the match its header."""
+    path = output / _EVENTS
+    try:
+        if path.stat().st_size > _EVENTS_MAX_BYTES or (output / _FRAMES).stat().st_size == 0:
+            return None
+        return ma_schemas.parse_events(json.loads(path.read_bytes()))
+    except OSError, ValueError:
+        return None
+
+
+def _run_frames(
+    store: ObjectStore,
+    upload: Upload,
+    settings: Settings,
+    workdir: Path,
+    match_id: uuid.UUID,
+) -> tuple[load.Frames | None, str | None]:
+    """The network stream, with the files stored, or the reason it cannot be read."""
+    output = workdir / _OUTPUT_FOLDER
+    output.mkdir()
+    arguments = ["--frames", "--input", _INPUT, "--output-dir", _OUTPUT_FOLDER]
+    if settings.parser_max_fps is not None:
+        arguments += ["--fps", str(settings.parser_max_fps)]
+    result = sandbox.run(
+        settings.parser_bin,
+        arguments,
+        workdir,
+        sandbox.Limits(timeout_s=settings.parser_timeout_s, memory_mb=settings.parser_memory_mb),
+    )
+    code = result.exit_code
+    if code == _EXIT_BAD_ARGUMENTS:
+        raise PermanentError("parser_bad_arguments")
+    if code == _EXIT_OUTPUT_ERROR:
+        raise ParserOutputError
+    if code != _EXIT_OK:
+        if result.timed_out:
+            return None, "parser_timeout"
+        # A panic, or running out of memory: this file would only do the same again.
+        return None, _FRAMES_FAILURES.get(code if code is not None else -1, "parser_crashed")
+    events = _read_events(output)
+    if events is None:
+        return None, "invalid_events"
+    frames = load.Frames(events, frames_key(match_id), events_key(match_id))
+    store.upload(output / _FRAMES, frames.frames_key, "application/vnd.apache.parquet")
+    store.upload(output / _EVENTS, frames.events_key, "application/json")
+    return frames, None
+
+
 def _process(
     connection: Connection, store: ObjectStore, upload: Upload, settings: Settings, workdir: Path
 ) -> None:
@@ -192,12 +258,15 @@ def _process(
         _attach_to_known_match(connection, store, upload, sha256, existing[0])
         return
 
-    # Before the transaction: once a match names this file, the file has to be there.
+    # All of this before the transaction: once a match names its files, they have to be there. If
+    # the worker dies here, the job starts over and writes over the same keys.
+    match_id = load.match_id_for(key)
     target = raw_key(sha256)
     store.copy(upload.key, target)
+    frames, error_code = _run_frames(store, upload, settings, workdir, match_id)
     with connection.transaction():
-        match_id = load.insert_match(connection, header, key, target)
-        if match_id is not None:
+        created = load.insert_match(connection, match_id, header, key, target, frames, error_code)
+        if created:
             connection.execute(
                 "INSERT INTO match_files (sha256, match_id) VALUES (%s, %s)", (sha256, match_id)
             )
@@ -207,7 +276,12 @@ def _process(
                 "completed_at = now() WHERE id = %s",
                 (sha256, match_id, upload.id),
             )
-    if match_id is None:
+            if frames is not None:
+                connection.execute(
+                    "INSERT INTO jobs (kind, payload) VALUES ('analyze', %s)",
+                    (Jsonb({"match_id": str(match_id)}),),
+                )
+    if not created:
         # Another worker created this match in the meantime, from another file.
         winner = load.existing_match(connection, key)
         assert winner is not None
@@ -216,7 +290,11 @@ def _process(
         _attach_to_known_match(connection, store, upload, sha256, winner[0])
         return
     store.delete(upload.key)
-    log.info("match %s from build %s", match_id, header["game_build"])
+    # The build goes to the log either way: this is how a breaking patch shows up.
+    if frames is None:
+        log.warning("match %s from build %s: %s", match_id, header["game_build"], error_code)
+    else:
+        log.info("match %s from build %s", match_id, header["game_build"])
 
 
 def handle(connection: Connection, job: Job, store: ObjectStore, settings: Settings) -> None:
