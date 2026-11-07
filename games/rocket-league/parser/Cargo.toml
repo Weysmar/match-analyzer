@@ -16,6 +16,11 @@ path = "src/lib.rs"
 name = "rl-parse"
 path = "src/main.rs"
 
+# A test reference, never deployed: the image builds rl-parse alone.
+[[bin]]
+name = "rl-oracle"
+path = "src/bin/rl-oracle.rs"
+
 [dependencies]
 # Exact versions: subtr-actor's public API exposes boxcars types and changes often.
 boxcars = "=0.13.0"
