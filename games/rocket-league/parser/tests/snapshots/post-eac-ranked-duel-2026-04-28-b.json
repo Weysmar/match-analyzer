@@ -1,0 +1,102 @@
+{
+  "build_id": 1210528741,
+  "changelist": 512269,
+  "duration_s": 257.5213317871094,
+  "game_build": "260316.80791.512269",
+  "game_class": "TAGame.Replay_Soccar_TA",
+  "goals": [
+    {
+      "frame": 1721,
+      "player_name": "player1",
+      "team": 1,
+      "time_s": 57.36666488647461
+    },
+    {
+      "frame": 2499,
+      "player_name": "player0",
+      "team": 0,
+      "time_s": 83.30000305175781
+    },
+    {
+      "frame": 3417,
+      "player_name": "player0",
+      "team": 0,
+      "time_s": 113.9000015258789
+    },
+    {
+      "frame": 4273,
+      "player_name": "player1",
+      "team": 1,
+      "time_s": 142.43333435058594
+    },
+    {
+      "frame": 5592,
+      "player_name": "player0",
+      "team": 0,
+      "time_s": 186.39999389648438
+    },
+    {
+      "frame": 6163,
+      "player_name": "player1",
+      "team": 1,
+      "time_s": 205.43333435058594
+    },
+    {
+      "frame": 7476,
+      "player_name": "player0",
+      "team": 0,
+      "time_s": 249.1999969482422
+    },
+    {
+      "frame": 7732,
+      "player_name": "player0",
+      "team": 0,
+      "time_s": 257.73333740234375
+    }
+  ],
+  "map": "Paname_Dusk_P",
+  "match_guid": "<id>",
+  "match_type": "Online",
+  "parser_version": "<version>",
+  "played_at": "2026-04-28T15:24:57Z",
+  "played_at_source": "epoch",
+  "players": [
+    {
+      "assists": 0,
+      "goals": 5,
+      "is_bot": false,
+      "name": "player0",
+      "platform": "epic",
+      "platform_id": "<id>",
+      "saves": 0,
+      "score": 849,
+      "shots": 10,
+      "team": 0
+    },
+    {
+      "assists": 0,
+      "goals": 3,
+      "is_bot": false,
+      "name": "player1",
+      "platform": "psn",
+      "platform_id": "<id>",
+      "saves": 4,
+      "score": 934,
+      "shots": 3,
+      "team": 1
+    }
+  ],
+  "playlist": null,
+  "replay_id": "<id>",
+  "replay_version": {
+    "major": 868,
+    "minor": 32,
+    "net": 11
+  },
+  "schema_version": 1,
+  "score": {
+    "blue": 5,
+    "orange": 3
+  },
+  "team_size": 1
+}

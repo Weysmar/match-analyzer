@@ -1,0 +1,120 @@
+{
+  "build_id": 102852329,
+  "changelist": 520762,
+  "duration_s": 495.4532470703125,
+  "game_build": "260616.79869.520762",
+  "game_class": "TAGame.Replay_Soccar_TA",
+  "goals": [
+    {
+      "frame": 1373,
+      "player_name": "player2",
+      "team": 1,
+      "time_s": 45.766666412353516
+    },
+    {
+      "frame": 3030,
+      "player_name": "player0",
+      "team": 0,
+      "time_s": 101.0
+    },
+    {
+      "frame": 4119,
+      "player_name": "player0",
+      "team": 0,
+      "time_s": 137.3000030517578
+    },
+    {
+      "frame": 5863,
+      "player_name": "player2",
+      "team": 1,
+      "time_s": 195.43333435058594
+    },
+    {
+      "frame": 7088,
+      "player_name": "player3",
+      "team": 1,
+      "time_s": 236.26666259765625
+    },
+    {
+      "frame": 7678,
+      "player_name": "player1",
+      "team": 0,
+      "time_s": 255.93333435058594
+    },
+    {
+      "frame": 12386,
+      "player_name": "player0",
+      "team": 0,
+      "time_s": 412.8666687011719
+    }
+  ],
+  "map": "NeoTokyo_Standard_P",
+  "match_guid": "<id>",
+  "match_type": "Online",
+  "parser_version": "<version>",
+  "played_at": "2026-07-03T03:44:00Z",
+  "played_at_source": "epoch",
+  "players": [
+    {
+      "assists": 0,
+      "goals": 3,
+      "is_bot": false,
+      "name": "player0",
+      "platform": "steam",
+      "platform_id": "<id>",
+      "saves": 1,
+      "score": 718,
+      "shots": 4,
+      "team": 0
+    },
+    {
+      "assists": 0,
+      "goals": 1,
+      "is_bot": false,
+      "name": "player1",
+      "platform": "steam",
+      "platform_id": "<id>",
+      "saves": 6,
+      "score": 875,
+      "shots": 6,
+      "team": 0
+    },
+    {
+      "assists": 0,
+      "goals": 2,
+      "is_bot": false,
+      "name": "player2",
+      "platform": "epic",
+      "platform_id": "<id>",
+      "saves": 4,
+      "score": 866,
+      "shots": 6,
+      "team": 1
+    },
+    {
+      "assists": 0,
+      "goals": 1,
+      "is_bot": false,
+      "name": "player3",
+      "platform": "xbox",
+      "platform_id": "<id>",
+      "saves": 1,
+      "score": 374,
+      "shots": 5,
+      "team": 1
+    }
+  ],
+  "playlist": null,
+  "replay_id": "<id>",
+  "replay_version": {
+    "major": 868,
+    "minor": 32,
+    "net": 11
+  },
+  "schema_version": 1,
+  "score": {
+    "blue": 4,
+    "orange": 3
+  },
+  "team_size": 2
+}

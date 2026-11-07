@@ -1,0 +1,132 @@
+{
+  "build_id": -1391821129,
+  "changelist": 135786,
+  "duration_s": 246.60000610351562,
+  "game_build": "160721.58730.135786",
+  "game_class": "TAGame.Replay_Soccar_TA",
+  "goals": [
+    {
+      "frame": 519,
+      "player_name": "player5",
+      "team": 1,
+      "time_s": 17.299999237060547
+    },
+    {
+      "frame": 898,
+      "player_name": "player0",
+      "team": 0,
+      "time_s": 29.933332443237305
+    },
+    {
+      "frame": 4434,
+      "player_name": "player4",
+      "team": 0,
+      "time_s": 147.8000030517578
+    },
+    {
+      "frame": 4982,
+      "player_name": "player1",
+      "team": 0,
+      "time_s": 166.06666564941406
+    },
+    {
+      "frame": 6139,
+      "player_name": "player2",
+      "team": 1,
+      "time_s": 204.63333129882812
+    }
+  ],
+  "map": "Stadium_p",
+  "match_guid": null,
+  "match_type": "LAN",
+  "parser_version": "<version>",
+  "played_at": null,
+  "played_at_source": null,
+  "players": [
+    {
+      "assists": 1,
+      "goals": 1,
+      "is_bot": false,
+      "name": "player0",
+      "platform": "steam",
+      "platform_id": "<id>",
+      "saves": 0,
+      "score": 180,
+      "shots": 2,
+      "team": 0
+    },
+    {
+      "assists": 0,
+      "goals": 1,
+      "is_bot": false,
+      "name": "player1",
+      "platform": "steam",
+      "platform_id": "<id>",
+      "saves": 2,
+      "score": 180,
+      "shots": 0,
+      "team": 0
+    },
+    {
+      "assists": 1,
+      "goals": 1,
+      "is_bot": false,
+      "name": "player2",
+      "platform": "steam",
+      "platform_id": "<id>",
+      "saves": 0,
+      "score": 260,
+      "shots": 3,
+      "team": 1
+    },
+    {
+      "assists": 0,
+      "goals": 0,
+      "is_bot": false,
+      "name": "player3",
+      "platform": "steam",
+      "platform_id": "<id>",
+      "saves": 1,
+      "score": 145,
+      "shots": 4,
+      "team": 1
+    },
+    {
+      "assists": 2,
+      "goals": 1,
+      "is_bot": false,
+      "name": "player4",
+      "platform": "steam",
+      "platform_id": "<id>",
+      "saves": 1,
+      "score": 360,
+      "shots": 5,
+      "team": 0
+    },
+    {
+      "assists": 1,
+      "goals": 1,
+      "is_bot": false,
+      "name": "player5",
+      "platform": "steam",
+      "platform_id": "<id>",
+      "saves": 2,
+      "score": 205,
+      "shots": 1,
+      "team": 1
+    }
+  ],
+  "playlist": null,
+  "replay_id": "<id>",
+  "replay_version": {
+    "major": 868,
+    "minor": 12,
+    "net": null
+  },
+  "schema_version": 1,
+  "score": {
+    "blue": 3,
+    "orange": 2
+  },
+  "team_size": 4
+}

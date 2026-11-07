@@ -1,0 +1,132 @@
+{
+  "build_id": -422551716,
+  "changelist": 231343,
+  "duration_s": 319.1333312988281,
+  "game_build": "190419.41693.231343",
+  "game_class": "TAGame.Replay_Soccar_TA",
+  "goals": [
+    {
+      "frame": 1320,
+      "player_name": "player0",
+      "team": 1,
+      "time_s": 44.0
+    },
+    {
+      "frame": 2375,
+      "player_name": "player2",
+      "team": 0,
+      "time_s": 79.16666412353516
+    },
+    {
+      "frame": 5001,
+      "player_name": "player3",
+      "team": 1,
+      "time_s": 166.6999969482422
+    },
+    {
+      "frame": 7266,
+      "player_name": "player2",
+      "team": 0,
+      "time_s": 242.1999969482422
+    },
+    {
+      "frame": 7872,
+      "player_name": "player5",
+      "team": 0,
+      "time_s": 262.3999938964844
+    }
+  ],
+  "map": "EuroStadium_Night_P",
+  "match_guid": null,
+  "match_type": "Private",
+  "parser_version": "<version>",
+  "played_at": "2019-05-02T20:17:15",
+  "played_at_source": "date_without_timezone",
+  "players": [
+    {
+      "assists": 1,
+      "goals": 1,
+      "is_bot": false,
+      "name": "player0",
+      "platform": "steam",
+      "platform_id": "<id>",
+      "saves": 5,
+      "score": 625,
+      "shots": 3,
+      "team": 1
+    },
+    {
+      "assists": 2,
+      "goals": 0,
+      "is_bot": false,
+      "name": "player1",
+      "platform": "steam",
+      "platform_id": "<id>",
+      "saves": 0,
+      "score": 192,
+      "shots": 0,
+      "team": 0
+    },
+    {
+      "assists": 1,
+      "goals": 2,
+      "is_bot": false,
+      "name": "player2",
+      "platform": "steam",
+      "platform_id": "<id>",
+      "saves": 1,
+      "score": 512,
+      "shots": 8,
+      "team": 0
+    },
+    {
+      "assists": 0,
+      "goals": 1,
+      "is_bot": false,
+      "name": "player3",
+      "platform": "steam",
+      "platform_id": "<id>",
+      "saves": 0,
+      "score": 218,
+      "shots": 3,
+      "team": 1
+    },
+    {
+      "assists": 0,
+      "goals": 0,
+      "is_bot": false,
+      "name": "player4",
+      "platform": "xbox",
+      "platform_id": "<id>",
+      "saves": 2,
+      "score": 250,
+      "shots": 1,
+      "team": 1
+    },
+    {
+      "assists": 0,
+      "goals": 1,
+      "is_bot": false,
+      "name": "player5",
+      "platform": "switch",
+      "platform_id": "<id>",
+      "saves": 4,
+      "score": 489,
+      "shots": 3,
+      "team": 0
+    }
+  ],
+  "playlist": null,
+  "replay_id": "<id>",
+  "replay_version": {
+    "major": 868,
+    "minor": 24,
+    "net": 10
+  },
+  "schema_version": 1,
+  "score": {
+    "blue": 3,
+    "orange": 2
+  },
+  "team_size": 4
+}

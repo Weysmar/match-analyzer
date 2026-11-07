@@ -1,0 +1,180 @@
+{
+  "build_id": 1210528741,
+  "changelist": 512269,
+  "duration_s": 589.2803344726562,
+  "game_build": "260316.80791.512269",
+  "game_class": "TAGame.Replay_Soccar_TA",
+  "goals": [
+    {
+      "frame": 2736,
+      "player_name": "player0",
+      "team": 1,
+      "time_s": 91.19999694824219
+    },
+    {
+      "frame": 3255,
+      "player_name": "player0",
+      "team": 1,
+      "time_s": 108.5
+    },
+    {
+      "frame": 5410,
+      "player_name": "player0",
+      "team": 1,
+      "time_s": 180.3333282470703
+    },
+    {
+      "frame": 6206,
+      "player_name": "player0",
+      "team": 1,
+      "time_s": 206.86666870117188
+    },
+    {
+      "frame": 6739,
+      "player_name": "player0",
+      "team": 1,
+      "time_s": 224.63333129882812
+    },
+    {
+      "frame": 7426,
+      "player_name": "player1",
+      "team": 0,
+      "time_s": 247.53334045410156
+    },
+    {
+      "frame": 8630,
+      "player_name": "player1",
+      "team": 0,
+      "time_s": 287.6666564941406
+    },
+    {
+      "frame": 9032,
+      "player_name": "player0",
+      "team": 1,
+      "time_s": 301.0666809082031
+    },
+    {
+      "frame": 10149,
+      "player_name": "player0",
+      "team": 1,
+      "time_s": 338.29998779296875
+    },
+    {
+      "frame": 10654,
+      "player_name": "player0",
+      "team": 1,
+      "time_s": 355.1333312988281
+    },
+    {
+      "frame": 11653,
+      "player_name": "player0",
+      "team": 1,
+      "time_s": 388.4333190917969
+    },
+    {
+      "frame": 12647,
+      "player_name": "player1",
+      "team": 0,
+      "time_s": 421.5666809082031
+    },
+    {
+      "frame": 13260,
+      "player_name": "player0",
+      "team": 1,
+      "time_s": 442.0
+    },
+    {
+      "frame": 13836,
+      "player_name": "player1",
+      "team": 0,
+      "time_s": 461.20001220703125
+    },
+    {
+      "frame": 14912,
+      "player_name": "player1",
+      "team": 0,
+      "time_s": 497.0666809082031
+    },
+    {
+      "frame": 15815,
+      "player_name": "player0",
+      "team": 1,
+      "time_s": 527.1666870117188
+    },
+    {
+      "frame": 16221,
+      "player_name": "player1",
+      "team": 0,
+      "time_s": 540.7000122070312
+    },
+    {
+      "frame": 17171,
+      "player_name": "player1",
+      "team": 0,
+      "time_s": 572.3666381835938
+    },
+    {
+      "frame": 19331,
+      "player_name": "player0",
+      "team": 1,
+      "time_s": 644.3666381835938
+    },
+    {
+      "frame": 20505,
+      "player_name": "player1",
+      "team": 0,
+      "time_s": 683.5
+    },
+    {
+      "frame": 21846,
+      "player_name": "player0",
+      "team": 1,
+      "time_s": 728.2000122070312
+    }
+  ],
+  "map": "UtopiaStadium_Dusk_P",
+  "match_guid": "<id>",
+  "match_type": "Private",
+  "parser_version": "<version>",
+  "played_at": "2026-04-28T16:00:55Z",
+  "played_at_source": "epoch",
+  "players": [
+    {
+      "assists": 0,
+      "goals": 13,
+      "is_bot": false,
+      "name": "player0",
+      "platform": "steam",
+      "platform_id": "<id>",
+      "saves": 8,
+      "score": 2674,
+      "shots": 22,
+      "team": 1
+    },
+    {
+      "assists": 0,
+      "goals": 8,
+      "is_bot": false,
+      "name": "player1",
+      "platform": "steam",
+      "platform_id": "<id>",
+      "saves": 6,
+      "score": 1897,
+      "shots": 19,
+      "team": 0
+    }
+  ],
+  "playlist": null,
+  "replay_id": "<id>",
+  "replay_version": {
+    "major": 868,
+    "minor": 32,
+    "net": 11
+  },
+  "schema_version": 1,
+  "score": {
+    "blue": 6,
+    "orange": 4
+  },
+  "team_size": 3
+}

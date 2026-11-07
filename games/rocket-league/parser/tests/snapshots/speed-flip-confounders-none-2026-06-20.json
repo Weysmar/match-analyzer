@@ -1,0 +1,48 @@
+{
+  "build_id": 939334844,
+  "changelist": 519749,
+  "duration_s": 301.9402160644531,
+  "game_build": "260602.75104.519749",
+  "game_class": "TAGame.Replay_Soccar_TA",
+  "goals": [
+    {
+      "frame": 9436,
+      "player_name": "player0",
+      "team": 0,
+      "time_s": 314.5333251953125
+    }
+  ],
+  "map": "cs_day_p",
+  "match_guid": null,
+  "match_type": "Offline",
+  "parser_version": "<version>",
+  "played_at": "2026-06-21T02:26:04Z",
+  "played_at_source": "epoch",
+  "players": [
+    {
+      "assists": 0,
+      "goals": 1,
+      "is_bot": false,
+      "name": "player0",
+      "platform": "epic",
+      "platform_id": "<id>",
+      "saves": 0,
+      "score": 135,
+      "shots": 1,
+      "team": 0
+    }
+  ],
+  "playlist": null,
+  "replay_id": "<id>",
+  "replay_version": {
+    "major": 868,
+    "minor": 32,
+    "net": 11
+  },
+  "schema_version": 1,
+  "score": {
+    "blue": 1,
+    "orange": 0
+  },
+  "team_size": 1
+}

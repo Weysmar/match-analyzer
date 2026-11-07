@@ -1,0 +1,126 @@
+{
+  "build_id": -1853621652,
+  "changelist": 511382,
+  "duration_s": 303.1158447265625,
+  "game_build": "260303.78181.511382",
+  "game_class": "TAGame.Replay_Soccar_TA",
+  "goals": [
+    {
+      "frame": 453,
+      "player_name": "player0",
+      "team": 1,
+      "time_s": 15.100000381469727
+    },
+    {
+      "frame": 3189,
+      "player_name": "player0",
+      "team": 1,
+      "time_s": 106.30000305175781
+    },
+    {
+      "frame": 3996,
+      "player_name": "player0",
+      "team": 1,
+      "time_s": 133.1999969482422
+    },
+    {
+      "frame": 4858,
+      "player_name": "player0",
+      "team": 1,
+      "time_s": 161.93333435058594
+    },
+    {
+      "frame": 5936,
+      "player_name": "player0",
+      "team": 1,
+      "time_s": 197.86666870117188
+    },
+    {
+      "frame": 6718,
+      "player_name": "player1",
+      "team": 0,
+      "time_s": 223.93333435058594
+    },
+    {
+      "frame": 8095,
+      "player_name": "player0",
+      "team": 1,
+      "time_s": 269.8333435058594
+    },
+    {
+      "frame": 8523,
+      "player_name": "player0",
+      "team": 1,
+      "time_s": 284.1000061035156
+    },
+    {
+      "frame": 9151,
+      "player_name": "player1",
+      "team": 0,
+      "time_s": 305.0333251953125
+    },
+    {
+      "frame": 9737,
+      "player_name": "player0",
+      "team": 1,
+      "time_s": 324.5666809082031
+    },
+    {
+      "frame": 10118,
+      "player_name": "player0",
+      "team": 1,
+      "time_s": 337.26666259765625
+    },
+    {
+      "frame": 11941,
+      "player_name": "player0",
+      "team": 1,
+      "time_s": 398.0333251953125
+    }
+  ],
+  "map": "EuroStadium_Dusk_P",
+  "match_guid": "<id>",
+  "match_type": "Private",
+  "parser_version": "<version>",
+  "played_at": "2026-03-21T02:24:06Z",
+  "played_at_source": "epoch",
+  "players": [
+    {
+      "assists": 0,
+      "goals": 10,
+      "is_bot": false,
+      "name": "player0",
+      "platform": "steam",
+      "platform_id": "<id>",
+      "saves": 2,
+      "score": 1655,
+      "shots": 15,
+      "team": 1
+    },
+    {
+      "assists": 0,
+      "goals": 2,
+      "is_bot": false,
+      "name": "player1",
+      "platform": "steam",
+      "platform_id": "<id>",
+      "saves": 2,
+      "score": 562,
+      "shots": 7,
+      "team": 0
+    }
+  ],
+  "playlist": null,
+  "replay_id": "<id>",
+  "replay_version": {
+    "major": 868,
+    "minor": 32,
+    "net": 11
+  },
+  "schema_version": 1,
+  "score": {
+    "blue": 2,
+    "orange": 10
+  },
+  "team_size": 1
+}

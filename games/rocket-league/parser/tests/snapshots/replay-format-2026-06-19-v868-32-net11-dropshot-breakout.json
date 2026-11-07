@@ -1,0 +1,114 @@
+{
+  "build_id": 939334844,
+  "changelist": 519749,
+  "duration_s": 301.55853271484375,
+  "game_build": "260602.75104.519749",
+  "game_class": "TAGame.Replay_Soccar_TA",
+  "goals": [
+    {
+      "frame": 1743,
+      "player_name": "player5",
+      "team": 1,
+      "time_s": 58.099998474121094
+    },
+    {
+      "frame": 5112,
+      "player_name": "player5",
+      "team": 1,
+      "time_s": 170.39999389648438
+    }
+  ],
+  "map": "ShatterShot_P",
+  "match_guid": "<id>",
+  "match_type": "Online",
+  "parser_version": "<version>",
+  "played_at": "2026-06-20T03:37:44Z",
+  "played_at_source": "epoch",
+  "players": [
+    {
+      "assists": 1,
+      "goals": 0,
+      "is_bot": false,
+      "name": "player0",
+      "platform": "epic",
+      "platform_id": "<id>",
+      "saves": 0,
+      "score": 96,
+      "shots": 1,
+      "team": 1
+    },
+    {
+      "assists": 0,
+      "goals": 0,
+      "is_bot": false,
+      "name": "player1",
+      "platform": "xbox",
+      "platform_id": "<id>",
+      "saves": 3,
+      "score": 428,
+      "shots": 18,
+      "team": 0
+    },
+    {
+      "assists": 0,
+      "goals": 0,
+      "is_bot": false,
+      "name": "player2",
+      "platform": "psn",
+      "platform_id": "<id>",
+      "saves": 0,
+      "score": 308,
+      "shots": 20,
+      "team": 0
+    },
+    {
+      "assists": 0,
+      "goals": 0,
+      "is_bot": false,
+      "name": "player3",
+      "platform": "psn",
+      "platform_id": "<id>",
+      "saves": 1,
+      "score": 499,
+      "shots": 38,
+      "team": 1
+    },
+    {
+      "assists": 0,
+      "goals": 0,
+      "is_bot": false,
+      "name": "player4",
+      "platform": "psn",
+      "platform_id": "<id>",
+      "saves": 3,
+      "score": 473,
+      "shots": 9,
+      "team": 0
+    },
+    {
+      "assists": 0,
+      "goals": 2,
+      "is_bot": false,
+      "name": "player5",
+      "platform": "epic",
+      "platform_id": "<id>",
+      "saves": 0,
+      "score": 1422,
+      "shots": 96,
+      "team": 1
+    }
+  ],
+  "playlist": null,
+  "replay_id": "<id>",
+  "replay_version": {
+    "major": 868,
+    "minor": 32,
+    "net": 11
+  },
+  "schema_version": 1,
+  "score": {
+    "blue": 0,
+    "orange": 2
+  },
+  "team_size": 3
+}

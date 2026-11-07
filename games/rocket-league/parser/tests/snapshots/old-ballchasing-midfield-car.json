@@ -1,0 +1,174 @@
+{
+  "build_id": -918579830,
+  "changelist": 134970,
+  "duration_s": 277.3999938964844,
+  "game_build": "160705.43783.134970",
+  "game_class": "TAGame.Replay_Soccar_TA",
+  "goals": [
+    {
+      "frame": 788,
+      "player_name": "player2",
+      "team": 0,
+      "time_s": 26.266666412353516
+    },
+    {
+      "frame": 1847,
+      "player_name": "player2",
+      "team": 0,
+      "time_s": 61.56666564941406
+    },
+    {
+      "frame": 2809,
+      "player_name": "player2",
+      "team": 0,
+      "time_s": 93.63333129882812
+    },
+    {
+      "frame": 3101,
+      "player_name": "player2",
+      "team": 0,
+      "time_s": 103.36666870117188
+    },
+    {
+      "frame": 3654,
+      "player_name": "player4",
+      "team": 0,
+      "time_s": 121.80000305175781
+    },
+    {
+      "frame": 5156,
+      "player_name": "player2",
+      "team": 0,
+      "time_s": 171.86666870117188
+    },
+    {
+      "frame": 5782,
+      "player_name": "player4",
+      "team": 0,
+      "time_s": 192.73333740234375
+    },
+    {
+      "frame": 6018,
+      "player_name": "player2",
+      "team": 0,
+      "time_s": 200.60000610351562
+    },
+    {
+      "frame": 6612,
+      "player_name": "player2",
+      "team": 0,
+      "time_s": 220.39999389648438
+    },
+    {
+      "frame": 7220,
+      "player_name": "player2",
+      "team": 0,
+      "time_s": 240.6666717529297
+    },
+    {
+      "frame": 7570,
+      "player_name": "player2",
+      "team": 0,
+      "time_s": 252.3333282470703
+    },
+    {
+      "frame": 7812,
+      "player_name": "player2",
+      "team": 0,
+      "time_s": 260.3999938964844
+    }
+  ],
+  "map": "Park_Night_P",
+  "match_guid": null,
+  "match_type": "Online",
+  "parser_version": "<version>",
+  "played_at": null,
+  "played_at_source": null,
+  "players": [
+    {
+      "assists": 0,
+      "goals": 0,
+      "is_bot": false,
+      "name": "player0",
+      "platform": "psn",
+      "platform_id": null,
+      "saves": 1,
+      "score": 50,
+      "shots": 0,
+      "team": 1
+    },
+    {
+      "assists": 0,
+      "goals": 0,
+      "is_bot": false,
+      "name": "player1",
+      "platform": "psn",
+      "platform_id": null,
+      "saves": 0,
+      "score": 0,
+      "shots": 0,
+      "team": 1
+    },
+    {
+      "assists": 1,
+      "goals": 10,
+      "is_bot": false,
+      "name": "player2",
+      "platform": "steam",
+      "platform_id": "<id>",
+      "saves": 0,
+      "score": 2130,
+      "shots": 16,
+      "team": 0
+    },
+    {
+      "assists": 1,
+      "goals": 0,
+      "is_bot": false,
+      "name": "player3",
+      "platform": "steam",
+      "platform_id": "<id>",
+      "saves": 0,
+      "score": 130,
+      "shots": 0,
+      "team": 0
+    },
+    {
+      "assists": 2,
+      "goals": 2,
+      "is_bot": false,
+      "name": "player4",
+      "platform": "psn",
+      "platform_id": null,
+      "saves": 0,
+      "score": 430,
+      "shots": 3,
+      "team": 0
+    },
+    {
+      "assists": 0,
+      "goals": 0,
+      "is_bot": false,
+      "name": "player5",
+      "platform": "psn",
+      "platform_id": null,
+      "saves": 2,
+      "score": 200,
+      "shots": 0,
+      "team": 1
+    }
+  ],
+  "playlist": null,
+  "replay_id": "<id>",
+  "replay_version": {
+    "major": 868,
+    "minor": 12,
+    "net": null
+  },
+  "schema_version": 1,
+  "score": {
+    "blue": 12,
+    "orange": 1
+  },
+  "team_size": 3
+}
