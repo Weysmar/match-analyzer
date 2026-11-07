@@ -4,7 +4,7 @@ from collections.abc import Iterator
 import psycopg
 import pytest
 
-from ma_db.testing import Connection, role_url, temporary_database
+from ma_db.testing import Connection, Factory, role_url, temporary_database
 
 
 @pytest.fixture(scope="session")
@@ -29,9 +29,10 @@ def worker_url(database: str) -> str:
 
 @pytest.fixture
 def conn(database: str) -> Iterator[Connection]:
-    """The tests' own view, as the schema's owner."""
+    """The tests' own view, as the schema's owner. Each test starts empty: a file one test has
+    seen would otherwise be a duplicate for the next."""
     with psycopg.connect(database, autocommit=True) as connection:
-        connection.execute("DELETE FROM jobs")
+        connection.execute("TRUNCATE jobs, matches, uploads, users, anonymous_sessions CASCADE")
         yield connection
 
 
@@ -39,3 +40,8 @@ def conn(database: str) -> Iterator[Connection]:
 def worker_conn(worker_url: str) -> Iterator[Connection]:
     with psycopg.connect(worker_url, autocommit=True) as connection:
         yield connection
+
+
+@pytest.fixture
+def make(conn: Connection) -> Factory:
+    return Factory(conn)

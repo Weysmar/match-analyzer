@@ -94,6 +94,7 @@ def fail(connection: Connection, job: Job, worker: str, code: str, *, retry: boo
             """,
             (code, job.id, worker),
         )
+        _settle_uploads(connection)
     return cursor.rowcount == 1
 
 
@@ -119,7 +120,23 @@ def recover(connection: Connection, timeout_s: int) -> tuple[int, int]:
         """,
         (timeout_s,),
     ).rowcount
+    if dead:
+        _settle_uploads(connection)
     return requeued, dead
+
+
+def _settle_uploads(connection: Connection) -> None:
+    """Nobody should wait forever for a file whose job has died."""
+    connection.execute(
+        """
+        UPDATE uploads
+        SET status = 'failed', completed_at = now()
+        FROM jobs
+        WHERE jobs.status = 'dead' AND jobs.kind = 'parse'
+            AND jobs.payload->>'upload_id' = uploads.id::text
+            AND uploads.status IN ('uploaded', 'processing')
+        """
+    )
 
 
 def status_counts(connection: Connection) -> dict[tuple[str, str], int]:
