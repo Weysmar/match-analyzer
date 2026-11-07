@@ -1,6 +1,6 @@
 # Plan d'implémentation V1 : `match-analyzer`
 
-> **Statut : validé par Vincent le 2026-11-06, avec D1, D2 et D3 tels que recommandés. Étape 0 close le 2026-11-07, sauf T0.7 (comparaison Epic, action de Vincent) et la vérification du timeout sur le VPS. Amendements A1 à A17 et D20 validés. Étape 1 terminée le 2026-11-07, dépôt privé `Weysmar/match-analyzer`. Étapes 2 et 3 fusionnées le 2026-11-07. Étape 4 fusionnée le 2026-11-07. Étape 5 en cours : T5.1 à T5.11 fusionnées, T5.12 à T5.14 sur la branche `feat/api-matches`.**
+> **Statut : validé par Vincent le 2026-11-06, avec D1, D2 et D3 tels que recommandés. Étape 0 close le 2026-11-07, sauf T0.7 (comparaison Epic, action de Vincent) et la vérification du timeout sur le VPS. Amendements A1 à A17 et D20 validés. Étape 1 terminée le 2026-11-07, dépôt privé `Weysmar/match-analyzer`. Étapes 2 et 3 fusionnées le 2026-11-07. Étape 4 fusionnée le 2026-11-07. Étape 5 : T5.1 à T5.14 fusionnées, T5.15 et T5.16 sur la branche `feat/api-stats-erasure`, à valider par Vincent avant l'étape 6.**
 > Date : 2026-11-06. Périmètre : section 8 de `CLAUDE.md`, ordre de la section 13, précédé d'une étape 0 de vérification.
 > Rapport de l'étape 0 : `spikes/s0-parse/RAPPORT.md`.
 
@@ -102,6 +102,9 @@ Trois autres points attendent ta confirmation en [annexe C](#annexe-c--décision
 | A35 | Une erreur au moment de choisir son joueur se propagerait à tous ses matchs. | Changer d'avis efface le joueur précédent des identités mémorisées et des matchs qu'il avait atteints, puis applique le nouveau. |
 | A36 | La fiche d'un match doit permettre de ne pas proposer un bot comme identité. | `players[].is_bot` est ajouté au contrat de `GET /matches/{id}`. |
 | A37 | D20 prévoit qu'un joueur anonymisé voie son vrai pseudo une fois vérifié, mais `match_players` ne conserve que le nom anonyme. | En V1, il voit son nom anonyme, y compris dans sa propre fiche. |
+| A38 | « Moyenne sur les N derniers matchs » laissait ouverts le poids d'un match et la place d'un match sans métriques. | Chaque match pèse autant, quelle que soit sa durée. Seuls comptent les matchs dont le joueur est connu et qui ont des métriques : un `header_only` ne prend pas de place. |
+| A39 | `DELETE /me` laisserait derrière lui la session anonyme du même navigateur. | Elle est effacée en même temps. `DELETE /me/anonymous` répond `202` même sans session. |
+| A40 | La liste des `metric_id` vit dans `rl_analysis` (étape 7), que l'API n'importe pas. | L'API garde sa propre liste pour `unknown_metric`. L'étape 7 devra ajouter un test d'égalité entre les deux. |
 | A21 | Les règles `requires` de `clap` laissaient passer une combinaison d'options invalide. | Les combinaisons d'options sont vérifiées par `rl-parse` lui-même. |
 
 **Encore ouvert** : l'identifiant Epic (T0.7).
