@@ -1,12 +1,38 @@
 [package]
 name = "rl-parse"
-version = "0.0.0"
+version = "0.1.0"
 edition = "2024"
 rust-version = "1.88"
 publish = false
 description = "Turns a replay file into header.json, frames.parquet and events.json."
 
 [workspace]
+
+[lib]
+name = "rl_parse"
+path = "src/lib.rs"
+
+[[bin]]
+name = "rl-parse"
+path = "src/main.rs"
+
+[dependencies]
+# Exact versions: subtr-actor's public API exposes boxcars types and changes often.
+boxcars = "=0.13.0"
+subtr-actor = "=1.5.1"
+# Heavy, but the only way to write Parquet from Rust. Features kept to the minimum.
+arrow = { version = "=60.1.0", default-features = false }
+parquet = { version = "=60.1.0", default-features = false, features = ["arrow", "zstd"] }
+clap = { version = "=4.6.7", features = ["derive"] }
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+
+[profile.release]
+lto = "thin"
+
+# The corpus tests compare against subtr-actor's stats: far too slow unoptimized.
+[profile.test.package."*"]
+opt-level = 2
 
 [lints.rust]
 unsafe_code = "forbid"
