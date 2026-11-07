@@ -8,7 +8,7 @@ from typing import Any
 import psycopg
 import pytest
 
-from ma_db.testing import Connection
+from ma_db.testing import Connection, Factory
 from ma_worker import queue
 from ma_worker.queue import Job
 from ma_worker.runner import PermanentError, Runner
@@ -320,3 +320,41 @@ def test_the_worker_role_cannot_touch_accounts(worker_conn: Connection) -> None:
     with pytest.raises(psycopg.errors.InsufficientPrivilege):
         worker_conn.execute("DELETE FROM users")
     assert worker_conn.execute("SELECT count(*) FROM jobs").fetchone() is not None
+
+
+def upload_status(conn: Connection, upload: object) -> str:
+    row = conn.execute("SELECT status FROM uploads WHERE id = %s", (upload,)).fetchone()
+    assert row is not None
+    return str(row[0])
+
+
+def test_a_job_that_keeps_killing_workers_fails_its_upload(
+    conn: Connection, worker_conn: Connection, make: Factory
+) -> None:
+    upload = make.upload(anonymous_session_id=make.anonymous_session())
+    conn.execute("UPDATE uploads SET status = 'processing' WHERE id = %s", (upload,))
+    job_id = add_job(conn, payload=f'{{"upload_id": "{upload}"}}', max_attempts=1)
+    take(worker_conn, "died")
+    conn.execute("UPDATE jobs SET locked_at = now() - interval '1 hour' WHERE id = %s", (job_id,))
+    assert queue.recover(worker_conn, 600) == (0, 1)
+    assert upload_status(conn, upload) == "failed"
+
+
+def test_a_retry_leaves_its_upload_alone(
+    conn: Connection, worker_conn: Connection, make: Factory
+) -> None:
+    upload = make.upload(anonymous_session_id=make.anonymous_session())
+    conn.execute("UPDATE uploads SET status = 'processing' WHERE id = %s", (upload,))
+    add_job(conn, payload=f'{{"upload_id": "{upload}"}}')
+    queue.fail(worker_conn, take(worker_conn), ME, "StoreError")
+    assert upload_status(conn, upload) == "processing"
+
+
+def test_a_finished_upload_is_not_marked_failed(
+    conn: Connection, worker_conn: Connection, make: Factory
+) -> None:
+    upload = make.upload(anonymous_session_id=make.anonymous_session())
+    conn.execute("UPDATE uploads SET status = 'done' WHERE id = %s", (upload,))
+    add_job(conn, payload=f'{{"upload_id": "{upload}"}}', max_attempts=1)
+    queue.fail(worker_conn, take(worker_conn), ME, "StoreError")
+    assert upload_status(conn, upload) == "done"
