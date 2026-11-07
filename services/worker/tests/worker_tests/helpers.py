@@ -57,6 +57,66 @@ def player(
     } | fields
 
 
+def member(
+    index: int,
+    name: str,
+    team: int,
+    platform: str,
+    platform_id: str | None,
+    *,
+    anonymized: bool = False,
+) -> dict[str, Any]:
+    return {
+        "player_idx": index,
+        "platform": platform,
+        "platform_id": platform_id,
+        "name": name,
+        "team": team,
+        "anonymized": anonymized,
+    }
+
+
+def events(**fields: Any) -> dict[str, Any]:
+    """A valid `events.json`, for the players of `header()`."""
+    document: dict[str, Any] = {
+        "schema_version": 1,
+        "parser_version": "0.1.1",
+        "fps": None,
+        "playlist_id": 13,
+        "duration_s": 300.0,
+        "arena_out_of_bounds": False,
+        "roster": [
+            member(0, "Blue One", 0, "steam", "1001"),
+            member(1, "Orange One", 1, "epic", "abc"),
+        ],
+        "goals": [
+            {
+                "frame": 100,
+                "time_s": 12.5,
+                "team": 0,
+                "player_idx": 0,
+                "score_blue": 1,
+                "score_orange": 0,
+            }
+        ],
+        "demolitions": [
+            {
+                "frame": 50,
+                "time_s": 5.0,
+                "attacker_idx": 1,
+                "victim_idx": 0,
+                "x": 0.0,
+                "y": 0.0,
+                "z": 17.0,
+            }
+        ],
+        "pad_pickups": [],
+        "unresolved_pad_pickups": 0,
+        "stat_events": [],
+    }
+    return document | fields
+
+
 class MemoryStore:
     """The object store, in a dictionary."""
 
@@ -98,7 +158,8 @@ class MemoryStore:
 
 class FakeParser:
     """A program standing in for `rl-parse`, run through the real sandbox. It writes the prepared
-    header, or ends with the prepared code, and counts its runs."""
+    files, or ends with the prepared code, and counts its runs. Reading frames fails by default, as
+    on a replay of a mode the parser does not read."""
 
     def __init__(self, folder: Path) -> None:
         self.folder = folder
@@ -106,14 +167,36 @@ class FakeParser:
         self.document = folder / "document.json"
         self.exit_code = folder / "exit-code"
         self.runs = folder / "runs"
+        self.events_document = folder / "events-document.json"
+        self.frames_code = folder / "frames-code"
+        self.frames_behavior = folder / "frames-behavior"
         self.set_header(header())
+        self.set_frames_exit_code(12)
         self.path.write_text(
             f"""#!{sys.executable}
+import os
+import signal
 import sys
+import time
 from pathlib import Path
 
 with open({str(self.runs)!r}, "a") as runs:
     runs.write(" ".join(sys.argv[1:]) + "\\n")
+if "--frames" in sys.argv:
+    behavior = Path({str(self.frames_behavior)!r})
+    action = behavior.read_text() if behavior.exists() else ""
+    if action == "hang":
+        time.sleep(300)
+    if action == "kill":
+        os.kill(os.getpid(), signal.SIGKILL)
+    code = Path({str(self.frames_code)!r})
+    if code.exists():
+        sys.exit(int(code.read_text()))
+    folder = Path(sys.argv[sys.argv.index("--output-dir") + 1])
+    if action != "no-frames":
+        (folder / "frames.parquet").write_bytes(b"a parquet file")
+    (folder / "events.json").write_bytes(Path({str(self.events_document)!r}).read_bytes())
+    sys.exit(0)
 code = Path({str(self.exit_code)!r})
 if code.exists():
     sys.exit(int(code.read_text()))
@@ -135,6 +218,30 @@ Path(target).write_bytes(Path({str(self.document)!r}).read_bytes())
             self.exit_code.unlink(missing_ok=True)
         else:
             self.exit_code.write_text(str(code), encoding="utf-8")
+
+    def set_events(self, document: dict[str, Any]) -> None:
+        """Reading frames now works, and gives this."""
+        self.events_document.write_text(json.dumps(document), encoding="utf-8")
+        self.set_frames_exit_code(None)
+
+    def set_raw_events(self, content: bytes) -> None:
+        self.events_document.write_bytes(content)
+        self.set_frames_exit_code(None)
+
+    def set_frames_exit_code(self, code: int | None) -> None:
+        if code is None:
+            self.frames_code.unlink(missing_ok=True)
+        else:
+            self.frames_code.write_text(str(code), encoding="utf-8")
+
+    def set_frames_signal(self, _: int) -> None:
+        self.frames_behavior.write_text("kill", encoding="utf-8")
+
+    def set_frames_hang(self) -> None:
+        self.frames_behavior.write_text("hang", encoding="utf-8")
+
+    def set_no_frames_file(self) -> None:
+        self.frames_behavior.write_text("no-frames", encoding="utf-8")
 
     def run_count(self) -> int:
         if not self.runs.exists():

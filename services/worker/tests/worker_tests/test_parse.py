@@ -177,6 +177,7 @@ def test_the_parser_gets_a_folder_of_its_own(
     run_job(worker_conn, store, settings, dropped(make, store, conn=conn))
     assert fake_parser.runs.read_text(encoding="utf-8") == (
         "--header --input input.replay --output header.json\n"
+        "--frames --input input.replay --output-dir out\n"
     )
 
 
@@ -372,7 +373,7 @@ def test_the_same_file_twice_is_one_match_and_two_links(
     assert state["sha256"] == hashlib.sha256(REPLAY).hexdigest()
     assert count(conn, "SELECT count(*) FROM user_matches WHERE match_id = %s", match) == 2
     # The second file is known by its hash: the parser does not even run.
-    assert fake_parser.run_count() == 1
+    assert fake_parser.run_count() == 2
     assert list(store.objects) == [f"raw/{state['sha256']}.replay"]
 
 
@@ -606,7 +607,7 @@ def test_running_again_after_the_end_changes_nothing(
     run_job(worker_conn, store, settings, upload)
     assert f"incoming/{upload}" not in store.objects
     assert matches_count(conn) == before
-    assert fake_parser.run_count() == 1
+    assert fake_parser.run_count() == 2
 
 
 @pytest.mark.parametrize("operation", ["download", "copy"])
