@@ -880,6 +880,16 @@ wheels = [
 name = "rl-analysis"
 version = "0.0.0"
 source = { editable = "games/rocket-league/analysis" }
+dependencies = [
+    { name = "ma-schemas" },
+    { name = "polars" },
+]
+
+[package.metadata]
+requires-dist = [
+    { name = "ma-schemas", editable = "packages/schemas" },
+    { name = "polars", specifier = "==2.1.0" },
+]
 
 [[package]]
 name = "rpds-py"
