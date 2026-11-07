@@ -1,0 +1,141 @@
+source = "https://raw.githubusercontent.com/rlrml/subtr-actor/ea9f34d5f9d6a20fff5fd73768c04975c3f5b7e4/assets/"
+
+[[public]]
+name = "air-dribble-goal-mouth-2026-05-24.replay"
+sha256 = "3a952366a26e4fe88c33c0611f3ae601a67f1ce570977c5294fbe61293b77ba1"
+
+[[public]]
+name = "boost-into-ball-misclassification-2026-06-11.replay"
+sha256 = "4ca020c2d66fb73edbd72a981c47c9d22956d3bd39ed854d29723c1fa92ff8f8"
+
+[[public]]
+name = "half-flip-recall-drill-2026-06-20.replay"
+sha256 = "9c7917a98f22900ceb10930f5742f63691d97c2b7b0e768178e14eefcc7fa458"
+
+[[public]]
+name = "old-ballchasing-midfield-car.replay"
+sha256 = "c19940038bbff711041eb28f8a2486126a7e3d5adb3004e02caac02642b268e5"
+
+[[public]]
+name = "post-eac-private-2026-04-28.replay"
+sha256 = "8e6809b4b8d28c6373a2363aba699b5692ab91a7d91b905b70aae92b20d9cf46"
+
+[[public]]
+name = "post-eac-ranked-doubles-2026-04-28.replay"
+sha256 = "f4b2c319787c3c11e87ae37819a8bad4c47d0847b94c2fda026d3566cb8d0891"
+
+[[public]]
+name = "post-eac-ranked-duel-2026-04-28-a.replay"
+sha256 = "e23fec480fbe19ab3d5ada41aac554f1d444506fdf204b92a329fff70e152b83"
+
+[[public]]
+name = "post-eac-ranked-duel-2026-04-28-b.replay"
+sha256 = "e00e2fb668a22f061aea2884f30b3723b238bb46febbe19a07190a10e2b3cd84"
+
+[[public]]
+name = "post-eac-ranked-standard-2026-04-28.replay"
+sha256 = "31c3c26451b7cd2ce2d533e8bf92661f0a84a8754bb941b6fd4b016c2f1cc74e"
+
+[[public]]
+name = "problematic-private-duel-2026-03-20.replay"
+sha256 = "85b50b2dbca51bfbde721a46c73a5d6ec7cb719dc8c74ac7080138c2dedf437e"
+
+[[public]]
+name = "ranked-standard-state-name-index-collision-2024-08-25.replay"
+sha256 = "ab13787e49161f6d5b47c8f3f0d3feac2a7986b1d9d6709f696817aa6970f133"
+
+[[public]]
+name = "recent-ranked-doubles-2026-03-10.replay"
+sha256 = "215a4e006a25d263836742b4adc0762514f96103ba4fa00e582803e8ecfda915"
+
+[[public]]
+name = "recent-ranked-standard-2026-03-10-a.replay"
+sha256 = "127d794a72ecbb02c3bd21cf4d0260cb25f6ba3f8d8b84a87839ee35a8985392"
+
+[[public]]
+name = "recent-ranked-standard-2026-03-10-b.replay"
+sha256 = "c1ea1200390b493ec9df43247e7b76409bb58d3abace3ae2c34adb1236db7fe3"
+
+[[public]]
+name = "replay-format-2016-07-21-v868-12-net-none-lan.replay"
+sha256 = "edf46af011fb016c622b21bcbc46da008e372626b62c68ea2b65be40c7f6f4ec"
+
+[[public]]
+name = "replay-format-2016-11-09-v868-14-net-none-rlcs-lan.replay"
+sha256 = "709c0cde2286a1ae0df40de7d58e650371e103f2b4dbf9c8316ac3d53913fc6e"
+
+[[public]]
+name = "replay-format-2017-03-16-v868-17-net-none-online.replay"
+sha256 = "89448d3339222f55bd9f021e3d707aa281edf80f3856bb3d11091f8a7205a9c9"
+
+[[public]]
+name = "replay-format-2017-11-22-v868-20-net2-legacy-vectors.replay"
+sha256 = "a3a8b5008317514b76b68e8085bae2b483ed6c59a049c343bf202851ac423cc0"
+
+[[public]]
+name = "replay-format-2018-03-15-v868-20-net5-modern-vectors-legacy-rotation.replay"
+sha256 = "46a410c54d7ce8b4a6cd4b968f8d6ee5abf0109cc8f07a9f3473bfd8220c9014"
+
+[[public]]
+name = "replay-format-2018-05-17-v868-22-net7-modern-rigidbody.replay"
+sha256 = "a4050215b5590704182cda2cd853a93f0ae72a8cebf459567a277b9f0fdb19ea"
+
+[[public]]
+name = "replay-format-2019-04-19-v868-24-net10-modern-rigidbody.replay"
+sha256 = "935203622a1a9a02ad5f9a882e7f5f53443a8d97339cd18d3e1f96905e586237"
+
+[[public]]
+name = "replay-format-2020-09-25-v868-29-net10-tournament.replay"
+sha256 = "ef1231e6381a2f2b2efec9f28691f2051d4bc8ef20a54bcf6009ec31cc57c245"
+
+[[public]]
+name = "replay-format-2022-09-29-v868-32-net10-legacy-boost.replay"
+sha256 = "4aa3aa0c6d42355ca2c161858545fb5cb02b78e8ee623b71e3e128870de2e8c8"
+
+[[public]]
+name = "replay-format-2025-06-10-v868-32-net10-replicated-boost.replay"
+sha256 = "025c76cdd72ddd612b357e88131ca50f6e21913191612c6d6dd5c4a660e177c7"
+
+[[public]]
+name = "replay-format-2026-01-14-v868-32-net10-demolish-extended.replay"
+sha256 = "6e905e4bf3131a540cd4592cdf8511c9eeec4df03fc89aff1c668185b06b0952"
+
+[[public]]
+name = "replay-format-2026-03-03-v868-32-net11-dodge-refresh-counter.replay"
+sha256 = "06136f35ea22a1cbd5b2d586dd98243f9471adee042e0e53590a291887eac70d"
+
+[[public]]
+name = "replay-format-2026-06-02-v868-32-net11-worldcup-ball.replay"
+sha256 = "4ca020c2d66fb73edbd72a981c47c9d22956d3bd39ed854d29723c1fa92ff8f8"
+
+[[public]]
+name = "replay-format-2026-06-19-v868-32-net11-dropshot-breakout.replay"
+sha256 = "c9756e136b5ceda4d78b2570cd7862a726c444b42c04e0fe59e01c0ffb3273a4"
+
+[[public]]
+name = "replay-format-2026-09-18-v868-34-net12-season24-honor-duel.replay"
+sha256 = "547d49f32310f14194c34612031745e95c238f77e7688ad0bc62091c694a138f"
+
+[[public]]
+name = "replay-format-2026-09-18-v868-34-net12-season24-standard.replay"
+sha256 = "77db223c48626fe05b4a2e22269eb4720e6e383f31f6c27dd7e8d841a14d7b38"
+
+[[public]]
+name = "reverse-flick-vs-backflip-2026-06-26.replay"
+sha256 = "967661839b1dc10d551eeea5b33f29be1e8d2f3b0364cfc29af432ee2eab4b14"
+
+[[public]]
+name = "speed-flip-confounders-none-2026-06-20.replay"
+sha256 = "afa807b3307be6b54f11ce80adffcae9eb6fabf3d277b9f6751f68249b14f8b6"
+
+[[public]]
+name = "speed-flip-recall-drill-2026-06-20.replay"
+sha256 = "8025637319f6b16accd9716b49e2959bb9f39285469b4f8c79e6569925442967"
+
+[[public]]
+name = "wall-aerial-false-positive-2026-06-26.replay"
+sha256 = "45cbc83abb447780c618dd4eed3ee6a215eba5d8bd2acf12285af83937a251a7"
+
+[[public]]
+name = "wall-aerial-ground-jump-2026-07-03.replay"
+sha256 = "3d6c6a6e5f4e00ef1c07ab5f3d85eae91b9870cd68e81deb5642aaef8d33c61a"

@@ -1,0 +1,13 @@
+[build-system]
+requires = ["hatchling==1.33.0"]
+build-backend = "hatchling.build"
+
+[project]
+name = "ma-worker"
+version = "0.0.0"
+description = "Job worker: parse, store and analyze replays."
+requires-python = ">=3.14"
+dependencies = []
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/ma_worker"]

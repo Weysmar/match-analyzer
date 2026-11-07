@@ -1,0 +1,67 @@
+# Workspace root, not a package. Members are installed with `uv sync --all-packages`.
+[project]
+name = "match-analyzer-workspace"
+version = "0.0.0"
+requires-python = ">=3.14"
+dependencies = ["ma-api", "ma-db", "ma-worker", "rl-analysis"]
+
+[dependency-groups]
+dev = [
+    # scripts/s3_check.py and s3_init.py; moves to the API and the worker with T5.9 and T6.2.
+    "boto3==1.43.126",
+    "mypy==2.4.1",
+    "pytest==9.2.0",
+    "ruff==0.17.4",
+]
+
+[tool.uv]
+package = false
+
+[tool.uv.workspace]
+members = ["db", "games/rocket-league/analysis", "services/api", "services/worker"]
+
+[tool.uv.sources]
+ma-api = { workspace = true }
+ma-db = { workspace = true }
+ma-worker = { workspace = true }
+rl-analysis = { workspace = true }
+
+[tool.ruff]
+line-length = 100
+target-version = "py314"
+extend-exclude = ["spikes"]
+
+[tool.ruff.lint]
+select = ["B", "C4", "E", "F", "I", "N", "PT", "PTH", "RUF", "SIM", "TID", "UP", "W"]
+
+[tool.ruff.lint.isort]
+known-first-party = ["ma_api", "ma_db", "ma_worker", "rl_analysis"]
+
+[tool.mypy]
+strict = true
+python_version = "3.14"
+files = [
+    "db/src",
+    "db/tests",
+    "games/rocket-league/analysis/src",
+    "games/rocket-league/analysis/tests",
+    "scripts",
+    "services/api/src",
+    "services/api/tests",
+    "services/worker/src",
+    "services/worker/tests",
+    "tests/fixtures/corpus.py",
+]
+
+[[tool.mypy.overrides]]
+module = ["boto3", "boto3.*", "botocore", "botocore.*"]
+ignore_missing_imports = true
+
+[tool.pytest.ini_options]
+testpaths = [
+    "db/tests",
+    "games/rocket-league/analysis/tests",
+    "services/api/tests",
+    "services/worker/tests",
+]
+addopts = ["--strict-markers", "--strict-config", "--import-mode=importlib"]

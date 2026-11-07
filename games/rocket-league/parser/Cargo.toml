@@ -1,0 +1,12 @@
+[package]
+name = "rl-parse"
+version = "0.0.0"
+edition = "2024"
+rust-version = "1.88"
+publish = false
+description = "Turns a replay file into header.json, frames.parquet and events.json."
+
+[workspace]
+
+[lints.rust]
+unsafe_code = "forbid"
