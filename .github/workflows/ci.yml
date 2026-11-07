@@ -99,6 +99,7 @@ jobs:
           uv run python scripts/s3_init.py
           uv run python scripts/s3_check.py
           uv run ma-db upgrade
+          uv run pytest -m s3
           uv run python -c "import os, psycopg; print(psycopg.connect(os.environ['API_DATABASE_URL']).execute('SELECT current_user').fetchone())"
       - run: docker compose -f compose.dev.yaml exec -T db pg_isready -U ma_dev
       - run: docker compose -f compose.dev.yaml logs
