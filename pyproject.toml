@@ -65,6 +65,7 @@ files = [
     "services/worker/src",
     "services/worker/tests",
     "tests/fixtures/corpus.py",
+    "tests/fixtures/oracle.py",
     "tests/pipeline",
     "tests/replays",
 ]

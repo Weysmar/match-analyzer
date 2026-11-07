@@ -14,3 +14,5 @@ __pycache__/
 .pytest_cache/
 .ruff_cache/
 node_modules/
+# Derived from the replays, never versioned either.
+tests/fixtures/oracle/

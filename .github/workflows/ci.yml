@@ -130,6 +130,12 @@ jobs:
       - run: uv run python tests/fixtures/corpus.py check
       - run: cargo build --release --locked --manifest-path games/rocket-league/parser/Cargo.toml
       - run: cargo test --release --locked --manifest-path games/rocket-league/parser/Cargo.toml --test corpus -- --include-ignored --test-threads=4
+      # subtr-actor is slow on long replays: its statistics are cached like the replays.
+      - uses: actions/cache@v6
+        with:
+          path: tests/fixtures/oracle
+          key: oracle-${{ hashFiles('tests/fixtures/manifest.toml', 'games/rocket-league/parser/Cargo.lock', 'games/rocket-league/parser/src/bin/rl-oracle.rs') }}
+      - run: uv run python tests/fixtures/oracle.py build
       - run: uv run pytest -m replays
       # Real replays, from the API to the database. Public ones only here, personal ones locally.
       - run: cp .env.example .env

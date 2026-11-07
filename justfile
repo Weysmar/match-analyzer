@@ -42,7 +42,7 @@ test:
     cargo test --manifest-path {{parser}}
 
 # Real replays: parser against subtr-actor, hostile files, Parquet read by polars (minutes)
-test-replays:
+test-replays: oracle-cache
     cargo build --release --manifest-path {{parser}}
     cargo test --release --manifest-path {{parser}} --test corpus -- --include-ignored --test-threads=4
     uv run pytest -m replays
@@ -89,6 +89,11 @@ api:
 # Tests against PostgreSQL and the S3 store (needs `just dev-up`)
 test-s3:
     uv run pytest -m s3
+
+# subtr-actor's statistics for each replay, computed once: the reference of the metrics
+oracle-cache:
+    cargo build --release --manifest-path {{parser}}
+    uv run python tests/fixtures/oracle.py build
 
 # Real replays through the API, the worker, the parser and S3 (needs `just dev-up` and the corpus)
 test-pipeline:
