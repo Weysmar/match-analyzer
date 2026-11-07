@@ -5,6 +5,8 @@
 > **Statut : un point reste ouvert.** Le parsing est validé jusqu'au build `261031` du 31 octobre 2026. **Il manque la comparaison de l'identifiant Epic (T0.7).**
 >
 > **Correction du 2026-11-07** : la première version de ce rapport affirmait que le header ne contenait pas l'identifiant Epic. C'est faux, voir section 12.
+>
+> **Correction de l'étape 2** : la déduplication des pads « par pad, séquence et joueur » de la section 5 écrasait de vrais ramassages, car une séquence revient après une réapparition. `rl-parse` la borne par le temps de réapparition du pad : écart médian de 0, p95 de 3 gros et 3 petits sur 178 joueurs récents.
 
 ## 1. Conclusion
 
