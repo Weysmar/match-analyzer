@@ -1,0 +1,35 @@
+# Development only: PostgreSQL and an S3 store, published on the loopback.
+# The values are development placeholders from .env; production is compose.yaml (step 9).
+name: match-analyzer-dev
+
+services:
+  db:
+    image: postgres:16.15
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-ma_dev}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-ma_dev}
+      POSTGRES_DB: ${POSTGRES_DB:-match_analyzer}
+    ports:
+      - "127.0.0.1:${DEV_POSTGRES_PORT:-5432}:5432"
+    volumes:
+      - db-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD", "pg_isready", "-U", "${POSTGRES_USER:-ma_dev}"]
+      interval: 2s
+      timeout: 3s
+      retries: 30
+
+  # Choice of the emulator: docs/decisions/0001-dev-s3-emulator.md
+  s3:
+    image: rustfs/rustfs:1.0.4
+    environment:
+      RUSTFS_ACCESS_KEY: ${S3_ACCESS_KEY_ID:-ma-dev-access-key}
+      RUSTFS_SECRET_KEY: ${S3_SECRET_ACCESS_KEY:-ma-dev-secret-key}
+    ports:
+      - "127.0.0.1:${DEV_S3_PORT:-9000}:9000"
+    volumes:
+      - s3-data:/data
+
+volumes:
+  db-data:
+  s3-data:
