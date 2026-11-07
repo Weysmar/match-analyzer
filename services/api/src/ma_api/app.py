@@ -7,7 +7,7 @@ import psycopg
 from fastapi import FastAPI, Request, Response
 from psycopg_pool import PoolTimeout
 
-from ma_api import __version__, errors
+from ma_api import __version__, errors, sessions
 from ma_api.db import Database
 from ma_api.errors import error_response
 from ma_api.settings import Settings
@@ -82,4 +82,5 @@ def create_app(settings: Settings | None = None) -> FastAPI:
             return error_response(503, "unavailable")
         return Response('{"status":"ok"}', media_type="application/json")
 
+    app.include_router(sessions.router, prefix=PREFIX)
     return app
