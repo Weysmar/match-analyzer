@@ -3,16 +3,17 @@
 from collections.abc import AsyncIterator, Awaitable, Callable
 from contextlib import asynccontextmanager
 
+import httpx2
 import psycopg
 from fastapi import FastAPI, Request, Response
 from psycopg_pool import PoolTimeout
 
-from ma_api import __version__, errors, sessions
+from ma_api import __version__, errors, sessions, steam
 from ma_api.db import Database
 from ma_api.errors import error_response
-from ma_api.settings import Settings
+from ma_api.settings import PREFIX, Settings
 
-PREFIX = "/api/v1"
+_HTTP_TIMEOUT_S = 10.0
 _SAFE_METHODS = {"GET", "HEAD", "OPTIONS"}
 _HEADERS = {
     "X-Content-Type-Options": "nosniff",
@@ -23,14 +24,19 @@ _HEADERS = {
 }
 
 
-def create_app(settings: Settings | None = None) -> FastAPI:
+def create_app(
+    settings: Settings | None = None, *, http_transport: httpx2.BaseTransport | None = None
+) -> FastAPI:
+    """`http_transport` replaces the outside world in the tests."""
     settings = settings or Settings.from_env()
     database = Database(settings.database_url, timeout_s=settings.database_timeout_s)
+    http = httpx2.Client(transport=http_transport, timeout=_HTTP_TIMEOUT_S)
 
     @asynccontextmanager
     async def lifespan(_: FastAPI) -> AsyncIterator[None]:
         database.open()
         yield
+        http.close()
         database.close()
 
     # The documentation is a development aid: production does not advertise its routes.
@@ -44,6 +50,7 @@ def create_app(settings: Settings | None = None) -> FastAPI:
     )
     app.state.settings = settings
     app.state.database = database
+    app.state.http = http
     errors.install(app)
 
     @app.middleware("http")
@@ -83,4 +90,5 @@ def create_app(settings: Settings | None = None) -> FastAPI:
         return Response('{"status":"ok"}', media_type="application/json")
 
     app.include_router(sessions.router, prefix=PREFIX)
+    app.include_router(steam.router, prefix=PREFIX)
     return app
