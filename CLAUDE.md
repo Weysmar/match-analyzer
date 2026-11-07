@@ -302,3 +302,4 @@ Avancer étape par étape, faire valider chaque étape avant de passer à la sui
 - **Nom du produit et nom de domaine : à trancher en priorité**, car ils bloquent la soumission Epic (section 8.4).
 - Comparaison de l'identifiant Epic d'un replay avec un vrai `account_id` (T0.7 du plan).
 - Replays récents en 1v1 et en 3v3 : le corpus de Vincent ne couvre que du 2v2 classé.
+- Deux replays d'un même match enregistrés par deux joueurs différents : aucun dans le corpus, alors que la déduplication par clé en dépend (A43 du plan).
