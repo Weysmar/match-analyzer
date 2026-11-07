@@ -421,6 +421,16 @@ requires-dist = [{ name = "jsonschema", specifier = "==4.26.0" }]
 name = "ma-worker"
 version = "0.0.0"
 source = { editable = "services/worker" }
+dependencies = [
+    { name = "boto3" },
+    { name = "psycopg", extra = ["binary"] },
+]
+
+[package.metadata]
+requires-dist = [
+    { name = "boto3", specifier = "==1.43.126" },
+    { name = "psycopg", extras = ["binary"], specifier = "==3.3.8" },
+]
 
 [[package]]
 name = "mako"
