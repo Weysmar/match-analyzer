@@ -60,6 +60,9 @@ def test_production_values() -> None:
             "SITE_URL": "https://example.test/",
             "SESSION_SECRET": SECRET,
             "FEATURE_EPIC_LOGIN": "true",
+            "EPIC_CLIENT_ID": "a",
+            "EPIC_CLIENT_SECRET": "b",
+            "EPIC_REDIRECT_URI": "https://example.test/callback",
             "TRUSTED_PROXY_COUNT": "0",
         }
     )

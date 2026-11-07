@@ -4,7 +4,7 @@ import os
 import secrets
 import urllib.parse
 from collections.abc import Mapping
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 
 PREFIX = "/api/v1"
 
@@ -32,10 +32,10 @@ def _flag(env: Mapping[str, str], name: str) -> bool:
 
 @dataclass(frozen=True)
 class Settings:
-    database_url: str
+    database_url: str = field(repr=False)
     site_url: str = "http://localhost:3000"
     production: bool = False
-    session_secret: str = "development"
+    session_secret: str = field(default="development", repr=False)
     session_ttl_days: int = 30
     anonymous_session_ttl_days: int = 30
     rate_auth_ip_per_minute: int = 20
@@ -43,6 +43,12 @@ class Settings:
     epic_login: bool = False
     database_timeout_s: float = 5.0
     steam_openid_url: str = "https://steamcommunity.com/openid/login"
+    epic_client_id: str = ""
+    epic_client_secret: str = field(default="", repr=False)
+    epic_redirect_uri: str = ""
+    epic_authorize_url: str = "https://www.epicgames.com/id/authorize"
+    epic_token_url: str = "https://api.epicgames.dev/epic/oauth/v2/token"
+    epic_userinfo_url: str = "https://api.epicgames.dev/epic/oauth/v2/userInfo"
 
     @classmethod
     def from_env(cls, env: Mapping[str, str] | None = None) -> Settings:
@@ -58,6 +64,15 @@ class Settings:
                 raise SettingsError("SESSION_SECRET needs at least 32 characters in production")
             if not site_url.startswith("https://"):
                 raise SettingsError("SITE_URL must use https in production")
+        epic_login = _flag(values, "FEATURE_EPIC_LOGIN")
+        epic = {
+            name: values.get(name, "").strip()
+            for name in ("EPIC_CLIENT_ID", "EPIC_CLIENT_SECRET", "EPIC_REDIRECT_URI")
+        }
+        if epic_login:
+            for name, value in epic.items():
+                if not value:
+                    raise SettingsError(f"{name} is needed with FEATURE_EPIC_LOGIN")
         return cls(
             database_url=database_url,
             site_url=site_url,
@@ -68,7 +83,10 @@ class Settings:
             anonymous_session_ttl_days=_integer(values, "ANON_SESSION_TTL_DAYS", 30),
             rate_auth_ip_per_minute=_integer(values, "RATE_AUTH_IP_PER_MIN", 20),
             trusted_proxy_count=_integer(values, "TRUSTED_PROXY_COUNT", 1, minimum=0),
-            epic_login=_flag(values, "FEATURE_EPIC_LOGIN"),
+            epic_login=epic_login,
+            epic_client_id=epic["EPIC_CLIENT_ID"],
+            epic_client_secret=epic["EPIC_CLIENT_SECRET"],
+            epic_redirect_uri=epic["EPIC_REDIRECT_URI"],
         )
 
     @property
