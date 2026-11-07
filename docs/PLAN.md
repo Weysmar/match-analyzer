@@ -1,6 +1,6 @@
 # Plan d'implémentation V1 : `match-analyzer`
 
-> **Statut : validé par Vincent le 2026-11-06, avec D1, D2 et D3 tels que recommandés. Étape 0 close le 2026-11-07, sauf T0.7 (comparaison Epic, action de Vincent) et la vérification du timeout sur le VPS. Amendements A1 à A17 et D20 validés. Étape 1 terminée le 2026-11-07, dépôt privé `Weysmar/match-analyzer`. Étapes 2 et 3 fusionnées le 2026-11-07. Étape 4 fusionnée le 2026-11-07. Étape 5 : T5.1 à T5.14 fusionnées, T5.15 et T5.16 sur la branche `feat/api-stats-erasure`, à valider par Vincent avant l'étape 6.**
+> **Statut : validé par Vincent le 2026-11-06, avec D1, D2 et D3 tels que recommandés. Étape 0 close le 2026-11-07, sauf T0.7 (comparaison Epic, action de Vincent) et la vérification du timeout sur le VPS. Amendements A1 à A17 et D20 validés. Étape 1 terminée le 2026-11-07, dépôt privé `Weysmar/match-analyzer`. Étapes 2 et 3 fusionnées le 2026-11-07. Étape 4 fusionnée le 2026-11-07. Étape 5 fusionnée le 2026-11-07. Étape 6 en cours : T6.1 à T6.3 sur la branche `feat/worker-foundation`.**
 > Date : 2026-11-06. Périmètre : section 8 de `CLAUDE.md`, ordre de la section 13, précédé d'une étape 0 de vérification.
 > Rapport de l'étape 0 : `spikes/s0-parse/RAPPORT.md`.
 
@@ -105,6 +105,8 @@ Trois autres points attendent ta confirmation en [annexe C](#annexe-c--décision
 | A38 | « Moyenne sur les N derniers matchs » laissait ouverts le poids d'un match et la place d'un match sans métriques. | Chaque match pèse autant, quelle que soit sa durée. Seuls comptent les matchs dont le joueur est connu et qui ont des métriques : un `header_only` ne prend pas de place. |
 | A39 | `DELETE /me` laisserait derrière lui la session anonyme du même navigateur. | Elle est effacée en même temps. `DELETE /me/anonymous` répond `202` même sans session. |
 | A40 | La liste des `metric_id` vit dans `rl_analysis` (étape 7), que l'API n'importe pas. | L'API garde sa propre liste pour `unknown_metric`. L'étape 7 devra ajouter un test d'égalité entre les deux. |
+| A41 | `preexec_fn`, qui pose les limites du parser, n'est sûr que sans autre thread actif. | Le worker monte en charge par processus, jamais par threads. Le stockage n'utilise pas les transferts à threads de `boto3`. |
+| A42 | Un worker mort laisse son job `running`, sans battement de cœur en V1. | Un job plus vieux que `WORKER_JOB_TIMEOUT_S` (600 s, plus du double du délai du parser) est repris. Après le nombre maximal de tentatives, il est marqué `dead` : un replay qui tue son worker ne tourne pas en boucle. |
 | A21 | Les règles `requires` de `clap` laissaient passer une combinaison d'options invalide. | Les combinaisons d'options sont vérifiées par `rl-parse` lui-même. |
 
 **Encore ouvert** : l'identifiant Epic (T0.7).
@@ -1146,6 +1148,7 @@ CREATE TABLE rate_limit_buckets (
 | `PARSER_MEMORY_MB`                                          | `512`                   | Issu de T0.8, à valider à T6.3 car `RLIMIT_AS` compte la mémoire virtuelle |
 | `PARSER_MAX_FPS`                                            |                         | Plafond optionnel, vide par défaut : toutes les frames sont gardées        |
 | `WORKER_CONCURRENCY`                                        | `1`                     | À fixer selon le VPS                                                       |
+| `WORKER_JOB_TIMEOUT_S`                                      | `600`                   | Âge à partir duquel un job en cours compte comme abandonné (A42)           |
 | `RAW_RETENTION_DAYS`                                        | `30`                    | Rétention des fichiers bruts                                               |
 | `RAW_RETENTION_HEADER_ONLY_DAYS`                            | `180`                   | Rétention des `header_only` (D6)                                           |
 | `OPERATOR_NAME`, `OPERATOR_EMAIL`, `HOSTING_INFO`           |                         | Mentions légales, jamais dans le code                                      |
