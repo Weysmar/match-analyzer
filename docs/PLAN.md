@@ -1,6 +1,6 @@
 # Plan d'implémentation V1 : `match-analyzer`
 
-> **Statut : validé par Vincent le 2026-11-06, avec D1, D2 et D3 tels que recommandés. Étape 0 close le 2026-11-07, sauf T0.7 (comparaison Epic, action de Vincent) et la vérification du timeout sur le VPS. Amendements A1 à A17 et D20 validés. Étape 1 terminée le 2026-11-07, dépôt privé `Weysmar/match-analyzer`. Étapes 2 et 3 fusionnées le 2026-11-07. Étape 4 fusionnée le 2026-11-07. Étape 5 en cours : T5.1 à T5.6 fusionnées, T5.7 et T5.8 sur la branche `feat/api-epic-attach`.**
+> **Statut : validé par Vincent le 2026-11-06, avec D1, D2 et D3 tels que recommandés. Étape 0 close le 2026-11-07, sauf T0.7 (comparaison Epic, action de Vincent) et la vérification du timeout sur le VPS. Amendements A1 à A17 et D20 validés. Étape 1 terminée le 2026-11-07, dépôt privé `Weysmar/match-analyzer`. Étapes 2 et 3 fusionnées le 2026-11-07. Étape 4 fusionnée le 2026-11-07. Étape 5 en cours : T5.1 à T5.8 fusionnées, T5.9 à T5.11 sur la branche `feat/api-uploads`.**
 > Date : 2026-11-06. Périmètre : section 8 de `CLAUDE.md`, ordre de la section 13, précédé d'une étape 0 de vérification.
 > Rapport de l'étape 0 : `spikes/s0-parse/RAPPORT.md`.
 
@@ -95,6 +95,9 @@ Trois autres points attendent ta confirmation en [annexe C](#annexe-c--décision
 | A28 | Steam ne donne aucun pseudo sans clé Web API (section 8.1), or `users.display_name` est obligatoire. | Un compte Steam commence avec un nom par défaut. Il prend ensuite le pseudo de son replay vérifié le plus récent, sauf si ce joueur est anonymisé dans le jeu. |
 | A29 | L'API et le worker doivent appliquer la même règle de vérification, sans paquet partagé. | `refresh_verification()` est une fonction SQL (migration 0006). Le worker l'appellera à la fin du parsing (étape 6). |
 | A30 | Un joueur peut déclarer un pseudo alors que son identifiant lié prouve qu'il en jouait un autre dans le même match. | La preuve l'emporte : le match est vérifié sur le joueur prouvé. Une identité déclarée sans preuve reste telle quelle et n'est jamais vérifiée. |
+| A31 | Les quotas d'upload comptent des fichiers, et un lot peut en dépasser une partie. | Tout ou rien, par fichier : un lot refusé ne consomme rien. Un doublon ne consomme rien non plus. Les tentatives de connexion, elles, comptent même en cas d'échec. |
+| A32 | Rien ne limitait la taille d'une requête adressée à l'API. | Corps limité à 1 Mio, longueur obligatoire. Les replays vont directement au stockage objet. |
+| A33 | Un doublon n'a pas besoin d'une nouvelle ligne dans `uploads`. | `POST /uploads` renvoie l'`upload_id` existant. Seul le hash calculé par le worker compte, jamais un hash déclaré. |
 | A21 | Les règles `requires` de `clap` laissaient passer une combinaison d'options invalide. | Les combinaisons d'options sont vérifiées par `rl-parse` lui-même. |
 
 **Encore ouvert** : l'identifiant Epic (T0.7).
