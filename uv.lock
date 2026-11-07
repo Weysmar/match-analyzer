@@ -374,6 +374,7 @@ version = "0.0.0"
 source = { editable = "services/api" }
 dependencies = [
     { name = "fastapi" },
+    { name = "httpx2" },
     { name = "psycopg", extra = ["binary"] },
     { name = "psycopg-pool" },
     { name = "uvicorn" },
@@ -382,6 +383,7 @@ dependencies = [
 [package.metadata]
 requires-dist = [
     { name = "fastapi", specifier = "==0.162.2" },
+    { name = "httpx2", specifier = "==2.16.0" },
     { name = "psycopg", extras = ["binary"], specifier = "==3.3.8" },
     { name = "psycopg-pool", specifier = "==3.3.3" },
     { name = "uvicorn", specifier = "==0.54.0" },
@@ -523,7 +525,6 @@ dependencies = [
 [package.dev-dependencies]
 dev = [
     { name = "boto3" },
-    { name = "httpx2" },
     { name = "mypy" },
     { name = "polars" },
     { name = "pytest" },
@@ -542,7 +543,6 @@ requires-dist = [
 [package.metadata.requires-dev]
 dev = [
     { name = "boto3", specifier = "==1.43.126" },
-    { name = "httpx2", specifier = "==2.16.0" },
     { name = "mypy", specifier = "==2.4.1" },
     { name = "polars", specifier = "==2.1.0" },
     { name = "pytest", specifier = "==9.2.0" },

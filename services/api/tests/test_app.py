@@ -9,9 +9,9 @@ import pytest
 from fastapi import Body, FastAPI
 from fastapi.testclient import TestClient
 
-from ma_api.app import PREFIX, create_app
+from ma_api.app import create_app
 from ma_api.errors import ApiError
-from ma_api.settings import Settings
+from ma_api.settings import PREFIX, Settings
 
 SITE = "http://testserver"
 UNREACHABLE = "postgresql://nobody@127.0.0.1:1/nothing"

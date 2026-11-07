@@ -13,11 +13,11 @@ from fastapi.testclient import TestClient
 
 from ma_api import owner as owner_module
 from ma_api import ratelimit, sessions
-from ma_api.app import PREFIX, create_app
+from ma_api.app import create_app
 from ma_api.db import ConnectionDep
 from ma_api.errors import ApiError
 from ma_api.owner import Owner
-from ma_api.settings import Settings
+from ma_api.settings import PREFIX, Settings
 from ma_db.testing import Connection, Factory, count
 
 pytestmark = pytest.mark.db
@@ -157,12 +157,12 @@ def extended_app(settings: Settings) -> FastAPI:
 
     @app.post("/test/limited")
     def limited(connection: ConnectionDep, request: Request) -> dict[str, str]:
-        ratelimit.hit(connection, ratelimit.address_key(request, settings), 2, 3600)
+        ratelimit.hit(connection, ratelimit.address_key(request, settings, "test"), 2, 3600)
         return {"ok": "yes"}
 
     @app.post("/test/limited-then-failed")
     def limited_then_failed(connection: ConnectionDep, request: Request) -> None:
-        ratelimit.hit(connection, ratelimit.address_key(request, settings), 2, 3600)
+        ratelimit.hit(connection, ratelimit.address_key(request, settings, "test"), 2, 3600)
         raise ApiError(401, "not_signed_in")
 
     return app
@@ -247,13 +247,6 @@ def test_an_owner_is_one_or_the_other() -> None:
         Owner()
     with pytest.raises(ValueError, match="owner"):
         Owner(user_id=uuid.uuid4(), anonymous_session_id=uuid.uuid4())
-
-
-@pytest.fixture
-def clean_limits(conn: Connection) -> Iterator[None]:
-    conn.execute("DELETE FROM rate_limit_buckets")
-    yield
-    conn.execute("DELETE FROM rate_limit_buckets")
 
 
 @pytest.mark.usefixtures("clean_limits")

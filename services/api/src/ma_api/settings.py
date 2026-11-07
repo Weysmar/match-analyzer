@@ -6,6 +6,8 @@ import urllib.parse
 from collections.abc import Mapping
 from dataclasses import dataclass
 
+PREFIX = "/api/v1"
+
 
 class SettingsError(ValueError):
     """The configuration cannot run safely."""
@@ -40,6 +42,7 @@ class Settings:
     trusted_proxy_count: int = 1
     epic_login: bool = False
     database_timeout_s: float = 5.0
+    steam_openid_url: str = "https://steamcommunity.com/openid/login"
 
     @classmethod
     def from_env(cls, env: Mapping[str, str] | None = None) -> Settings:

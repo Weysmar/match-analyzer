@@ -53,3 +53,10 @@ def conn(database: str) -> Iterator[Connection]:
 @pytest.fixture
 def make(conn: Connection) -> Factory:
     return Factory(conn)
+
+
+@pytest.fixture
+def clean_limits(conn: Connection) -> Iterator[None]:
+    conn.execute("DELETE FROM rate_limit_buckets")
+    yield
+    conn.execute("DELETE FROM rate_limit_buckets")
