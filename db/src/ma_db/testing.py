@@ -100,14 +100,16 @@ class Factory:
         platform: str = "steam",
         platform_id: str | None = None,
         team: int = 0,
+        name: str = "a player",
     ) -> int:
         return self._one(
             int,
             "INSERT INTO match_players (match_id, platform, platform_id, display_name, team) "
-            "VALUES (%s, %s, %s, 'a player', %s) RETURNING id",
+            "VALUES (%s, %s, %s, %s, %s) RETURNING id",
             match_id,
             platform,
             platform_id if platform_id is not None else str(self._next()),
+            name,
             team,
         )
 
