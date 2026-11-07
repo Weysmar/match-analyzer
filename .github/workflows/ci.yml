@@ -20,6 +20,12 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v7
+      - uses: actions/cache@v6
+        with:
+          path: |
+            ~/.cargo/registry
+            games/rocket-league/parser/target
+          key: rust-debug-${{ hashFiles('rust-toolchain.toml', 'games/rocket-league/parser/Cargo.lock') }}
       # rust-toolchain.toml selects the toolchain; rustup is on the runner.
       - run: cargo fmt --manifest-path games/rocket-league/parser/Cargo.toml --check
       - run: cargo clippy --manifest-path games/rocket-league/parser/Cargo.toml --all-targets --locked -- -D warnings
@@ -72,8 +78,8 @@ jobs:
       - run: docker compose -f compose.dev.yaml logs
         if: failure()
 
-  # Public replays only; they are cached, never committed.
-  corpus:
+  # Public replays only; they are cached, never committed. Personal replays are checked locally.
+  replays:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v7
@@ -84,6 +90,22 @@ jobs:
         with:
           path: tests/fixtures/replays/public
           key: replays-${{ hashFiles('tests/fixtures/manifest.toml') }}
+      - uses: actions/cache@v6
+        with:
+          path: |
+            ~/.cargo/registry
+            games/rocket-league/parser/target
+          key: rust-release-${{ hashFiles('rust-toolchain.toml', 'games/rocket-league/parser/Cargo.lock') }}
       - run: uv sync --all-packages --locked
       - run: uv run python tests/fixtures/corpus.py fetch
       - run: uv run python tests/fixtures/corpus.py check
+      - run: cargo build --release --locked --manifest-path games/rocket-league/parser/Cargo.toml
+      - run: cargo test --release --locked --manifest-path games/rocket-league/parser/Cargo.toml --test corpus -- --include-ignored --test-threads=4
+      - run: uv run pytest -m replays
+
+  parser-image:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - run: docker build -t rl-parse games/rocket-league/parser
+      - run: docker run --rm rl-parse --version
