@@ -90,6 +90,14 @@ api:
 test-s3:
     uv run pytest -m s3
 
+# Run the jobs (needs `just dev-up`)
+worker:
+    uv run ma-worker run
+
+# How the job queue is doing, dead jobs included
+worker-status:
+    uv run ma-worker status
+
 # Stop them; the data volumes are kept
 dev-down:
     docker compose -f compose.dev.yaml down
