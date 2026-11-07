@@ -1,0 +1,85 @@
+//! `rl-oracle`: subtr-actor's own statistics for one replay, per player, in the order of the
+//! roster that `rl-parse` writes. A reference for the tests and the oracle report only: it is
+//! never built into the image, and `StatsCollector` stays out of production (section 6 of
+//! CLAUDE.md).
+//!
+//! Only numbers come out. Player ids are used to match rows, then dropped.
+
+use std::panic::{AssertUnwindSafe, catch_unwind};
+use std::process::ExitCode;
+
+use rl_parse::frames;
+use serde_json::{Map, Value, json};
+use subtr_actor::{ReplayDataCollector, StatsCollector};
+
+const MODULES: [&str; 4] = ["boost", "movement", "positioning", "demo"];
+
+/// The numeric fields of one player's row in a stats module, and nothing else.
+fn numbers(stats: &Value) -> Value {
+    let kept: Map<String, Value> = stats
+        .as_object()
+        .map(|fields| {
+            fields
+                .iter()
+                .filter(|(_, value)| value.is_number())
+                .map(|(name, value)| (name.clone(), value.clone()))
+                .collect()
+        })
+        .unwrap_or_default();
+    Value::Object(kept)
+}
+
+fn oracle(bytes: &[u8]) -> Option<Value> {
+    let replay = frames::parse(bytes).ok()?;
+    let data = ReplayDataCollector::new().get_replay_data(&replay).ok()?;
+    let stats = serde_json::to_value(StatsCollector::new().get_stats(&replay).ok()?).ok()?;
+    let modules = &stats["modules"];
+    let players = data
+        .frame_data
+        .players
+        .iter()
+        .enumerate()
+        .map(|(player_idx, (remote_id, _))| {
+            let id = serde_json::to_value(remote_id).unwrap_or(Value::Null);
+            let team = u8::from(data.meta.team_one.iter().any(|p| p.remote_id == *remote_id));
+            let mut row = Map::new();
+            row.insert("player_idx".into(), json!(player_idx));
+            row.insert("team".into(), json!(team));
+            for module in MODULES {
+                let found = modules[module]["player_stats"]
+                    .as_array()
+                    .and_then(|rows| rows.iter().find(|row| row["player_id"] == id))
+                    .map(|row| numbers(&row["stats"]))
+                    .unwrap_or(Value::Null);
+                row.insert(module.into(), found);
+            }
+            Value::Object(row)
+        })
+        .collect::<Vec<_>>();
+    Some(json!({ "players": players }))
+}
+
+fn main() -> ExitCode {
+    let Some(path) = std::env::args_os().nth(1) else {
+        eprintln!("usage: rl-oracle <replay>");
+        return ExitCode::from(2);
+    };
+    let Ok(bytes) = std::fs::read(path) else {
+        eprintln!("cannot read the replay");
+        return ExitCode::from(1);
+    };
+    // subtr-actor can panic on a replay it does not understand: say so, with nothing from the file.
+    match catch_unwind(AssertUnwindSafe(|| oracle(&bytes)))
+        .ok()
+        .flatten()
+    {
+        Some(value) => {
+            println!("{value}");
+            ExitCode::SUCCESS
+        }
+        None => {
+            eprintln!("subtr-actor could not read this replay");
+            ExitCode::from(1)
+        }
+    }
+}
