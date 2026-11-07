@@ -12,6 +12,7 @@ from fastapi.responses import RedirectResponse
 from ma_api import account, attach, flow, ratelimit, sessions
 from ma_api.db import Database
 from ma_api.errors import ApiError
+from ma_api.owner import Owner
 from ma_api.settings import Settings
 
 log = logging.getLogger("ma_api")
@@ -67,6 +68,7 @@ def complete(
         if anonymous is not None:
             attach.attach_anonymous(connection, anonymous, user)
             sessions.clear_anonymous_cookie(response, settings)
+        attach.apply_claims(connection, Owner(user_id=user))
         attach.refresh_verification(connection, user)
         if current_user is None:
             sessions.open_user_session(connection, settings, user, response)
