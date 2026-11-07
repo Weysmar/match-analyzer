@@ -1,0 +1,16 @@
+# Replays hold other players' names and ids: never versioned.
+*.replay
+tests/fixtures/replays/
+# Secrets
+.env
+.env.*
+!.env.example
+# Build and spike output
+target/
+out/
+__pycache__/
+.venv/
+.mypy_cache/
+.pytest_cache/
+.ruff_cache/
+node_modules/
