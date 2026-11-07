@@ -48,6 +48,16 @@ def set_cookie(
     )
 
 
+def _delete_cookie(response: Response, settings: Settings, base: str) -> None:
+    response.delete_cookie(
+        cookie_name(settings, base),
+        path="/",
+        secure=settings.secure_cookies,
+        httponly=True,
+        samesite="lax",
+    )
+
+
 def get_settings(request: Request) -> Settings:
     settings: Settings = request.app.state.settings
     return settings
@@ -98,6 +108,18 @@ def identify(connection: Connection, settings: Settings, cookies: dict[str, str]
     return Identity()
 
 
+def anonymous_session_of(
+    connection: Connection, settings: Settings, cookies: dict[str, str]
+) -> uuid.UUID | None:
+    """Whatever else the browser holds: a sign-in takes over the anonymous session as well."""
+    token = cookies.get(cookie_name(settings, _ANONYMOUS_COOKIE))
+    return _anonymous_of(connection, token) if token else None
+
+
+def clear_anonymous_cookie(response: Response, settings: Settings) -> None:
+    _delete_cookie(response, settings, _ANONYMOUS_COOKIE)
+
+
 def get_identity(request: Request, connection: ConnectionDep, settings: SettingsDep) -> Identity:
     return identify(connection, settings, request.cookies)
 
@@ -142,14 +164,11 @@ router = APIRouter()
 @router.post("/auth/logout", status_code=204)
 def logout(request: Request, connection: ConnectionDep, settings: SettingsDep) -> Response:
     """Deletes the session itself: a copy of the cookie stops working as well."""
-    name = cookie_name(settings, _SESSION_COOKIE)
-    token = request.cookies.get(name)
+    token = request.cookies.get(cookie_name(settings, _SESSION_COOKIE))
     if token:
         connection.execute("DELETE FROM auth_sessions WHERE token_hash = %s", (token_hash(token),))
     response = Response(status_code=204)
-    response.delete_cookie(
-        name, path="/", secure=settings.secure_cookies, httponly=True, samesite="lax"
-    )
+    _delete_cookie(response, settings, _SESSION_COOKIE)
     return response
 
 

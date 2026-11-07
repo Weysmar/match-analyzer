@@ -3,7 +3,6 @@
 import hashlib
 import uuid
 from collections.abc import Iterator
-from datetime import timedelta
 
 import httpx2
 import psycopg
@@ -20,30 +19,12 @@ from ma_api.owner import Owner
 from ma_api.settings import PREFIX, Settings
 from ma_db.testing import Connection, Factory, count
 
+from .helpers import anonymous_session, user_session
+
 pytestmark = pytest.mark.db
 
 ME = f"{PREFIX}/me"
 SITE = "http://testserver"
-
-
-def login(conn: Connection, user: uuid.UUID, *, valid: bool = True) -> str:
-    token = sessions.new_token()
-    conn.execute(
-        "INSERT INTO auth_sessions (token_hash, user_id, expires_at) VALUES (%s, %s, now() + %s)",
-        (sessions.token_hash(token), user, timedelta(days=1 if valid else -1)),
-    )
-    return token
-
-
-def anonymous(conn: Connection, *, valid: bool = True) -> tuple[uuid.UUID, str]:
-    token = sessions.new_token()
-    row = conn.execute(
-        "INSERT INTO anonymous_sessions (token_hash, expires_at) VALUES (%s, now() + %s) "
-        "RETURNING id",
-        (sessions.token_hash(token), timedelta(days=1 if valid else -1)),
-    ).fetchone()
-    assert row is not None
-    return row[0], token
 
 
 def me_with(client: TestClient, **cookies: str) -> httpx2.Response:
@@ -79,7 +60,7 @@ def test_health_with_the_database(client: TestClient) -> None:
 def test_a_signed_in_user(client: TestClient, conn: Connection, make: Factory) -> None:
     user = make.user("Someone")
     make.linked_account(user, "steam", "76561190000000001")
-    token = login(conn, user)
+    token = user_session(conn, user)
     response = me_with(client, session=token)
     body = response.json()
     assert body["kind"] == "user"
@@ -90,15 +71,15 @@ def test_a_signed_in_user(client: TestClient, conn: Connection, make: Factory) -
 
 
 def test_an_anonymous_session(client: TestClient, conn: Connection) -> None:
-    _, token = anonymous(conn)
+    _, token = anonymous_session(conn)
     assert me_with(client, anon=token).json()["kind"] == "anonymous"
 
 
 def test_a_user_wins_over_an_anonymous_session(
     client: TestClient, conn: Connection, make: Factory
 ) -> None:
-    _, anon = anonymous(conn)
-    token = login(conn, make.user())
+    _, anon = anonymous_session(conn)
+    token = user_session(conn, make.user())
     assert me_with(client, anon=anon, session=token).json()["kind"] == "user"
 
 
@@ -108,25 +89,25 @@ def test_a_forged_cookie_is_nobody(client: TestClient, cookie: str) -> None:
 
 
 def test_an_expired_session_is_nobody(client: TestClient, conn: Connection, make: Factory) -> None:
-    token = login(conn, make.user(), valid=False)
+    token = user_session(conn, make.user(), valid=False)
     assert me_with(client, session=token).json()["kind"] == "none"
 
 
 def test_an_expired_anonymous_session_is_nobody(client: TestClient, conn: Connection) -> None:
-    _, token = anonymous(conn, valid=False)
+    _, token = anonymous_session(conn, valid=False)
     assert me_with(client, anon=token).json()["kind"] == "none"
 
 
 def test_a_hash_stolen_from_the_table_is_not_a_cookie(
     client: TestClient, conn: Connection, make: Factory
 ) -> None:
-    token = login(conn, make.user())
+    token = user_session(conn, make.user())
     stolen = hashlib.sha256(token.encode()).hexdigest()
     assert me_with(client, session=stolen).json()["kind"] == "none"
 
 
 def test_a_token_is_never_stored_in_clear(conn: Connection, make: Factory) -> None:
-    token = login(conn, make.user())
+    token = user_session(conn, make.user())
     assert (
         count(conn, "SELECT count(*) FROM auth_sessions WHERE token_hash = %s", token.encode()) == 0
     )
