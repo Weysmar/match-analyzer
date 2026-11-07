@@ -34,11 +34,13 @@ def token_hash(token: str) -> bytes:
     return hashlib.sha256(token.encode()).digest()
 
 
-def set_cookie(response: Response, settings: Settings, base: str, token: str, days: int) -> None:
+def set_cookie(
+    response: Response, settings: Settings, base: str, value: str, max_age_s: int
+) -> None:
     response.set_cookie(
         cookie_name(settings, base),
-        token,
-        max_age=days * 86_400,
+        value,
+        max_age=max_age_s,
         path="/",
         secure=settings.secure_cookies,
         httponly=True,
@@ -117,11 +119,38 @@ def ensure_owner(
         (token_hash(token), settings.anonymous_session_ttl_days),
     ).fetchone()
     assert row is not None
-    set_cookie(response, settings, _ANONYMOUS_COOKIE, token, settings.anonymous_session_ttl_days)
+    days = settings.anonymous_session_ttl_days
+    set_cookie(response, settings, _ANONYMOUS_COOKIE, token, days * 86_400)
     return Owner(anonymous_session_id=row[0])
 
 
+def open_user_session(
+    connection: Connection, settings: Settings, user: uuid.UUID, response: Response
+) -> None:
+    token = new_token()
+    connection.execute(
+        "INSERT INTO auth_sessions (token_hash, user_id, expires_at) "
+        "VALUES (%s, %s, now() + make_interval(days => %s))",
+        (token_hash(token), user, settings.session_ttl_days),
+    )
+    set_cookie(response, settings, _SESSION_COOKIE, token, settings.session_ttl_days * 86_400)
+
+
 router = APIRouter()
+
+
+@router.post("/auth/logout", status_code=204)
+def logout(request: Request, connection: ConnectionDep, settings: SettingsDep) -> Response:
+    """Deletes the session itself: a copy of the cookie stops working as well."""
+    name = cookie_name(settings, _SESSION_COOKIE)
+    token = request.cookies.get(name)
+    if token:
+        connection.execute("DELETE FROM auth_sessions WHERE token_hash = %s", (token_hash(token),))
+    response = Response(status_code=204)
+    response.delete_cookie(
+        name, path="/", secure=settings.secure_cookies, httponly=True, samesite="lax"
+    )
+    return response
 
 
 @router.get("/me")

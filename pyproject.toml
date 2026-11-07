@@ -9,8 +9,6 @@ dependencies = ["ma-api", "ma-db", "ma-schemas", "ma-worker", "rl-analysis"]
 dev = [
     # scripts/s3_check.py and s3_init.py; moves to the API and the worker with T5.9 and T6.2.
     "boto3==1.43.126",
-    # FastAPI's test client.
-    "httpx2==2.16.0",
     "mypy==2.4.1",
     # tests/replays reads the parser's Parquet; moves to rl-analysis with T7.2.
     "polars==2.1.0",

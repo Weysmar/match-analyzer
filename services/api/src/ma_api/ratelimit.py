@@ -27,10 +27,11 @@ def client_address(request: Request, settings: Settings) -> str:
     return forwarded[-settings.trusted_proxy_count]
 
 
-def address_key(request: Request, settings: Settings) -> str:
+def address_key(request: Request, settings: Settings, scope: str) -> str:
+    """Per limit: the windows of two limits can start at the same instant, and would add up."""
     address = client_address(request, settings)
     digest = hmac.new(settings.session_secret.encode(), address.encode(), hashlib.sha256)
-    return f"ip:{digest.hexdigest()}"
+    return f"{scope}:ip:{digest.hexdigest()}"
 
 
 def hit(connection: Connection, key: str, limit: int, window_s: int) -> None:
@@ -56,3 +57,8 @@ def hit(connection: Connection, key: str, limit: int, window_s: int) -> None:
     if row[0] > limit:
         retry = max(int(row[1]), 1)
         raise ApiError(429, "rate_limited", {"retry_after_s": retry}, {"Retry-After": str(retry)})
+
+
+def limit_auth(connection: Connection, request: Request, settings: Settings) -> None:
+    key = address_key(request, settings, "auth")
+    hit(connection, key, settings.rate_auth_ip_per_minute, 60)
