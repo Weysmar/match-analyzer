@@ -1,6 +1,6 @@
 # Plan d'implémentation V1 : `match-analyzer`
 
-> **Statut : validé par Vincent le 2026-11-06, avec D1, D2 et D3 tels que recommandés. Étape 0 close le 2026-11-07, sauf T0.7 (comparaison Epic, action de Vincent) et la vérification du timeout sur le VPS. Amendements A1 à A17 et D20 validés. Étape 1 terminée le 2026-11-07, dépôt privé `Weysmar/match-analyzer`. Étapes 2 et 3 fusionnées le 2026-11-07. Étape 4 fusionnée le 2026-11-07. Étape 5 en cours : T5.1 à T5.4 fusionnées, T5.5 et T5.6 sur la branche `feat/api-steam`.**
+> **Statut : validé par Vincent le 2026-11-06, avec D1, D2 et D3 tels que recommandés. Étape 0 close le 2026-11-07, sauf T0.7 (comparaison Epic, action de Vincent) et la vérification du timeout sur le VPS. Amendements A1 à A17 et D20 validés. Étape 1 terminée le 2026-11-07, dépôt privé `Weysmar/match-analyzer`. Étapes 2 et 3 fusionnées le 2026-11-07. Étape 4 fusionnée le 2026-11-07. Étape 5 en cours : T5.1 à T5.6 fusionnées, T5.7 et T5.8 sur la branche `feat/api-epic-attach`.**
 > Date : 2026-11-06. Périmètre : section 8 de `CLAUDE.md`, ordre de la section 13, précédé d'une étape 0 de vérification.
 > Rapport de l'étape 0 : `spikes/s0-parse/RAPPORT.md`.
 
@@ -92,7 +92,9 @@ Trois autres points attendent ta confirmation en [annexe C](#annexe-c--décision
 | A25 | Par défaut, FastAPI termine une dépendance après l'envoi de la réponse. | La transaction est validée avant la réponse (`scope="function"`), pour qu'un client puisse lire aussitôt ce qu'il vient d'écrire. |
 | A26 | Une adresse IP est une donnée personnelle, et `X-Forwarded-For` est écrit en partie par le client. | Les compteurs de débit stockent un HMAC de l'adresse. Seule l'entrée posée par le dernier proxy de confiance compte. |
 | A27 | Starlette a déprécié `httpx` pour son client de test, au profit de `httpx2`. | L'API utilise `httpx2`, pour les tests comme pour ses appels à Steam et à Epic. |
-| A28 | Steam ne donne aucun pseudo sans clé Web API (section 8.1), or `users.display_name` est obligatoire. | Un compte Steam commence avec un nom par défaut. L'étape T5.8 le remplacera par le pseudo d'un replay vérifié. |
+| A28 | Steam ne donne aucun pseudo sans clé Web API (section 8.1), or `users.display_name` est obligatoire. | Un compte Steam commence avec un nom par défaut. Il prend ensuite le pseudo de son replay vérifié le plus récent, sauf si ce joueur est anonymisé dans le jeu. |
+| A29 | L'API et le worker doivent appliquer la même règle de vérification, sans paquet partagé. | `refresh_verification()` est une fonction SQL (migration 0006). Le worker l'appellera à la fin du parsing (étape 6). |
+| A30 | Un joueur peut déclarer un pseudo alors que son identifiant lié prouve qu'il en jouait un autre dans le même match. | La preuve l'emporte : le match est vérifié sur le joueur prouvé. Une identité déclarée sans preuve reste telle quelle et n'est jamais vérifiée. |
 | A21 | Les règles `requires` de `clap` laissaient passer une combinaison d'options invalide. | Les combinaisons d'options sont vérifiées par `rl-parse` lui-même. |
 
 **Encore ouvert** : l'identifiant Epic (T0.7).
