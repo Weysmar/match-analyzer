@@ -92,7 +92,8 @@ test-s3:
 
 # Run the jobs (needs `just dev-up`)
 worker:
-    uv run ma-worker run
+    cargo build --release --manifest-path {{parser}}
+    PARSER_BIN=games/rocket-league/parser/target/release/rl-parse uv run ma-worker run
 
 # How the job queue is doing, dead jobs included
 worker-status:

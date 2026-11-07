@@ -4,6 +4,7 @@ from pathlib import Path
 
 import pytest
 
+from ma_worker.cli import build_handlers, resolve_parser
 from ma_worker.settings import Settings, SettingsError
 from ma_worker.store import S3Store, StoreError
 
@@ -98,3 +99,29 @@ def test_a_store_out_of_reach_fails_cleanly(tmp_path: Path) -> None:
         store.copy("a-key", "other")
     with pytest.raises(StoreError):
         store.delete("a-key")
+
+
+def test_the_parser_is_found_and_made_absolute(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    binary = tmp_path / "rl-parse"
+    binary.write_text("#!/bin/sh\n", encoding="utf-8")
+    binary.chmod(0o755)
+    monkeypatch.setenv("PATH", str(tmp_path))
+    resolved = resolve_parser(Settings(database_url="unused"))
+    assert resolved.parser_bin == str(binary)
+
+
+def test_a_missing_parser_stops_the_start(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.setenv("PATH", str(tmp_path))
+    with pytest.raises(SettingsError, match="PARSER_BIN"):
+        resolve_parser(Settings(database_url="unused"))
+
+
+def test_parse_jobs_have_a_handler() -> None:
+    assert set(build_handlers(Settings(database_url="unused"))) == {"parse"}
+
+
+def test_the_upload_limit_comes_from_the_environment() -> None:
+    env = {"WORKER_DATABASE_URL": URL, "UPLOAD_MAX_BYTES": "10"}
+    assert Settings.from_env(env).upload_max_bytes == 10
