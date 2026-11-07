@@ -1,6 +1,6 @@
 # Plan d'implémentation V1 : `match-analyzer`
 
-> **Statut : validé par Vincent le 2026-11-06, avec D1, D2 et D3 tels que recommandés. Étape 0 close le 2026-11-07, sauf T0.7 (comparaison Epic, action de Vincent) et la vérification du timeout sur le VPS. Amendements A1 à A17 et D20 validés. Étape 1 terminée le 2026-11-07, dépôt privé `Weysmar/match-analyzer`. Étapes 2 et 3 fusionnées le 2026-11-07. Étape 4 fusionnée le 2026-11-07. Étape 5 fusionnée le 2026-11-07. Étape 6 en cours : T6.1 à T6.3 sur la branche `feat/worker-foundation`.**
+> **Statut : validé par Vincent le 2026-11-06, avec D1, D2 et D3 tels que recommandés. Étape 0 close le 2026-11-07, sauf T0.7 (comparaison Epic, action de Vincent) et la vérification du timeout sur le VPS. Amendements A1 à A17 et D20 validés. Étape 1 terminée le 2026-11-07, dépôt privé `Weysmar/match-analyzer`. Étapes 2 et 3 fusionnées le 2026-11-07. Étape 4 fusionnée le 2026-11-07. Étape 5 fusionnée le 2026-11-07. Étape 6 en cours : T6.1 à T6.3 fusionnées, T6.4 à T6.6 sur la branche `feat/worker-parse`.**
 > Date : 2026-11-06. Périmètre : section 8 de `CLAUDE.md`, ordre de la section 13, précédé d'une étape 0 de vérification.
 > Rapport de l'étape 0 : `spikes/s0-parse/RAPPORT.md`.
 
@@ -107,6 +107,9 @@ Trois autres points attendent ta confirmation en [annexe C](#annexe-c--décision
 | A40 | La liste des `metric_id` vit dans `rl_analysis` (étape 7), que l'API n'importe pas. | L'API garde sa propre liste pour `unknown_metric`. L'étape 7 devra ajouter un test d'égalité entre les deux. |
 | A41 | `preexec_fn`, qui pose les limites du parser, n'est sûr que sans autre thread actif. | Le worker monte en charge par processus, jamais par threads. Le stockage n'utilise pas les transferts à threads de `boto3`. |
 | A42 | Un worker mort laisse son job `running`, sans battement de cœur en V1. | Un job plus vieux que `WORKER_JOB_TIMEOUT_S` (600 s, plus du double du délai du parser) est repris. Après le nombre maximal de tentatives, il est marqué `dead` : un replay qui tue son worker ne tourne pas en boucle. |
+| A43 | Mesuré sur le corpus : 84 replays sur 122 sans `MatchGUID`, 3 sans date, 5 sans joueur. La clé « date + joueurs + score » fusionnerait à tort deux replays sans date ni joueurs. | Sans ancre ou sans joueur, la clé devient le hash du fichier : un tel fichier ne se reconnaît que lui-même. Une seule paire du corpus partage un `MatchGUID`, cohérente, ce qui reste une preuve faible. |
+| A44 | Un job mort laisserait son upload en attente pour toujours. | Un job `parse` mort fait passer son upload à `failed`, y compris quand le worker lui-même est mort. |
+| A45 | L'échec du header n'avait pas de traitement : le tableau des codes vise le network. | Sans header, le fichier est rejeté comme `corrupt`, y compris pour une panique ou un délai dépassé. |
 | A21 | Les règles `requires` de `clap` laissaient passer une combinaison d'options invalide. | Les combinaisons d'options sont vérifiées par `rl-parse` lui-même. |
 
 **Encore ouvert** : l'identifiant Epic (T0.7).
