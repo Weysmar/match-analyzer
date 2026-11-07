@@ -8,6 +8,7 @@ version = "0.0.0"
 description = "HTTP API: sessions, sign-in, uploads, matches and stats."
 requires-python = ">=3.14"
 dependencies = [
+    "boto3==1.43.126",
     "fastapi==0.162.2",
     "httpx2==2.16.0",
     "psycopg[binary]==3.3.8",

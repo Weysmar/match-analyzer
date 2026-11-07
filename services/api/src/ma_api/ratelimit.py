@@ -6,6 +6,7 @@ counters only need to tell two addresses apart.
 
 import hashlib
 import hmac
+from collections.abc import Sequence
 
 from fastapi import Request
 
@@ -62,3 +63,40 @@ def hit(connection: Connection, key: str, limit: int, window_s: int) -> None:
 def limit_auth(connection: Connection, request: Request, settings: Settings) -> None:
     key = address_key(request, settings, "auth")
     hit(connection, key, settings.rate_auth_ip_per_minute, 60)
+
+
+def consume(
+    connection: Connection, quotas: Sequence[tuple[str, int]], amount: int, window_s: int
+) -> None:
+    """Takes `amount` from every quota, or refuses without taking anything.
+
+    Unlike `hit`, it stays in the caller's transaction, whose rollback gives everything back: a
+    refused batch costs nothing, and what is left of a quota can still be used. Every request takes
+    its quotas in the same order, so that two of them cannot wait for each other.
+    """
+    for key, limit in quotas:
+        row = connection.execute(
+            """
+            INSERT INTO rate_limit_buckets (bucket_key, window_start, hits)
+            SELECT %(key)s, date_bin(make_interval(secs => %(window)s), now(), 'epoch'), %(amount)s
+            WHERE %(amount)s <= %(limit)s
+            ON CONFLICT (bucket_key, window_start)
+            DO UPDATE SET hits = rate_limit_buckets.hits + excluded.hits
+            WHERE rate_limit_buckets.hits + excluded.hits <= %(limit)s
+            RETURNING hits
+            """,
+            {"key": key, "window": window_s, "amount": amount, "limit": limit},
+        ).fetchone()
+        if row is None:
+            left = connection.execute(
+                """
+                SELECT ceil(extract(epoch FROM date_bin(make_interval(secs => %(window)s), now(),
+                       'epoch') + make_interval(secs => %(window)s) - now()))
+                """,
+                {"window": window_s},
+            ).fetchone()
+            assert left is not None
+            retry = max(int(left[0]), 1)
+            raise ApiError(
+                429, "quota_exceeded", {"retry_after_s": retry}, {"Retry-After": str(retry)}
+            )

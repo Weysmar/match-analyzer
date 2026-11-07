@@ -59,6 +59,10 @@ def test_production_values() -> None:
             "APP_ENV": "production",
             "SITE_URL": "https://example.test/",
             "SESSION_SECRET": SECRET,
+            "S3_ENDPOINT": "https://store.example.test",
+            "S3_BUCKET": "a-bucket",
+            "S3_ACCESS_KEY_ID": "a",
+            "S3_SECRET_ACCESS_KEY": "b",
             "FEATURE_EPIC_LOGIN": "true",
             "EPIC_CLIENT_ID": "a",
             "EPIC_CLIENT_SECRET": "b",
@@ -79,3 +83,36 @@ def test_production_values() -> None:
 def test_invalid_numbers_are_refused(name: str, value: str) -> None:
     with pytest.raises(SettingsError, match=name):
         Settings.from_env({"API_DATABASE_URL": URL, name: value})
+
+
+def test_production_needs_an_object_store() -> None:
+    env = {
+        "API_DATABASE_URL": URL,
+        "APP_ENV": "production",
+        "SITE_URL": "https://example.test",
+        "SESSION_SECRET": SECRET,
+    }
+    with pytest.raises(SettingsError, match="S3_ENDPOINT"):
+        Settings.from_env(env)
+
+
+def test_upload_limits_come_from_the_environment() -> None:
+    settings = Settings.from_env(
+        {
+            "API_DATABASE_URL": URL,
+            "UPLOAD_MAX_BYTES": "10",
+            "UPLOAD_MAX_FILES_PER_BATCH": "2",
+            "UPLOAD_URL_TTL_S": "30",
+            "RATE_UPLOAD_ANON_PER_DAY": "3",
+            "RATE_UPLOAD_IP_PER_DAY": "4",
+            "RATE_UPLOAD_USER_PER_DAY": "5",
+            "S3_SECRET_ACCESS_KEY": "the-secret-key",
+        }
+    )
+    assert settings.upload_max_bytes == 10
+    assert settings.upload_max_files == 2
+    assert settings.upload_url_ttl_s == 30
+    assert settings.rate_upload_anon_per_day == 3
+    assert settings.rate_upload_ip_per_day == 4
+    assert settings.rate_upload_user_per_day == 5
+    assert "the-secret-key" not in repr(settings)

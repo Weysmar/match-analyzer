@@ -43,6 +43,18 @@ class Settings:
     epic_login: bool = False
     database_timeout_s: float = 5.0
     steam_openid_url: str = "https://steamcommunity.com/openid/login"
+    s3_endpoint: str = ""
+    s3_public_endpoint: str = ""
+    s3_region: str = "auto"
+    s3_bucket: str = ""
+    s3_access_key_id: str = ""
+    s3_secret_access_key: str = field(default="", repr=False)
+    upload_max_bytes: int = 20_971_520
+    upload_max_files: int = 50
+    upload_url_ttl_s: int = 600
+    rate_upload_anon_per_day: int = 100
+    rate_upload_ip_per_day: int = 200
+    rate_upload_user_per_day: int = 500
     epic_client_id: str = ""
     epic_client_secret: str = field(default="", repr=False)
     epic_redirect_uri: str = ""
@@ -64,6 +76,9 @@ class Settings:
                 raise SettingsError("SESSION_SECRET needs at least 32 characters in production")
             if not site_url.startswith("https://"):
                 raise SettingsError("SITE_URL must use https in production")
+            for name in ("S3_ENDPOINT", "S3_BUCKET", "S3_ACCESS_KEY_ID", "S3_SECRET_ACCESS_KEY"):
+                if not values.get(name, "").strip():
+                    raise SettingsError(f"{name} is needed in production")
         epic_login = _flag(values, "FEATURE_EPIC_LOGIN")
         epic = {
             name: values.get(name, "").strip()
@@ -83,6 +98,18 @@ class Settings:
             anonymous_session_ttl_days=_integer(values, "ANON_SESSION_TTL_DAYS", 30),
             rate_auth_ip_per_minute=_integer(values, "RATE_AUTH_IP_PER_MIN", 20),
             trusted_proxy_count=_integer(values, "TRUSTED_PROXY_COUNT", 1, minimum=0),
+            s3_endpoint=values.get("S3_ENDPOINT", "").strip(),
+            s3_public_endpoint=values.get("S3_PUBLIC_ENDPOINT", "").strip(),
+            s3_region=values.get("S3_REGION", "auto").strip(),
+            s3_bucket=values.get("S3_BUCKET", "").strip(),
+            s3_access_key_id=values.get("S3_ACCESS_KEY_ID", "").strip(),
+            s3_secret_access_key=values.get("S3_SECRET_ACCESS_KEY", "").strip(),
+            upload_max_bytes=_integer(values, "UPLOAD_MAX_BYTES", 20_971_520),
+            upload_max_files=_integer(values, "UPLOAD_MAX_FILES_PER_BATCH", 50),
+            upload_url_ttl_s=_integer(values, "UPLOAD_URL_TTL_S", 600),
+            rate_upload_anon_per_day=_integer(values, "RATE_UPLOAD_ANON_PER_DAY", 100),
+            rate_upload_ip_per_day=_integer(values, "RATE_UPLOAD_IP_PER_DAY", 200),
+            rate_upload_user_per_day=_integer(values, "RATE_UPLOAD_USER_PER_DAY", 500),
             epic_login=epic_login,
             epic_client_id=epic["EPIC_CLIENT_ID"],
             epic_client_secret=epic["EPIC_CLIENT_SECRET"],
