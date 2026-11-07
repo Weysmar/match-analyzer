@@ -65,6 +65,7 @@ files = [
     "services/worker/src",
     "services/worker/tests",
     "tests/fixtures/corpus.py",
+    "tests/pipeline",
     "tests/replays",
 ]
 
@@ -79,11 +80,12 @@ testpaths = [
     "packages/schemas/tests",
     "services/api/tests",
     "services/worker/tests",
-    "tests/replays",
+    "tests/pipeline", "tests/replays",
 ]
-addopts = ["--strict-markers", "--strict-config", "--import-mode=importlib", "-m", "not replays and not db and not s3"]
+addopts = ["--strict-markers", "--strict-config", "--import-mode=importlib", "-m", "not replays and not db and not s3 and not pipeline"]
 markers = [
     "replays: needs the replay corpus and the release parser (just test-replays)",
     "db: needs PostgreSQL and TEST_DATABASE_URL (just test-db)",
     "s3: needs PostgreSQL and the S3 store of `just dev-up`",
+    "pipeline: real replays through everything (just test-pipeline)",
 ]

@@ -90,6 +90,11 @@ api:
 test-s3:
     uv run pytest -m s3
 
+# Real replays through the API, the worker, the parser and S3 (needs `just dev-up` and the corpus)
+test-pipeline:
+    cargo build --release --manifest-path {{parser}}
+    uv run pytest -m pipeline
+
 # Run the jobs (needs `just dev-up`)
 worker:
     cargo build --release --manifest-path {{parser}}

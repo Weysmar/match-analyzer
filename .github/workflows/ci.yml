@@ -131,6 +131,16 @@ jobs:
       - run: cargo build --release --locked --manifest-path games/rocket-league/parser/Cargo.toml
       - run: cargo test --release --locked --manifest-path games/rocket-league/parser/Cargo.toml --test corpus -- --include-ignored --test-threads=4
       - run: uv run pytest -m replays
+      # Real replays, from the API to the database. Public ones only here, personal ones locally.
+      - run: cp .env.example .env
+      - run: docker compose -f compose.dev.yaml up -d --wait
+      - name: Pipeline
+        run: |
+          set -a; . ./.env; set +a
+          uv run python scripts/s3_init.py
+          uv run pytest -m pipeline
+      - run: docker compose -f compose.dev.yaml logs
+        if: failure()
 
   parser-image:
     runs-on: ubuntu-latest
