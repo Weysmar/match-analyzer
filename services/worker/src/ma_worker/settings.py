@@ -36,6 +36,7 @@ class Settings:
     parser_max_fps: int | None = None
     concurrency: int = 1
     job_timeout_s: int = 600
+    upload_max_bytes: int = 20_971_520
 
     @classmethod
     def from_env(cls, env: Mapping[str, str] | None = None) -> Settings:
@@ -58,6 +59,7 @@ class Settings:
             ),
             concurrency=_integer(values, "WORKER_CONCURRENCY", 1),
             job_timeout_s=_integer(values, "WORKER_JOB_TIMEOUT_S", 600),
+            upload_max_bytes=_integer(values, "UPLOAD_MAX_BYTES", 20_971_520),
         )
         # A job has to outlast both of its parser runs, or it would be taken for abandoned.
         if settings.job_timeout_s <= 2 * settings.parser_timeout_s:

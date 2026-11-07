@@ -423,12 +423,14 @@ version = "0.0.0"
 source = { editable = "services/worker" }
 dependencies = [
     { name = "boto3" },
+    { name = "ma-schemas" },
     { name = "psycopg", extra = ["binary"] },
 ]
 
 [package.metadata]
 requires-dist = [
     { name = "boto3", specifier = "==1.43.126" },
+    { name = "ma-schemas", editable = "packages/schemas" },
     { name = "psycopg", extras = ["binary"], specifier = "==3.3.8" },
 ]
 
