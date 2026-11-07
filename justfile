@@ -82,6 +82,10 @@ db-downgrade revision:
 test-db:
     uv run pytest -m db
 
+# Serve the API on 127.0.0.1:8000, documentation at /api/docs (needs `just dev-up`)
+api:
+    uv run ma-api
+
 # Stop them; the data volumes are kept
 dev-down:
     docker compose -f compose.dev.yaml down
