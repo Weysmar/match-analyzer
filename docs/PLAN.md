@@ -1,6 +1,6 @@
 # Plan d'implémentation V1 : `match-analyzer`
 
-> **Statut : validé par Vincent le 2026-11-06, avec D1, D2 et D3 tels que recommandés. Étape 0 close le 2026-11-07, sauf T0.7 (comparaison Epic, action de Vincent) et la vérification du timeout sur le VPS. Amendements A1 à A17 et D20 validés. Étape 1 terminée le 2026-11-07, dépôt privé `Weysmar/match-analyzer`. Étapes 2 et 3 fusionnées le 2026-11-07. Étape 4 faite sur la branche `feat/db`, à valider par Vincent avant l'étape 5.**
+> **Statut : validé par Vincent le 2026-11-06, avec D1, D2 et D3 tels que recommandés. Étape 0 close le 2026-11-07, sauf T0.7 (comparaison Epic, action de Vincent) et la vérification du timeout sur le VPS. Amendements A1 à A17 et D20 validés. Étape 1 terminée le 2026-11-07, dépôt privé `Weysmar/match-analyzer`. Étapes 2 et 3 fusionnées le 2026-11-07. Étape 4 fusionnée le 2026-11-07. Étape 5 en cours : socle T5.1 à T5.4 sur la branche `feat/api-foundation`.**
 > Date : 2026-11-06. Périmètre : section 8 de `CLAUDE.md`, ordre de la section 13, précédé d'une étape 0 de vérification.
 > Rapport de l'étape 0 : `spikes/s0-parse/RAPPORT.md`.
 
@@ -89,6 +89,8 @@ Trois autres points attendent ta confirmation en [annexe C](#annexe-c--décision
 | A22 | Les 3 entrées du header absentes du réseau sont des spectateurs : `Team` vaut -1 et leur score est nul. | Ils ne sont plus des joueurs : `rl-parse` les retire de `header.json`, et leurs identifiants ne sont pas conservés. |
 | A23 | Un schéma combinant `$ref` et type nullable refusait `null` : les contre-exemples l'ont révélé. | Corrigé. Types Python écrits à la main, sans générateur, et contrôlés contre les schémas. Pas de types TypeScript pour ces formats : le front ne les lit pas, il passe par l'API. |
 | A24 | L'annexe A autorisait un `match_player_id` d'un autre match, et un événement nommant un joueur d'un autre match. | Clés étrangères composées `(match_id, player)`, rôles `ma_api` et `ma_worker` aux droits minimaux, plateformes et cohérence des rejets contrôlées par la base. `arena_out_of_bounds` conservé dans `matches`. |
+| A25 | Par défaut, FastAPI termine une dépendance après l'envoi de la réponse. | La transaction est validée avant la réponse (`scope="function"`), pour qu'un client puisse lire aussitôt ce qu'il vient d'écrire. |
+| A26 | Une adresse IP est une donnée personnelle, et `X-Forwarded-For` est écrit en partie par le client. | Les compteurs de débit stockent un HMAC de l'adresse. Seule l'entrée posée par le dernier proxy de confiance compte. |
 | A21 | Les règles `requires` de `clap` laissaient passer une combinaison d'options invalide. | Les combinaisons d'options sont vérifiées par `rl-parse` lui-même. |
 
 **Encore ouvert** : l'identifiant Epic (T0.7).
