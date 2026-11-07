@@ -4,6 +4,7 @@ import uuid
 
 from ma_api.account import DEFAULT_DISPLAY_NAME
 from ma_api.db import Connection
+from ma_api.owner import Owner
 
 
 def attach_anonymous(connection: Connection, session: uuid.UUID, user: uuid.UUID) -> None:
@@ -51,6 +52,12 @@ def attach_anonymous(connection: Connection, session: uuid.UUID, user: uuid.UUID
         (user, session),
     )
     connection.execute("DELETE FROM anonymous_sessions WHERE id = %s", (session,))
+
+
+def apply_claims(connection: Connection, owner: Owner) -> None:
+    connection.execute(
+        "SELECT apply_player_claims(%s, %s)", (owner.user_id, owner.anonymous_session_id)
+    )
 
 
 def refresh_verification(connection: Connection, user: uuid.UUID) -> None:
