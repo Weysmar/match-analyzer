@@ -11,11 +11,8 @@ from collections.abc import Sequence
 
 import httpx2
 from fastapi import APIRouter, Request, Response
-from fastapi.responses import RedirectResponse
 
-from ma_api import account, flow, ratelimit, sessions
-from ma_api.db import ConnectionDep, Database
-from ma_api.errors import ApiError
+from ma_api import flow, signin
 from ma_api.sessions import SettingsDep
 from ma_api.settings import PREFIX, Settings
 
@@ -108,58 +105,25 @@ router = APIRouter()
 
 
 @router.get("/auth/steam")
-def start(
-    request: Request, connection: ConnectionDep, settings: SettingsDep, return_to: str = "/"
-) -> Response:
+def start(request: Request, settings: SettingsDep, return_to: str = "/") -> Response:
     """Sends the browser to Steam, and remembers where to bring it back."""
-    ratelimit.limit_auth(connection, request, settings)
-    target = flow.safe_return_to(return_to)
-    if target is None:
-        fields = [{"field": "query.return_to", "rule": "relative_path"}]
-        raise ApiError(400, "invalid_request", {"fields": fields})
-    response = RedirectResponse("", status_code=303)
-    started = flow.start(response, settings, _FLOW, target)
+    response, started = signin.begin(request, settings, _FLOW, return_to)
     response.headers["location"] = login_url(settings, started.nonce)
-    return response
-
-
-def _failure(settings: Settings, code: str) -> Response:
-    response = RedirectResponse(f"{settings.site_url}/?auth_error={code}", status_code=303)
-    flow.finish(response, settings, _FLOW)
     return response
 
 
 @router.get(_CALLBACK)
 def callback(request: Request, settings: SettingsDep) -> Response:
-    """Where Steam brings the browser back.
-
-    It takes its connections by hand: none may stay held while waiting for Steam, or a slow Steam
-    would use up the pool and stop the whole API.
-    """
-    database: Database = request.app.state.database
-    with database.transaction() as connection:
-        ratelimit.limit_auth(connection, request, settings)
+    """Where Steam brings the browser back."""
+    signin.count_attempt(request, settings)
     started = flow.read(request.cookies, settings, _FLOW)
     if started is None:
         log.info("steam sign-in refused: no_flow")
-        return _failure(settings, "auth_failed")
+        return signin.failure(settings, _FLOW, "auth_failed")
     client: httpx2.Client = request.app.state.http
     steam_id = verified_steam_id(
         client, settings, request.query_params.multi_items(), started.nonce
     )
     if steam_id is None:
-        return _failure(settings, "auth_failed")
-
-    response = RedirectResponse(f"{settings.site_url}{started.return_to}", status_code=303)
-    flow.finish(response, settings, _FLOW)
-    with database.transaction() as connection:
-        owner = sessions.identify(connection, settings, request.cookies).owner
-        current_user = None if owner is None else owner.user_id
-        try:
-            user = account.sign_in(connection, "steam", steam_id, None, current_user)
-        except account.AccountAlreadyLinkedError:
-            log.info("steam sign-in refused: account_already_linked")
-            return _failure(settings, "account_already_linked")
-        if current_user is None:
-            sessions.open_user_session(connection, settings, user, response)
-    return response
+        return signin.failure(settings, _FLOW, "auth_failed")
+    return signin.complete(request, settings, _FLOW, started, "steam", steam_id, None)

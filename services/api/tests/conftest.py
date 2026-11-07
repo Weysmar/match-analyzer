@@ -9,6 +9,8 @@ from ma_api.app import create_app
 from ma_api.settings import Settings
 from ma_db.testing import Connection, Factory, role_url, temporary_database
 
+from .helpers import FakeProviders, browser_for
+
 SITE = "http://testserver"
 
 
@@ -60,3 +62,14 @@ def clean_limits(conn: Connection) -> Iterator[None]:
     conn.execute("DELETE FROM rate_limit_buckets")
     yield
     conn.execute("DELETE FROM rate_limit_buckets")
+
+
+@pytest.fixture
+def providers() -> FakeProviders:
+    return FakeProviders()
+
+
+@pytest.fixture
+def browser(settings: Settings, providers: FakeProviders) -> Iterator[TestClient]:
+    with browser_for(settings, providers) as test_client:
+        yield test_client
