@@ -1,6 +1,6 @@
 # Plan d'implémentation V1 : `match-analyzer`
 
-> **Statut : validé par Vincent le 2026-11-06, avec D1, D2 et D3 tels que recommandés. Étape 0 close le 2026-11-07, sauf T0.7 (comparaison Epic, action de Vincent) et la vérification du timeout sur le VPS. Amendements A1 à A17 et D20 validés. Étape 1 terminée le 2026-11-07, dépôt privé `Weysmar/match-analyzer`. Étapes 2 et 3 fusionnées le 2026-11-07. Étape 4 fusionnée le 2026-11-07. Étape 5 en cours : T5.1 à T5.8 fusionnées, T5.9 à T5.11 sur la branche `feat/api-uploads`.**
+> **Statut : validé par Vincent le 2026-11-06, avec D1, D2 et D3 tels que recommandés. Étape 0 close le 2026-11-07, sauf T0.7 (comparaison Epic, action de Vincent) et la vérification du timeout sur le VPS. Amendements A1 à A17 et D20 validés. Étape 1 terminée le 2026-11-07, dépôt privé `Weysmar/match-analyzer`. Étapes 2 et 3 fusionnées le 2026-11-07. Étape 4 fusionnée le 2026-11-07. Étape 5 en cours : T5.1 à T5.11 fusionnées, T5.12 à T5.14 sur la branche `feat/api-matches`.**
 > Date : 2026-11-06. Périmètre : section 8 de `CLAUDE.md`, ordre de la section 13, précédé d'une étape 0 de vérification.
 > Rapport de l'étape 0 : `spikes/s0-parse/RAPPORT.md`.
 
@@ -98,6 +98,10 @@ Trois autres points attendent ta confirmation en [annexe C](#annexe-c--décision
 | A31 | Les quotas d'upload comptent des fichiers, et un lot peut en dépasser une partie. | Tout ou rien, par fichier : un lot refusé ne consomme rien. Un doublon ne consomme rien non plus. Les tentatives de connexion, elles, comptent même en cas d'échec. |
 | A32 | Rien ne limitait la taille d'une requête adressée à l'API. | Corps limité à 1 Mio, longueur obligatoire. Les replays vont directement au stockage objet. |
 | A33 | Un doublon n'a pas besoin d'une nouvelle ligne dans `uploads`. | `POST /uploads` renvoie l'`upload_id` existant. Seul le hash calculé par le worker compte, jamais un hash déclaré. |
+| A34 | L'identité mémorisée doit s'appliquer côté API (au choix) et côté worker (à l'arrivée d'un match). | `apply_player_claims()` est une fonction SQL (migration 0007), comme `refresh_verification()`. Le worker l'appellera à T6.8. |
+| A35 | Une erreur au moment de choisir son joueur se propagerait à tous ses matchs. | Changer d'avis efface le joueur précédent des identités mémorisées et des matchs qu'il avait atteints, puis applique le nouveau. |
+| A36 | La fiche d'un match doit permettre de ne pas proposer un bot comme identité. | `players[].is_bot` est ajouté au contrat de `GET /matches/{id}`. |
+| A37 | D20 prévoit qu'un joueur anonymisé voie son vrai pseudo une fois vérifié, mais `match_players` ne conserve que le nom anonyme. | En V1, il voit son nom anonyme, y compris dans sa propre fiche. |
 | A21 | Les règles `requires` de `clap` laissaient passer une combinaison d'options invalide. | Les combinaisons d'options sont vérifiées par `rl-parse` lui-même. |
 
 **Encore ouvert** : l'identifiant Epic (T0.7).
