@@ -1,6 +1,6 @@
 # Plan d'implémentation V1 : `match-analyzer`
 
-> **Statut : validé par Vincent le 2026-11-06, avec D1, D2 et D3 tels que recommandés. Étape 0 close le 2026-11-07, sauf T0.7 (comparaison Epic, action de Vincent) et la vérification du timeout sur le VPS. Amendements A1 à A17 et D20 validés. Étape 1 terminée le 2026-11-07, dépôt privé `Weysmar/match-analyzer`. Étape 2 fusionnée le 2026-11-07. Étape 3 faite sur la branche `feat/schemas`, à valider par Vincent avant l'étape 4.**
+> **Statut : validé par Vincent le 2026-11-06, avec D1, D2 et D3 tels que recommandés. Étape 0 close le 2026-11-07, sauf T0.7 (comparaison Epic, action de Vincent) et la vérification du timeout sur le VPS. Amendements A1 à A17 et D20 validés. Étape 1 terminée le 2026-11-07, dépôt privé `Weysmar/match-analyzer`. Étapes 2 et 3 fusionnées le 2026-11-07. Étape 4 faite sur la branche `feat/db`, à valider par Vincent avant l'étape 5.**
 > Date : 2026-11-06. Périmètre : section 8 de `CLAUDE.md`, ordre de la section 13, précédé d'une étape 0 de vérification.
 > Rapport de l'étape 0 : `spikes/s0-parse/RAPPORT.md`.
 
@@ -88,6 +88,7 @@ Trois autres points attendent ta confirmation en [annexe C](#annexe-c--décision
 | A20 | Un replay utilise la clé `MatchGuid`, les autres `MatchGUID`. Le header liste parfois des joueurs absents du réseau (3 dans un match privé). | Les deux clés sont lues. Le `roster` reste la référence quand le réseau est lu. |
 | A22 | Les 3 entrées du header absentes du réseau sont des spectateurs : `Team` vaut -1 et leur score est nul. | Ils ne sont plus des joueurs : `rl-parse` les retire de `header.json`, et leurs identifiants ne sont pas conservés. |
 | A23 | Un schéma combinant `$ref` et type nullable refusait `null` : les contre-exemples l'ont révélé. | Corrigé. Types Python écrits à la main, sans générateur, et contrôlés contre les schémas. Pas de types TypeScript pour ces formats : le front ne les lit pas, il passe par l'API. |
+| A24 | L'annexe A autorisait un `match_player_id` d'un autre match, et un événement nommant un joueur d'un autre match. | Clés étrangères composées `(match_id, player)`, rôles `ma_api` et `ma_worker` aux droits minimaux, plateformes et cohérence des rejets contrôlées par la base. `arena_out_of_bounds` conservé dans `matches`. |
 | A21 | Les règles `requires` de `clap` laissaient passer une combinaison d'options invalide. | Les combinaisons d'options sont vérifiées par `rl-parse` lui-même. |
 
 **Encore ouvert** : l'identifiant Epic (T0.7).
@@ -526,7 +527,7 @@ Il n'y a pas de `on_ground` : `CLAUDE.md` le demande, mais il n'existe pas dans 
 
 **Critère de fin** : `just db-migrate` crée le schéma à vide, et le retour arrière fonctionne.
 
-**Fichiers** : `db/pyproject.toml`, `db/src/ma_db/{cli.py,migrations/env.py,migrations/versions/*.{py,sql}}`, `db/tests/`.
+**Fichiers** : `db/pyproject.toml`, `db/src/ma_db/{cli,migrate,sqlfile,testing}.py`, `db/src/ma_db/migrations/`, `db/tests/`.
 
 Le dossier s'écarte de `db/migrations/` pour suivre le paquet Python (`db/src/...`), comme Untraded. Les fichiers restent du SQL versionné.
 
@@ -867,7 +868,7 @@ just reprocess --analysis-outdated [--dry-run]
 
 ## Annexe A : schéma de la base de données V1
 
-PostgreSQL 16. Tous les temps sont en `timestamptz`, en UTC. Par rapport à la liste de la section 13, `auth_sessions`, `player_claims`, `match_files`, `match_events` et `rate_limit_buckets` sont ajoutées (I15).
+PostgreSQL 16. Tous les temps sont en `timestamptz`, en UTC. **Les migrations de `db/src/ma_db/migrations/versions/` font foi** : cette annexe en donne la vue d'ensemble, sans les droits des rôles `ma_api` et `ma_worker`, définis table par table (A24). Par rapport à la liste de la section 13, `auth_sessions`, `player_claims`, `match_files`, `match_events` et `rate_limit_buckets` sont ajoutées (I15).
 
 ```sql
 -- Identity -----------------------------------------------------------------------------------
@@ -943,6 +944,7 @@ CREATE TABLE matches (
     team_size         smallint,
     score_blue        smallint,
     score_orange      smallint,
+    arena_out_of_bounds boolean NOT NULL DEFAULT false,
     raw_key           text,
     raw_deleted_at    timestamptz,
     frames_key        text,
@@ -972,7 +974,8 @@ CREATE TABLE match_players (
     id           bigint GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
     match_id     uuid NOT NULL REFERENCES matches (id) ON DELETE CASCADE,
     frames_idx   smallint,          -- player_idx in frames.parquet; null when header_only
-    platform     text NOT NULL,
+    platform     text NOT NULL
+                 CHECK (platform IN ('steam', 'epic', 'psn', 'xbox', 'switch', 'bot', 'unknown')),
     platform_id  text,              -- null for bots and when the replay does not carry it
     display_name text NOT NULL,
     team         smallint NOT NULL CHECK (team IN (0, 1)),
@@ -983,9 +986,9 @@ CREATE TABLE match_players (
     shots        smallint,
     is_bot       boolean NOT NULL DEFAULT false,
     anonymized   boolean NOT NULL DEFAULT false,
-    UNIQUE (match_id, frames_idx)
+    UNIQUE (match_id, frames_idx),
+    UNIQUE (match_id, id)
 );
-CREATE INDEX match_players_match ON match_players (match_id);
 CREATE INDEX match_players_identity ON match_players (platform, platform_id)
     WHERE platform_id IS NOT NULL;
 
@@ -996,8 +999,12 @@ CREATE TABLE match_events (
     frame            integer NOT NULL,
     time_s           real NOT NULL,
     team             smallint,
-    actor_player_id  bigint REFERENCES match_players (id) ON DELETE SET NULL,
-    victim_player_id bigint REFERENCES match_players (id) ON DELETE SET NULL
+    actor_player_id  bigint,
+    victim_player_id bigint,
+    FOREIGN KEY (match_id, actor_player_id) REFERENCES match_players (match_id, id)
+        ON DELETE SET NULL (actor_player_id),
+    FOREIGN KEY (match_id, victim_player_id) REFERENCES match_players (match_id, id)
+        ON DELETE SET NULL (victim_player_id)
 );
 CREATE INDEX match_events_match ON match_events (match_id, time_s);
 
@@ -1018,7 +1025,8 @@ CREATE TABLE uploads (
     match_id             uuid REFERENCES matches (id) ON DELETE SET NULL,
     created_at           timestamptz NOT NULL DEFAULT now(),
     completed_at         timestamptz,
-    CHECK (num_nonnulls(user_id, anonymous_session_id) = 1)
+    CHECK (num_nonnulls(user_id, anonymous_session_id) = 1),
+    CHECK ((status = 'rejected') = (rejection IS NOT NULL))
 );
 CREATE INDEX uploads_user ON uploads (user_id, created_at DESC) WHERE user_id IS NOT NULL;
 CREATE INDEX uploads_anon ON uploads (anonymous_session_id, created_at DESC)
@@ -1030,13 +1038,15 @@ CREATE TABLE user_matches (
     user_id              uuid REFERENCES users (id) ON DELETE CASCADE,
     anonymous_session_id uuid REFERENCES anonymous_sessions (id) ON DELETE CASCADE,
     match_id             uuid NOT NULL REFERENCES matches (id) ON DELETE CASCADE,
-    match_player_id      bigint REFERENCES match_players (id) ON DELETE SET NULL,
+    match_player_id      bigint,
     identity_source      text NOT NULL DEFAULT 'none' CHECK (identity_source IN
                          ('none', 'linked_account', 'claimed', 'memorized')),
     verified             boolean NOT NULL DEFAULT false,
     created_at           timestamptz NOT NULL DEFAULT now(),
     CHECK (num_nonnulls(user_id, anonymous_session_id) = 1),
-    CHECK (NOT verified OR identity_source = 'linked_account')
+    CHECK (NOT verified OR identity_source = 'linked_account'),
+    CHECK ((identity_source = 'none') = (match_player_id IS NULL)),
+    FOREIGN KEY (match_id, match_player_id) REFERENCES match_players (match_id, id)
 );
 CREATE UNIQUE INDEX user_matches_user ON user_matches (user_id, match_id) WHERE user_id IS NOT NULL;
 CREATE UNIQUE INDEX user_matches_anon ON user_matches (anonymous_session_id, match_id)
@@ -1092,7 +1102,10 @@ CREATE TABLE rate_limit_buckets (
 | ----------------------------------------------------------- | ----------------------- | -------------------------------------------------------------------------- |
 | `APP_ENV`                                                   | `development`           | `development` ou `production`                                              |
 | `SITE_URL`                                                  | `http://localhost:3000` | Adresse publique du site, base des redirections OAuth                      |
-| `DATABASE_URL`                                              |                         | Connexion du worker et des migrations                                      |
+| `DATABASE_URL` | | Migrations : propriétaire du schéma |
+| `API_DB_PASSWORD`, `WORKER_DB_PASSWORD` | | Mots de passe des rôles, posés par `ma-db upgrade` |
+| `WORKER_DATABASE_URL` | | Connexion du worker (rôle `ma_worker`) |
+| `TEST_DATABASE_URL` | | Base d'administration pour `just test-db`, développement et CI uniquement |
 | `API_DATABASE_URL`                                          |                         | Connexion de l'API (rôle restreint)                                        |
 | `SESSION_SECRET`                                            |                         | Signature du cookie de nonce OAuth                                         |
 | `SESSION_TTL_DAYS`                                          | `30`                    | Durée d'une session connectée                                              |
