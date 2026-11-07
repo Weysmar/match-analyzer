@@ -31,6 +31,18 @@ def temporary_database(admin_url: str, *, migrated: bool = True) -> Iterator[str
             admin.execute(sql.SQL("DROP DATABASE {} WITH (FORCE)").format(sql.Identifier(name)))
 
 
+def role_url(url: str, role: str, password: str) -> str:
+    """The URL of this database for a restricted role, with this password set on the role. Roles
+    belong to the cluster: pass the same password the rest of the environment expects."""
+    migrate.set_role_password(url, role, password)
+    parts = urllib.parse.urlsplit(url)
+    host = parts.hostname or "localhost"
+    netloc = f"{role}:{urllib.parse.quote(password, safe='')}@{host}"
+    if parts.port:
+        netloc += f":{parts.port}"
+    return parts._replace(netloc=netloc).geturl()
+
+
 class Factory:
     """Rows with sensible defaults, to keep tests about the one thing they check."""
 
