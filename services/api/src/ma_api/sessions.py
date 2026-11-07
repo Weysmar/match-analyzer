@@ -117,6 +117,10 @@ def anonymous_session_of(
     return _anonymous_of(connection, token) if token else None
 
 
+def clear_user_cookie(response: Response, settings: Settings) -> None:
+    _delete_cookie(response, settings, _SESSION_COOKIE)
+
+
 def clear_anonymous_cookie(response: Response, settings: Settings) -> None:
     _delete_cookie(response, settings, _ANONYMOUS_COOKIE)
 
@@ -175,7 +179,7 @@ def logout(request: Request, connection: ConnectionDep, settings: SettingsDep) -
     if token:
         connection.execute("DELETE FROM auth_sessions WHERE token_hash = %s", (token_hash(token),))
     response = Response(status_code=204)
-    _delete_cookie(response, settings, _SESSION_COOKIE)
+    clear_user_cookie(response, settings)
     return response
 
 
