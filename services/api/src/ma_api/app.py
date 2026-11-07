@@ -8,7 +8,7 @@ import psycopg
 from fastapi import FastAPI, Request, Response
 from psycopg_pool import PoolTimeout
 
-from ma_api import __version__, errors, sessions, steam
+from ma_api import __version__, epic, errors, sessions, steam
 from ma_api.db import Database
 from ma_api.errors import error_response
 from ma_api.settings import PREFIX, Settings
@@ -91,4 +91,5 @@ def create_app(
 
     app.include_router(sessions.router, prefix=PREFIX)
     app.include_router(steam.router, prefix=PREFIX)
+    app.include_router(epic.router, prefix=PREFIX)
     return app
