@@ -13,6 +13,7 @@ from typing import Annotated
 from fastapi import APIRouter, Depends, Request, Response
 
 from ma_api.db import Connection, ConnectionDep
+from ma_api.errors import ApiError
 from ma_api.owner import Owner
 from ma_api.settings import Settings
 
@@ -125,6 +126,12 @@ def get_identity(request: Request, connection: ConnectionDep, settings: Settings
 
 
 IdentityDep = Annotated[Identity, Depends(get_identity)]
+
+
+def require_owner(identity: Identity) -> Owner:
+    if identity.owner is None:
+        raise ApiError(401, "not_signed_in")
+    return identity.owner
 
 
 def ensure_owner(

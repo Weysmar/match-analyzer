@@ -86,6 +86,10 @@ test-db:
 api:
     uv run ma-api
 
+# Tests against PostgreSQL and the S3 store (needs `just dev-up`)
+test-s3:
+    uv run pytest -m s3
+
 # Stop them; the data volumes are kept
 dev-down:
     docker compose -f compose.dev.yaml down

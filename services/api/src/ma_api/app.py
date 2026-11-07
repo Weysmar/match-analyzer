@@ -8,12 +8,15 @@ import psycopg
 from fastapi import FastAPI, Request, Response
 from psycopg_pool import PoolTimeout
 
-from ma_api import __version__, epic, errors, sessions, steam
+from ma_api import __version__, epic, errors, sessions, steam, uploads
 from ma_api.db import Database
 from ma_api.errors import error_response
 from ma_api.settings import PREFIX, Settings
+from ma_api.storage import ObjectStore, S3Storage
 
 _HTTP_TIMEOUT_S = 10.0
+# Replays go straight to the object store: what reaches the API is small.
+_BODY_MAX_BYTES = 1_048_576
 _SAFE_METHODS = {"GET", "HEAD", "OPTIONS"}
 _HEADERS = {
     "X-Content-Type-Options": "nosniff",
@@ -24,10 +27,21 @@ _HEADERS = {
 }
 
 
+def _body_too_large(request: Request) -> bool:
+    """On what the request announces: a body without a stated length is refused as well."""
+    if "transfer-encoding" in request.headers:
+        return True
+    length = request.headers.get("content-length", "0")
+    return not length.isdecimal() or int(length) > _BODY_MAX_BYTES
+
+
 def create_app(
-    settings: Settings | None = None, *, http_transport: httpx2.BaseTransport | None = None
+    settings: Settings | None = None,
+    *,
+    http_transport: httpx2.BaseTransport | None = None,
+    storage: ObjectStore | None = None,
 ) -> FastAPI:
-    """`http_transport` replaces the outside world in the tests."""
+    """`http_transport` and `storage` replace the outside world in the tests."""
     settings = settings or Settings.from_env()
     database = Database(settings.database_url, timeout_s=settings.database_timeout_s)
     http = httpx2.Client(transport=http_transport, timeout=_HTTP_TIMEOUT_S)
@@ -51,6 +65,7 @@ def create_app(
     app.state.settings = settings
     app.state.database = database
     app.state.http = http
+    app.state.storage = storage or S3Storage(settings)
     errors.install(app)
 
     @app.middleware("http")
@@ -64,6 +79,8 @@ def create_app(
             and request.headers.get("origin") != settings.site_origin
         ):
             response: Response = error_response(403, "bad_origin")
+        elif request.method not in _SAFE_METHODS and _body_too_large(request):
+            response = error_response(413, "too_large")
         else:
             # Caught here rather than by an exception handler: Starlette would run that one outside
             # this middleware, then raise again, and the server would log the whole traceback.
@@ -92,4 +109,5 @@ def create_app(
     app.include_router(sessions.router, prefix=PREFIX)
     app.include_router(steam.router, prefix=PREFIX)
     app.include_router(epic.router, prefix=PREFIX)
+    app.include_router(uploads.router, prefix=PREFIX)
     return app

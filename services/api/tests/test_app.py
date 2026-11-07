@@ -160,3 +160,21 @@ def test_documentation_only_in_development() -> None:
     with TestClient(app_without_database(production=True), base_url=SITE) as client:
         assert client.get(f"{PREFIX}/openapi.json").status_code == 404
         assert client.get("/api/docs").status_code == 404
+
+
+def test_a_body_too_large_is_refused(client: TestClient) -> None:
+    response = client.post("/test/echo", content=b"x" * 1_048_577)
+    assert response.status_code == 413
+    assert error_of(response)["code"] == "too_large"
+
+
+def test_a_body_of_unstated_length_is_refused(client: TestClient) -> None:
+    def chunks() -> Iterator[bytes]:
+        yield b'{"number": 1}'
+
+    assert client.post("/test/echo", content=chunks()).status_code == 413
+
+
+def test_a_body_at_the_limit_goes_on(client: TestClient) -> None:
+    # Then refused for what it says, not for its size.
+    assert client.post("/test/echo", content=b"x" * 1_048_576).status_code == 400

@@ -11,8 +11,10 @@ from fastapi.testclient import TestClient
 
 from ma_api import sessions
 from ma_api.app import create_app
+from ma_api.errors import ApiError
 from ma_api.settings import PREFIX, Settings
 from ma_api.steam import OPENID_NS
+from ma_api.storage import ObjectStore
 from ma_db.testing import Connection
 
 STEAM_START = f"{PREFIX}/auth/steam"
@@ -52,9 +54,27 @@ class FakeProviders:
         self.userinfo_body = {"sub": account_id, "preferred_username": name}
 
 
+class FakeStore:
+    """The object store, as the API sees it."""
+
+    def __init__(self) -> None:
+        self.sizes: dict[str, int] = {}
+        self.down = False
+
+    def presign_put(self, key: str, size: int) -> str:
+        return f"https://store.test/{key}?size={size}"
+
+    def object_size(self, key: str) -> int | None:
+        if self.down:
+            raise ApiError(503, "unavailable")
+        return self.sizes.get(key)
+
+
 @contextmanager
-def browser_for(settings: Settings, providers: FakeProviders) -> Iterator[TestClient]:
-    app = create_app(settings, http_transport=httpx2.MockTransport(providers.handle))
+def browser_for(
+    settings: Settings, providers: FakeProviders, store: ObjectStore | None = None
+) -> Iterator[TestClient]:
+    app = create_app(settings, http_transport=httpx2.MockTransport(providers.handle), storage=store)
     with TestClient(
         app,
         base_url=settings.site_url,

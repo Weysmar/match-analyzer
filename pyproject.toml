@@ -81,8 +81,9 @@ testpaths = [
     "services/worker/tests",
     "tests/replays",
 ]
-addopts = ["--strict-markers", "--strict-config", "--import-mode=importlib", "-m", "not replays and not db"]
+addopts = ["--strict-markers", "--strict-config", "--import-mode=importlib", "-m", "not replays and not db and not s3"]
 markers = [
     "replays: needs the replay corpus and the release parser (just test-replays)",
     "db: needs PostgreSQL and TEST_DATABASE_URL (just test-db)",
+    "s3: needs PostgreSQL and the S3 store of `just dev-up`",
 ]
