@@ -41,6 +41,22 @@ test:
     pnpm test
     cargo test --manifest-path {{parser}}
 
+# Real replays: parser against subtr-actor, hostile files, Parquet read by polars (minutes)
+test-replays:
+    cargo build --release --manifest-path {{parser}}
+    cargo test --release --manifest-path {{parser}} --test corpus -- --include-ignored --test-threads=4
+    uv run pytest -m replays
+
+# Update the anonymized header snapshots, after an INTENDED change: review the diff
+parser-snapshots:
+    UPDATE_SNAPSHOTS=1 cargo test --release --manifest-path {{parser}} --test corpus headers_match -- --include-ignored
+
+# Build the parser's image and run it on a replay's header
+parser-image:
+    docker build -t match-analyzer/rl-parse:local games/rocket-league/parser
+    docker run --rm match-analyzer/rl-parse:local --version
+    docker run --rm --network none --read-only --cap-drop ALL --security-opt no-new-privileges --tmpfs /out -v "$PWD/tests/fixtures/replays/public/post-eac-ranked-doubles-2026-04-28.replay:/in.replay:ro" --entrypoint sh match-analyzer/rl-parse:local -c 'rl-parse --header --input /in.replay --output /out/header.json && wc -c /out/header.json'
+
 # Start PostgreSQL and S3 for development, and create the bucket (needs a .env)
 dev-up:
     docker compose -f compose.dev.yaml up -d --wait

@@ -1,0 +1,120 @@
+{
+  "build_id": -1853621652,
+  "changelist": 511382,
+  "duration_s": 259.33843994140625,
+  "game_build": "260303.78181.511382",
+  "game_class": "TAGame.Replay_Soccar_TA",
+  "goals": [
+    {
+      "frame": 745,
+      "player_name": "player2",
+      "team": 1,
+      "time_s": 24.83333396911621
+    },
+    {
+      "frame": 1471,
+      "player_name": "player1",
+      "team": 1,
+      "time_s": 49.03333282470703
+    },
+    {
+      "frame": 2235,
+      "player_name": "player2",
+      "team": 1,
+      "time_s": 74.5
+    },
+    {
+      "frame": 6584,
+      "player_name": "player2",
+      "team": 1,
+      "time_s": 219.46665954589844
+    },
+    {
+      "frame": 7323,
+      "player_name": "player3",
+      "team": 0,
+      "time_s": 244.10000610351562
+    },
+    {
+      "frame": 8634,
+      "player_name": "player2",
+      "team": 1,
+      "time_s": 287.79998779296875
+    },
+    {
+      "frame": 9569,
+      "player_name": "player2",
+      "team": 1,
+      "time_s": 318.9666748046875
+    }
+  ],
+  "map": "cs_day_p",
+  "match_guid": "<id>",
+  "match_type": "Online",
+  "parser_version": "<version>",
+  "played_at": "2026-03-11T09:03:06Z",
+  "played_at_source": "epoch",
+  "players": [
+    {
+      "assists": 1,
+      "goals": 0,
+      "is_bot": false,
+      "name": "player0",
+      "platform": "epic",
+      "platform_id": "<id>",
+      "saves": 2,
+      "score": 314,
+      "shots": 3,
+      "team": 0
+    },
+    {
+      "assists": 2,
+      "goals": 1,
+      "is_bot": false,
+      "name": "player1",
+      "platform": "epic",
+      "platform_id": "<id>",
+      "saves": 0,
+      "score": 370,
+      "shots": 4,
+      "team": 1
+    },
+    {
+      "assists": 0,
+      "goals": 5,
+      "is_bot": false,
+      "name": "player2",
+      "platform": "steam",
+      "platform_id": "<id>",
+      "saves": 3,
+      "score": 928,
+      "shots": 6,
+      "team": 1
+    },
+    {
+      "assists": 0,
+      "goals": 1,
+      "is_bot": false,
+      "name": "player3",
+      "platform": "epic",
+      "platform_id": "<id>",
+      "saves": 2,
+      "score": 408,
+      "shots": 3,
+      "team": 0
+    }
+  ],
+  "playlist": null,
+  "replay_id": "<id>",
+  "replay_version": {
+    "major": 868,
+    "minor": 32,
+    "net": 11
+  },
+  "schema_version": 1,
+  "score": {
+    "blue": 1,
+    "orange": 6
+  },
+  "team_size": 2
+}

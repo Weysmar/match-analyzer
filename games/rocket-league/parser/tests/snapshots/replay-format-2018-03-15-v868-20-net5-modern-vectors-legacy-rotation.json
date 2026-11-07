@@ -1,0 +1,108 @@
+{
+  "build_id": 424271419,
+  "changelist": 188644,
+  "duration_s": 326.0333251953125,
+  "game_build": "180315.66224.188644",
+  "game_class": "TAGame.Replay_Soccar_TA",
+  "goals": [
+    {
+      "frame": 646,
+      "player_name": "player3",
+      "team": 1,
+      "time_s": 21.53333282470703
+    },
+    {
+      "frame": 1287,
+      "player_name": "player2",
+      "team": 1,
+      "time_s": 42.900001525878906
+    },
+    {
+      "frame": 7609,
+      "player_name": "player0",
+      "team": 0,
+      "time_s": 253.63333129882812
+    },
+    {
+      "frame": 8665,
+      "player_name": "player1",
+      "team": 0,
+      "time_s": 288.8333435058594
+    },
+    {
+      "frame": 9033,
+      "player_name": "player0",
+      "team": 0,
+      "time_s": 301.1000061035156
+    }
+  ],
+  "map": "Stadium_P",
+  "match_guid": null,
+  "match_type": "Tournament",
+  "parser_version": "<version>",
+  "played_at": "2018-04-03T23:04:27",
+  "played_at_source": "date_without_timezone",
+  "players": [
+    {
+      "assists": 0,
+      "goals": 2,
+      "is_bot": false,
+      "name": "player0",
+      "platform": "steam",
+      "platform_id": "<id>",
+      "saves": 2,
+      "score": 800,
+      "shots": 4,
+      "team": 0
+    },
+    {
+      "assists": 0,
+      "goals": 1,
+      "is_bot": false,
+      "name": "player1",
+      "platform": "steam",
+      "platform_id": "<id>",
+      "saves": 1,
+      "score": 440,
+      "shots": 3,
+      "team": 0
+    },
+    {
+      "assists": 0,
+      "goals": 1,
+      "is_bot": false,
+      "name": "player2",
+      "platform": "steam",
+      "platform_id": "<id>",
+      "saves": 2,
+      "score": 450,
+      "shots": 1,
+      "team": 1
+    },
+    {
+      "assists": 1,
+      "goals": 1,
+      "is_bot": false,
+      "name": "player3",
+      "platform": "steam",
+      "platform_id": "<id>",
+      "saves": 2,
+      "score": 570,
+      "shots": 3,
+      "team": 1
+    }
+  ],
+  "playlist": null,
+  "replay_id": "<id>",
+  "replay_version": {
+    "major": 868,
+    "minor": 20,
+    "net": 5
+  },
+  "schema_version": 1,
+  "score": {
+    "blue": 3,
+    "orange": 2
+  },
+  "team_size": 2
+}

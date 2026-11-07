@@ -10,6 +10,8 @@ dev = [
     # scripts/s3_check.py and s3_init.py; moves to the API and the worker with T5.9 and T6.2.
     "boto3==1.43.126",
     "mypy==2.4.1",
+    # tests/replays reads the parser's Parquet; moves to rl-analysis with T7.2.
+    "polars==2.1.0",
     "pytest==9.2.0",
     "ruff==0.17.4",
 ]
@@ -51,6 +53,7 @@ files = [
     "services/worker/src",
     "services/worker/tests",
     "tests/fixtures/corpus.py",
+    "tests/replays",
 ]
 
 [[tool.mypy.overrides]]
@@ -63,5 +66,7 @@ testpaths = [
     "games/rocket-league/analysis/tests",
     "services/api/tests",
     "services/worker/tests",
+    "tests/replays",
 ]
-addopts = ["--strict-markers", "--strict-config", "--import-mode=importlib"]
+addopts = ["--strict-markers", "--strict-config", "--import-mode=importlib", "-m", "not replays"]
+markers = ["replays: needs the replay corpus and the release parser (just test-replays)"]

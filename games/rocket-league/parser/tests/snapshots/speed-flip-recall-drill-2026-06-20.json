@@ -1,0 +1,48 @@
+{
+  "build_id": 939334844,
+  "changelist": 519749,
+  "duration_s": 340.5644226074219,
+  "game_build": "260602.75104.519749",
+  "game_class": "TAGame.Replay_Soccar_TA",
+  "goals": [
+    {
+      "frame": 10660,
+      "player_name": "player0",
+      "team": 1,
+      "time_s": 355.3333435058594
+    }
+  ],
+  "map": "TrainStation_P",
+  "match_guid": null,
+  "match_type": "Offline",
+  "parser_version": "<version>",
+  "played_at": "2026-06-21T02:36:38Z",
+  "played_at_source": "epoch",
+  "players": [
+    {
+      "assists": 0,
+      "goals": 1,
+      "is_bot": false,
+      "name": "player0",
+      "platform": "epic",
+      "platform_id": "<id>",
+      "saves": 0,
+      "score": 137,
+      "shots": 1,
+      "team": 1
+    }
+  ],
+  "playlist": null,
+  "replay_id": "<id>",
+  "replay_version": {
+    "major": 868,
+    "minor": 32,
+    "net": 11
+  },
+  "schema_version": 1,
+  "score": {
+    "blue": 0,
+    "orange": 1
+  },
+  "team_size": 1
+}

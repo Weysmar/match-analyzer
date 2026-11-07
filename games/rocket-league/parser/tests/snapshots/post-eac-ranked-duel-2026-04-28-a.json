@@ -1,0 +1,78 @@
+{
+  "build_id": 1210528741,
+  "changelist": 512269,
+  "duration_s": 73.84661102294922,
+  "game_build": "260316.80791.512269",
+  "game_class": "TAGame.Replay_Soccar_TA",
+  "goals": [
+    {
+      "frame": 838,
+      "player_name": "player0",
+      "team": 1,
+      "time_s": 27.933332443237305
+    },
+    {
+      "frame": 1377,
+      "player_name": "player0",
+      "team": 1,
+      "time_s": 45.900001525878906
+    },
+    {
+      "frame": 1671,
+      "player_name": "player0",
+      "team": 1,
+      "time_s": 55.70000076293945
+    },
+    {
+      "frame": 2454,
+      "player_name": "player0",
+      "team": 1,
+      "time_s": 81.80000305175781
+    }
+  ],
+  "map": "street_p",
+  "match_guid": "<id>",
+  "match_type": "Online",
+  "parser_version": "<version>",
+  "played_at": "2026-04-28T15:35:09Z",
+  "played_at_source": "epoch",
+  "players": [
+    {
+      "assists": 0,
+      "goals": 4,
+      "is_bot": false,
+      "name": "player0",
+      "platform": "epic",
+      "platform_id": "<id>",
+      "saves": 1,
+      "score": 607,
+      "shots": 5,
+      "team": 1
+    },
+    {
+      "assists": 0,
+      "goals": 0,
+      "is_bot": false,
+      "name": "player1",
+      "platform": "psn",
+      "platform_id": "<id>",
+      "saves": 0,
+      "score": 62,
+      "shots": 1,
+      "team": 0
+    }
+  ],
+  "playlist": null,
+  "replay_id": "<id>",
+  "replay_version": {
+    "major": 868,
+    "minor": 32,
+    "net": 11
+  },
+  "schema_version": 1,
+  "score": {
+    "blue": 0,
+    "orange": 4
+  },
+  "team_size": 1
+}

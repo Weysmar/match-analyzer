@@ -1,0 +1,108 @@
+{
+  "build_id": 939334844,
+  "changelist": 519749,
+  "duration_s": 101.65901947021484,
+  "game_build": "260602.75104.519749",
+  "game_class": "TAGame.Replay_Soccar_TA",
+  "goals": [
+    {
+      "frame": 273,
+      "player_name": "player0",
+      "team": 1,
+      "time_s": 9.100000381469727
+    },
+    {
+      "frame": 633,
+      "player_name": "player0",
+      "team": 1,
+      "time_s": 21.100000381469727
+    },
+    {
+      "frame": 1259,
+      "player_name": "player0",
+      "team": 1,
+      "time_s": 41.96666717529297
+    },
+    {
+      "frame": 2149,
+      "player_name": "player0",
+      "team": 1,
+      "time_s": 71.63333129882812
+    },
+    {
+      "frame": 3163,
+      "player_name": "player0",
+      "team": 1,
+      "time_s": 105.43333435058594
+    }
+  ],
+  "map": "EuroStadium_P",
+  "match_guid": "<id>",
+  "match_type": "Online",
+  "parser_version": "<version>",
+  "played_at": "2026-06-10T22:54:56Z",
+  "played_at_source": "epoch",
+  "players": [
+    {
+      "assists": 0,
+      "goals": 5,
+      "is_bot": false,
+      "name": "player0",
+      "platform": "steam",
+      "platform_id": "<id>",
+      "saves": 1,
+      "score": 743,
+      "shots": 6,
+      "team": 1
+    },
+    {
+      "assists": 0,
+      "goals": 0,
+      "is_bot": false,
+      "name": "player1",
+      "platform": "psn",
+      "platform_id": "<id>",
+      "saves": 2,
+      "score": 128,
+      "shots": 0,
+      "team": 0
+    },
+    {
+      "assists": 0,
+      "goals": 0,
+      "is_bot": false,
+      "name": "player2",
+      "platform": "psn",
+      "platform_id": "<id>",
+      "saves": 0,
+      "score": 30,
+      "shots": 1,
+      "team": 1
+    },
+    {
+      "assists": 0,
+      "goals": 0,
+      "is_bot": false,
+      "name": "player3",
+      "platform": "epic",
+      "platform_id": "<id>",
+      "saves": 1,
+      "score": 116,
+      "shots": 1,
+      "team": 0
+    }
+  ],
+  "playlist": null,
+  "replay_id": "<id>",
+  "replay_version": {
+    "major": 868,
+    "minor": 32,
+    "net": 11
+  },
+  "schema_version": 1,
+  "score": {
+    "blue": 0,
+    "orange": 5
+  },
+  "team_size": 2
+}

@@ -1,0 +1,150 @@
+{
+  "build_id": -1652286008,
+  "changelist": 517210,
+  "duration_s": 304.20806884765625,
+  "game_build": "260506.26700.517210",
+  "game_class": "TAGame.Replay_Soccar_TA",
+  "goals": [
+    {
+      "frame": 258,
+      "player_name": "player3",
+      "team": 1,
+      "time_s": 8.600000381469727
+    },
+    {
+      "frame": 961,
+      "player_name": "player1",
+      "team": 0,
+      "time_s": 32.03333282470703
+    },
+    {
+      "frame": 1224,
+      "player_name": "player1",
+      "team": 0,
+      "time_s": 40.79999923706055
+    },
+    {
+      "frame": 1479,
+      "player_name": "player1",
+      "team": 0,
+      "time_s": 49.29999923706055
+    },
+    {
+      "frame": 1764,
+      "player_name": "player0",
+      "team": 0,
+      "time_s": 58.79999923706055
+    },
+    {
+      "frame": 2311,
+      "player_name": "player0",
+      "team": 0,
+      "time_s": 77.03333282470703
+    },
+    {
+      "frame": 3722,
+      "player_name": "player2",
+      "team": 1,
+      "time_s": 124.06666564941406
+    },
+    {
+      "frame": 4209,
+      "player_name": "player1",
+      "team": 0,
+      "time_s": 140.3000030517578
+    },
+    {
+      "frame": 5325,
+      "player_name": "player2",
+      "team": 1,
+      "time_s": 177.5
+    },
+    {
+      "frame": 6249,
+      "player_name": "player0",
+      "team": 0,
+      "time_s": 208.3000030517578
+    },
+    {
+      "frame": 7396,
+      "player_name": "player3",
+      "team": 1,
+      "time_s": 246.53334045410156
+    },
+    {
+      "frame": 8792,
+      "player_name": "player3",
+      "team": 1,
+      "time_s": 293.0666809082031
+    }
+  ],
+  "map": "UtopiaStadium_P",
+  "match_guid": "<id>",
+  "match_type": "Online",
+  "parser_version": "<version>",
+  "played_at": "2026-05-25T01:16:12Z",
+  "played_at_source": "epoch",
+  "players": [
+    {
+      "assists": 0,
+      "goals": 3,
+      "is_bot": false,
+      "name": "player0",
+      "platform": "xbox",
+      "platform_id": "<id>",
+      "saves": 0,
+      "score": 535,
+      "shots": 4,
+      "team": 0
+    },
+    {
+      "assists": 2,
+      "goals": 4,
+      "is_bot": false,
+      "name": "player1",
+      "platform": "epic",
+      "platform_id": "<id>",
+      "saves": 3,
+      "score": 929,
+      "shots": 6,
+      "team": 0
+    },
+    {
+      "assists": 1,
+      "goals": 2,
+      "is_bot": false,
+      "name": "player2",
+      "platform": "psn",
+      "platform_id": "<id>",
+      "saves": 1,
+      "score": 440,
+      "shots": 4,
+      "team": 1
+    },
+    {
+      "assists": 1,
+      "goals": 3,
+      "is_bot": false,
+      "name": "player3",
+      "platform": "psn",
+      "platform_id": "<id>",
+      "saves": 2,
+      "score": 804,
+      "shots": 6,
+      "team": 1
+    }
+  ],
+  "playlist": null,
+  "replay_id": "<id>",
+  "replay_version": {
+    "major": 868,
+    "minor": 32,
+    "net": 11
+  },
+  "schema_version": 1,
+  "score": {
+    "blue": 7,
+    "orange": 5
+  },
+  "team_size": 2
+}
