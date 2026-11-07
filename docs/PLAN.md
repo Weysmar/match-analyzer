@@ -1,6 +1,6 @@
 # Plan d'implémentation V1 : `match-analyzer`
 
-> **Statut : validé par Vincent le 2026-11-06, avec D1, D2 et D3 tels que recommandés. Étape 0 close le 2026-11-07, sauf T0.7 (comparaison Epic, action de Vincent) et la vérification du timeout sur le VPS. Amendements A1 à A17 et D20 validés. Étape 1 terminée le 2026-11-07, dépôt privé `Weysmar/match-analyzer`. Étape 2 faite sur la branche `feat/rl-parse`, à valider par Vincent avant l'étape 3.**
+> **Statut : validé par Vincent le 2026-11-06, avec D1, D2 et D3 tels que recommandés. Étape 0 close le 2026-11-07, sauf T0.7 (comparaison Epic, action de Vincent) et la vérification du timeout sur le VPS. Amendements A1 à A17 et D20 validés. Étape 1 terminée le 2026-11-07, dépôt privé `Weysmar/match-analyzer`. Étape 2 fusionnée le 2026-11-07. Étape 3 faite sur la branche `feat/schemas`, à valider par Vincent avant l'étape 4.**
 > Date : 2026-11-06. Périmètre : section 8 de `CLAUDE.md`, ordre de la section 13, précédé d'une étape 0 de vérification.
 > Rapport de l'étape 0 : `spikes/s0-parse/RAPPORT.md`.
 
@@ -86,6 +86,8 @@ Trois autres points attendent ta confirmation en [annexe C](#annexe-c--décision
 | A18 | La séquence d'un pad n'est pas unique, et vaut toujours 1 sur les anciens replays : la déduplication d'A4 écrasait de vrais ramassages, jusqu'à 47 pads pour un joueur. | Une répétition est ce que le temps de réapparition du pad rend impossible : 10 s pour un gros, 4 s pour un petit. Écart à `subtr-actor` : médiane 0, p95 de 3 avec les replays récents de Vincent, 4 sur les replays publics seuls. |
 | A19 | `NumFrames / RecordFPS` sous-estime la durée d'environ 16 %. | `duration_s` vient de `TotalSecondsPlayed` quand il existe. Le réseau donne la durée exacte dans `events.json`. |
 | A20 | Un replay utilise la clé `MatchGuid`, les autres `MatchGUID`. Le header liste parfois des joueurs absents du réseau (3 dans un match privé). | Les deux clés sont lues. Le `roster` reste la référence quand le réseau est lu. |
+| A22 | Les 3 entrées du header absentes du réseau sont des spectateurs : `Team` vaut -1 et leur score est nul. | Ils ne sont plus des joueurs : `rl-parse` les retire de `header.json`, et leurs identifiants ne sont pas conservés. |
+| A23 | Un schéma combinant `$ref` et type nullable refusait `null` : les contre-exemples l'ont révélé. | Corrigé. Types Python écrits à la main, sans générateur, et contrôlés contre les schémas. Pas de types TypeScript pour ces formats : le front ne les lit pas, il passe par l'API. |
 | A21 | Les règles `requires` de `clap` laissaient passer une combinaison d'options invalide. | Les combinaisons d'options sont vérifiées par `rl-parse` lui-même. |
 
 **Encore ouvert** : l'identifiant Epic (T0.7).
@@ -499,9 +501,9 @@ Il n'y a pas de `on_ground` : `CLAUDE.md` le demande, mais il n'existe pas dans 
 
 **Critère de fin** : `just test-schemas` valide les sorties réelles et refuse des contre-exemples.
 
-**Fichiers** : `packages/schemas/{header,events,frames}.schema.json`, `packages/schemas/README.md`, `packages/schemas/generated/`.
+**Fichiers** : `packages/schemas/{header,events,frames}.schema.json`, `packages/schemas/README.md`, `packages/schemas/src/ma_schemas/`.
 
-**Dépendances** : `jsonschema` (Python, version à confirmer). Génération de types : `json-schema-to-typescript`, si elle se justifie à T3.4.
+**Dépendances** : `jsonschema` (Python, version à confirmer). Pas de génération de types (A23).
 
 **Contrats** : les trois formats de l'étape 2. `frames.schema.json` décrit colonnes et types Parquet. Toute modification incompatible incrémente `schema_version` et `parser_version`.
 
