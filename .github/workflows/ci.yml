@@ -1,0 +1,89 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  UV_VERSION: "0.13.7"
+
+jobs:
+  rust:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      # rust-toolchain.toml selects the toolchain; rustup is on the runner.
+      - run: cargo fmt --manifest-path games/rocket-league/parser/Cargo.toml --check
+      - run: cargo clippy --manifest-path games/rocket-league/parser/Cargo.toml --all-targets --locked -- -D warnings
+      - run: cargo test --manifest-path games/rocket-league/parser/Cargo.toml --locked
+
+  python:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: astral-sh/setup-uv@v10
+        with:
+          version: ${{ env.UV_VERSION }}
+      - run: uv sync --all-packages --locked
+      - run: uv run ruff check .
+      - run: uv run ruff format --check .
+      - run: uv run mypy
+      - run: uv run pytest
+
+  typescript:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: pnpm/action-setup@v6
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 22
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm lint
+      - run: pnpm typecheck
+      - run: pnpm test
+
+  # The development stack starts, and the S3 store behaves as uploads expect.
+  stack:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: astral-sh/setup-uv@v10
+        with:
+          version: ${{ env.UV_VERSION }}
+      - run: cp .env.example .env
+      - run: docker compose -f compose.dev.yaml up -d --wait
+      - run: uv sync --all-packages --locked
+      - name: S3 checks
+        run: |
+          set -a; . ./.env; set +a
+          uv run python scripts/s3_init.py
+          uv run python scripts/s3_check.py
+      - run: docker compose -f compose.dev.yaml exec -T db pg_isready -U ma_dev
+      - run: docker compose -f compose.dev.yaml logs
+        if: failure()
+
+  # Public replays only; they are cached, never committed.
+  corpus:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: astral-sh/setup-uv@v10
+        with:
+          version: ${{ env.UV_VERSION }}
+      - uses: actions/cache@v6
+        with:
+          path: tests/fixtures/replays/public
+          key: replays-${{ hashFiles('tests/fixtures/manifest.toml') }}
+      - run: uv sync --all-packages --locked
+      - run: uv run python tests/fixtures/corpus.py fetch
+      - run: uv run python tests/fixtures/corpus.py check
