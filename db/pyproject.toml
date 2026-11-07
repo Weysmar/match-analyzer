@@ -7,7 +7,10 @@ name = "ma-db"
 version = "0.0.0"
 description = "Database migrations."
 requires-python = ">=3.14"
-dependencies = []
+dependencies = ["alembic==1.20.1", "psycopg[binary]==3.3.8"]
+
+[project.scripts]
+ma-db = "ma_db.cli:main"
 
 [tool.hatch.build.targets.wheel]
 packages = ["src/ma_db"]

@@ -46,6 +46,9 @@ select = ["B", "C4", "E", "F", "I", "N", "PT", "PTH", "RUF", "SIM", "TID", "UP",
 [tool.ruff.lint.isort]
 known-first-party = ["ma_api", "ma_db", "ma_schemas", "ma_worker", "rl_analysis"]
 
+[tool.ruff.lint.per-file-ignores]
+"db/src/ma_db/migrations/versions/*" = ["N999"]
+
 [tool.mypy]
 strict = true
 python_version = "3.14"
@@ -78,5 +81,8 @@ testpaths = [
     "services/worker/tests",
     "tests/replays",
 ]
-addopts = ["--strict-markers", "--strict-config", "--import-mode=importlib", "-m", "not replays"]
-markers = ["replays: needs the replay corpus and the release parser (just test-replays)"]
+addopts = ["--strict-markers", "--strict-config", "--import-mode=importlib", "-m", "not replays and not db"]
+markers = [
+    "replays: needs the replay corpus and the release parser (just test-replays)",
+    "db: needs PostgreSQL and TEST_DATABASE_URL (just test-db)",
+]
