@@ -47,6 +47,13 @@ test-replays:
     cargo test --release --manifest-path {{parser}} --test corpus -- --include-ignored --test-threads=4
     uv run pytest -m replays
 
+# The schemas: counter-examples, then the parser's real output on every local replay
+test-schemas:
+    uv run pytest packages/schemas/tests
+    cargo test --manifest-path {{parser}} --test schema
+    cargo build --release --manifest-path {{parser}}
+    uv run pytest -m replays tests/replays/test_schemas_on_real_output.py
+
 # Update the anonymized header snapshots, after an INTENDED change: review the diff
 parser-snapshots:
     UPDATE_SNAPSHOTS=1 cargo test --release --manifest-path {{parser}} --test corpus headers_match -- --include-ignored
