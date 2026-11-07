@@ -155,7 +155,7 @@ class Factory:
         )
 
     def metric(
-        self, match_player_id: int, metric_id: str = "boost.avg", value: float = 1.0
+        self, match_player_id: int, metric_id: str = "boost.avg", value: float | None = 1.0
     ) -> None:
         self.connection.execute(
             "INSERT INTO player_match_metrics "
