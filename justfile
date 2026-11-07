@@ -68,6 +68,19 @@ parser-image:
 dev-up:
     docker compose -f compose.dev.yaml up -d --wait
     uv run python scripts/s3_init.py
+    uv run ma-db upgrade
+
+# Apply the migrations and set the roles' passwords
+db-migrate:
+    uv run ma-db upgrade
+
+# Go back to a migration (`base`: everything)
+db-downgrade revision:
+    uv run ma-db downgrade {{revision}}
+
+# Database tests, each run in a temporary database (needs `just dev-up`)
+test-db:
+    uv run pytest -m db
 
 # Stop them; the data volumes are kept
 dev-down:
