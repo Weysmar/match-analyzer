@@ -58,12 +58,18 @@ def used_per_minute(match: Match) -> PerPlayer:
 def _pickups(match: Match) -> list[tuple[int, str, float]]:
     """Pickups on reference time, already deduplicated by `rl-parse` (A18): player, size, and the
     pad's y relative to the player's team."""
+    # A player who switches teams in a private match attacks the other half afterwards (A52).
+    team_at = {
+        (player, frame): team
+        for player, frame, team in match.frames.select("player_idx", "frame", "team").iter_rows()
+    }
     found: list[tuple[int, str, float]] = []
     for pickup in match.events["pad_pickups"]:
         if pickup["phase"] not in MOTION_PHASES:
             continue
         player = pickup["player_idx"]
-        sign = 1.0 if match.team_of(player) == 0 else -1.0
+        team = team_at.get((player, pickup["frame"]), match.team_of(player))
+        sign = 1.0 if team == 0 else -1.0
         found.append((player, pickup["size"], sign * pickup["y"]))
     return found
 
