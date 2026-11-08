@@ -369,6 +369,8 @@ export interface components {
         };
         /** Goal */
         Goal: {
+            /** Game Time S */
+            game_time_s: number | null;
             /** Player Name */
             player_name: string | null;
             /** Team */
@@ -423,12 +425,16 @@ export interface components {
             arena_out_of_bounds: boolean;
             /** Duration S */
             duration_s: number | null;
+            /** Game Length S */
+            game_length_s: number | null;
             /** Map */
             map: string | null;
             /** Match Id */
             match_id: string;
             /** Match Type */
             match_type: string | null;
+            /** Overtime From S */
+            overtime_from_s: number | null;
             /** Played At */
             played_at: string | null;
             /** Playlist */

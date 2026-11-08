@@ -237,3 +237,28 @@ def test_nothing_personal_reaches_the_log(
     assert "analyzed" in caplog.text
     for secret in ("Blue", "Orange"):
         assert secret not in caplog.text
+
+
+def test_the_game_clock_is_written(
+    conn: Connection, worker_conn: Connection, make: Factory, store: MemoryStore, tmp_path: Path
+) -> None:
+    """The match's length, no overtime, and each goal's clock, found by its frame (A63)."""
+    match, blue, _ = parsed_match(conn, make, store, tmp_path)
+    document = json.loads(store.objects[f"events/{match}.json"])
+    document["goals"] = [
+        {"frame": 4, "time_s": 4.0, "team": 0, "player_idx": 0, "score_blue": 1, "score_orange": 0}
+    ]
+    store.objects[f"events/{match}.json"] = json.dumps(document).encode()
+    conn.execute(
+        "INSERT INTO match_events (match_id, kind, frame, time_s, team, actor_player_id) "
+        "VALUES (%s, 'goal', 4, 4.0, 0, %s)",
+        (match, blue),
+    )
+    run_job(worker_conn, store, match)
+    assert conn.execute(
+        "SELECT game_length_s, overtime_from_s FROM matches WHERE id = %s", (match,)
+    ).fetchone() == (pytest.approx(10.0), None)
+    # Frame 4 ends the fifth second of play.
+    assert conn.execute(
+        "SELECT game_time_s FROM match_events WHERE match_id = %s", (match,)
+    ).fetchone() == (pytest.approx(5.0),)

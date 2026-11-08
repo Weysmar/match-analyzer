@@ -14,7 +14,7 @@ from ma_worker.queue import Connection, Job
 from ma_worker.runner import PermanentError
 from ma_worker.settings import Settings
 from ma_worker.store import ObjectStore
-from rl_analysis import ANALYSIS_VERSION
+from rl_analysis import ANALYSIS_VERSION, clock
 from rl_analysis.frames import InvalidFramesError
 from rl_analysis.match import load
 from rl_analysis.registry import METRICS, compute
@@ -65,6 +65,25 @@ def _write(
     return len(rows)
 
 
+def _write_clock(
+    connection: Connection, match_id: uuid.UUID, game_clock: clock.Clock, goal_frames: list[int]
+) -> None:
+    """The match's length and overtime, and the clock of each goal, found by its frame."""
+    connection.execute(
+        "UPDATE matches SET game_length_s = %s, overtime_from_s = %s WHERE id = %s",
+        (game_clock.length_s, game_clock.overtime_from_s, match_id),
+    )
+    with connection.cursor() as cursor:
+        cursor.executemany(
+            "UPDATE match_events SET game_time_s = %s "
+            "WHERE match_id = %s AND kind = 'goal' AND frame = %s",
+            [
+                (seconds, match_id, frame)
+                for seconds, frame in zip(game_clock.goals_s, goal_frames, strict=True)
+            ],
+        )
+
+
 def handle(connection: Connection, job: Job, store: ObjectStore, settings: Settings) -> None:
     try:
         match_id = uuid.UUID(job.payload["match_id"])
@@ -87,8 +106,12 @@ def handle(connection: Connection, job: Job, store: ObjectStore, settings: Setti
             # Written by the parser: a mismatch means a bug or a schema change, not a bad file.
             raise PermanentError("invalid_parsed_files") from None
         results = compute(match)
+        game_clock = clock.compute(match)
     with connection.transaction():
         written = _write(connection, match_id, results)
+        _write_clock(
+            connection, match_id, game_clock, [goal["frame"] for goal in match.events["goals"]]
+        )
         connection.execute(
             "UPDATE matches SET status = 'ready', analysis_version = %s, analyzed_at = now() "
             "WHERE id = %s",
