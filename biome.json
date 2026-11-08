@@ -1,6 +1,14 @@
 {
   "vcs": { "enabled": true, "clientKind": "git", "useIgnoreFile": true },
-  "files": { "includes": ["**", "!**/spikes", "!**/*.md"] },
+  "files": {
+    "includes": [
+      "**",
+      "!**/spikes",
+      "!**/*.md",
+      "!apps/web/openapi.json",
+      "!apps/web/src/lib/api/schema.ts"
+    ]
+  },
   "formatter": { "indentStyle": "space", "indentWidth": 2, "lineWidth": 100 },
   "linter": {
     "enabled": true,

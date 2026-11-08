@@ -10,7 +10,7 @@ from typing import Annotated, Any, Literal
 from fastapi import APIRouter, Query
 from psycopg import sql
 
-from ma_api import sessions
+from ma_api import models, sessions
 from ma_api.db import ConnectionDep
 from ma_api.errors import ApiError
 from ma_api.owner import Owner
@@ -73,7 +73,7 @@ def _recent(owner: Owner, scope: Scope, last: int) -> sql.Composed:
 router = APIRouter()
 
 
-@router.get("/stats/me")
+@router.get("/stats/me", response_model=models.Stats)
 def my_stats(
     connection: ConnectionDep, identity: IdentityDep, last: Last = 20, scope: Scope = "all"
 ) -> dict[str, Any]:
@@ -102,7 +102,7 @@ def my_stats(
     }
 
 
-@router.get("/stats/me/history")
+@router.get("/stats/me/history", response_model=models.History)
 def my_history(
     metric_id: str,
     connection: ConnectionDep,

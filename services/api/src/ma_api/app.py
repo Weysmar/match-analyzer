@@ -8,7 +8,18 @@ import psycopg
 from fastapi import FastAPI, Request, Response
 from psycopg_pool import PoolTimeout
 
-from ma_api import __version__, account, epic, errors, matches, sessions, stats, steam, uploads
+from ma_api import (
+    __version__,
+    account,
+    epic,
+    errors,
+    matches,
+    models,
+    sessions,
+    stats,
+    steam,
+    uploads,
+)
 from ma_api.db import Database
 from ma_api.errors import error_response
 from ma_api.settings import PREFIX, Settings
@@ -55,6 +66,10 @@ def create_app(
 
     # The documentation is a development aid: production does not advertise its routes.
     app = FastAPI(
+        responses={
+            status: {"model": models.Error}
+            for status in (400, 401, 403, 404, 409, 413, 422, 429, 503)
+        },
         title="match-analyzer",
         version=__version__,
         lifespan=lifespan,

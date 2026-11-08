@@ -13,6 +13,7 @@ from typing import Any
 
 import httpx2
 from fastapi import APIRouter, Request, Response
+from fastapi.responses import RedirectResponse
 
 from ma_api import flow, signin
 from ma_api.errors import not_found
@@ -139,7 +140,7 @@ def _require_enabled(settings: Settings) -> None:
 router = APIRouter()
 
 
-@router.get("/auth/epic")
+@router.get("/auth/epic", status_code=303, response_class=RedirectResponse)
 def start(request: Request, settings: SettingsDep, return_to: str = "/") -> Response:
     """Sends the browser to Epic, and remembers where to bring it back."""
     _require_enabled(settings)
@@ -148,7 +149,7 @@ def start(request: Request, settings: SettingsDep, return_to: str = "/") -> Resp
     return response
 
 
-@router.get("/auth/epic/callback")
+@router.get("/auth/epic/callback", status_code=303, response_class=RedirectResponse)
 def callback(request: Request, settings: SettingsDep) -> Response:
     """Where Epic brings the browser back."""
     _require_enabled(settings)

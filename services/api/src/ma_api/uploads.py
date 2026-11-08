@@ -14,7 +14,7 @@ from psycopg.rows import dict_row
 from psycopg.types.json import Jsonb
 from pydantic import BaseModel, Field, field_validator
 
-from ma_api import pagination, ratelimit, sessions
+from ma_api import models, pagination, ratelimit, sessions
 from ma_api.db import Connection, ConnectionDep, Database
 from ma_api.errors import ApiError, not_found
 from ma_api.owner import Owner
@@ -92,7 +92,7 @@ def _store(request: Request) -> ObjectStore:
 router = APIRouter()
 
 
-@router.post("/uploads", status_code=201)
+@router.post("/uploads", status_code=201, response_model=models.UploadsCreated)
 def create(
     batch: BatchIn,
     request: Request,
@@ -176,7 +176,9 @@ def _invalid_state(status: str) -> ApiError:
     return ApiError(409, "invalid_state", {"status": status})
 
 
-@router.post("/uploads/{upload_id}/complete", status_code=202)
+@router.post(
+    "/uploads/{upload_id}/complete", status_code=202, response_model=models.UploadCompleted
+)
 def complete(upload_id: uuid.UUID, request: Request, settings: SettingsDep) -> dict[str, str]:
     """Checks that the file arrived, then queues it. No connection stays held while asking the
     object store: a slow store would use up the pool and stop the whole API."""
@@ -217,7 +219,7 @@ def complete(upload_id: uuid.UUID, request: Request, settings: SettingsDep) -> d
     return {"upload_id": str(upload_id), "status": "uploaded"}
 
 
-@router.get("/uploads")
+@router.get("/uploads", response_model=models.UploadPage)
 def list_uploads(
     connection: ConnectionDep,
     identity: IdentityDep,
@@ -250,7 +252,7 @@ def list_uploads(
     }
 
 
-@router.get("/uploads/{upload_id}")
+@router.get("/uploads/{upload_id}", response_model=models.Upload)
 def get_upload(
     upload_id: uuid.UUID, connection: ConnectionDep, identity: IdentityDep
 ) -> dict[str, Any]:
