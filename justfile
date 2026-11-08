@@ -122,8 +122,11 @@ s3-check:
     uv run python scripts/s3_check.py
 
 # Reprocess obsolete matches: arrives with T7.14
-reprocess:
-    @echo "not available yet: see T7.14 in docs/PLAN.md" && exit 1
+# Queue outdated matches again: --parser-outdated or --analysis-outdated,
+# [--build-from X] [--build-to Y] [--dry-run]. The worker then does the work.
+reprocess *args:
+    cargo build --release --manifest-path {{parser}}
+    PARSER_BIN=games/rocket-league/parser/target/release/rl-parse uv run ma-worker reprocess {{args}}
 
 # Download the public replays of the manifest
 corpus-fetch:
