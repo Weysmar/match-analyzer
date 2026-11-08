@@ -1,6 +1,6 @@
 # Plan d'implémentation V1 : `match-analyzer`
 
-> **Statut : validé par Vincent le 2026-11-06, avec D1, D2 et D3 tels que recommandés. Étape 0 close le 2026-11-07, sauf T0.7 (comparaison Epic, action de Vincent) et la vérification du timeout sur le VPS. Amendements A1 à A17 et D20 validés. Étape 1 terminée le 2026-11-07, dépôt privé `Weysmar/match-analyzer`. Étapes 2 et 3 fusionnées le 2026-11-07. Étape 4 fusionnée le 2026-11-07. Étape 5 fusionnée le 2026-11-07. Étape 6 fusionnée le 2026-11-07. Étape 7 en cours : T7.1 à T7.11 fusionnées, correction de l'équipe par frame (A52) sur la branche `fix/parser-team-per-frame`.**
+> **Statut : validé par Vincent le 2026-11-06, avec D1, D2 et D3 tels que recommandés. Étape 0 close le 2026-11-07, sauf T0.7 (comparaison Epic, action de Vincent) et la vérification du timeout sur le VPS. Amendements A1 à A17 et D20 validés. Étape 1 terminée le 2026-11-07, dépôt privé `Weysmar/match-analyzer`. Étapes 2 et 3 fusionnées le 2026-11-07. Étape 4 fusionnée le 2026-11-07. Étape 5 fusionnée le 2026-11-07. Étape 6 fusionnée le 2026-11-07. Étape 7 en cours : T7.1 à T7.11 et A52 fusionnés, T7.12 et T7.13 sur la branche `feat/analyze-job`, T7.14 ensuite.**
 > Date : 2026-11-06. Périmètre : section 8 de `CLAUDE.md`, ordre de la section 13, précédé d'une étape 0 de vérification.
 > Rapport de l'étape 0 : `spikes/s0-parse/RAPPORT.md`.
 
