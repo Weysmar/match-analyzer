@@ -67,7 +67,7 @@ def players(frames: pl.DataFrame) -> list[int]:
     return sorted(int(index) for index in frames["player_idx"].unique().to_list())
 
 
-def _per_player(frames: pl.DataFrame, numerator: pl.Expr, denominator: pl.Expr) -> PerPlayer:
+def ratio(frames: pl.DataFrame, numerator: pl.Expr, denominator: pl.Expr) -> PerPlayer:
     """Numerator over denominator for each player, None when there is no time to divide by."""
     sums = frames.group_by("player_idx").agg(
         numerator.sum().alias("numerator"), denominator.sum().alias("denominator")
@@ -86,7 +86,7 @@ def time_average(frames: pl.DataFrame, mask: pl.Expr, value: pl.Expr) -> PerPlay
     left out of both sides."""
     kept = mask & value.is_not_null()
     weight = pl.when(kept).then(pl.col("dt_s")).otherwise(0.0)
-    return _per_player(frames, weight * value.fill_null(0.0), weight)
+    return ratio(frames, weight * value.fill_null(0.0), weight)
 
 
 def time_share(
@@ -97,5 +97,5 @@ def time_share(
     base = mask if known is None else mask & known
     weight = pl.when(base).then(pl.col("dt_s")).otherwise(0.0)
     hit = pl.when(base & condition.fill_null(value=False)).then(pl.col("dt_s")).otherwise(0.0)
-    shares = _per_player(frames, hit, weight)
+    shares = ratio(frames, hit, weight)
     return {player: None if share is None else 100.0 * share for player, share in shares.items()}

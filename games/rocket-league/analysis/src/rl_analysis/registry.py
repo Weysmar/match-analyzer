@@ -4,17 +4,16 @@ Adding one needs no migration: `player_match_metrics` holds a row per player and
 from collections.abc import Callable
 from dataclasses import dataclass
 
-import polars as pl
-
-from rl_analysis import boost
+from rl_analysis import boost, movement
 from rl_analysis.frames import PerPlayer
+from rl_analysis.match import Match
 
 
 @dataclass(frozen=True)
 class Metric:
     id: str
     unit: str
-    compute: Callable[[pl.DataFrame], PerPlayer]
+    compute: Callable[[Match], PerPlayer]
 
     @property
     def definition(self) -> str:
@@ -23,16 +22,27 @@ class Metric:
 
 
 METRICS: tuple[Metric, ...] = (
+    Metric("boost.used_per_min", "%/min", boost.used_per_minute),
     Metric("boost.avg", "%", boost.average),
     Metric("boost.pct_zero", "%", boost.time_empty),
     Metric("boost.pct_full", "%", boost.time_full),
+    Metric("boost.pads_big", "count", boost.pads_big),
+    Metric("boost.pads_small", "count", boost.pads_small),
+    Metric("boost.pads_enemy_half", "count", boost.pads_enemy_half),
+    Metric("move.speed_avg", "uu/s", movement.speed_average),
+    Metric("move.pct_supersonic", "%", movement.time_supersonic),
+    Metric("move.pct_ground", "%", movement.time_on_ground),
+    Metric("move.pct_low_air", "%", movement.time_in_low_air),
+    Metric("move.pct_high_air", "%", movement.time_in_high_air),
 )
 
 
-def compute(frames: pl.DataFrame) -> dict[int, dict[str, float | None]]:
-    """Every metric for every player of the match, by `player_idx`."""
-    results: dict[int, dict[str, float | None]] = {}
+def compute(match: Match) -> dict[int, dict[str, float | None]]:
+    """Every metric for every player of the roster, by `player_idx`. A player with no frame gets
+    None for a measure of time, and 0 for a count."""
+    results: dict[int, dict[str, float | None]] = {player: {} for player in match.players}
     for metric in METRICS:
-        for player, value in metric.compute(frames).items():
-            results.setdefault(player, {})[metric.id] = value
+        values = metric.compute(match)
+        for player in match.players:
+            results[player][metric.id] = values.get(player)
     return results
