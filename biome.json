@@ -6,6 +6,7 @@
       "!**/spikes",
       "!**/*.md",
       "!apps/web/openapi.json",
+      "!apps/web/metrics.json",
       "!apps/web/src/lib/api/schema.ts"
     ]
   },

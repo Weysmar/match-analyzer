@@ -18,9 +18,12 @@ export async function SiteHeader({ me }: { me: Me | null }) {
           <Link href="/" className="font-semibold tracking-tight">
             {t("app.name")}
           </Link>
-          <nav aria-label={t("header.nav.label")} className="text-sm">
+          <nav aria-label={t("header.nav.label")} className="flex gap-4 text-sm">
             <Link href="/upload" className="hover:underline">
               {t("header.nav.upload")}
+            </Link>
+            <Link href="/matches" className="hover:underline">
+              {t("header.nav.matches")}
             </Link>
           </nav>
         </div>

@@ -1,0 +1,86 @@
+[
+  {
+    "id": "boost.used_per_min",
+    "unit": "%/min"
+  },
+  {
+    "id": "boost.avg",
+    "unit": "%"
+  },
+  {
+    "id": "boost.pct_zero",
+    "unit": "%"
+  },
+  {
+    "id": "boost.pct_full",
+    "unit": "%"
+  },
+  {
+    "id": "boost.pads_big",
+    "unit": "count"
+  },
+  {
+    "id": "boost.pads_small",
+    "unit": "count"
+  },
+  {
+    "id": "boost.pads_enemy_half",
+    "unit": "count"
+  },
+  {
+    "id": "move.speed_avg",
+    "unit": "uu/s"
+  },
+  {
+    "id": "move.pct_supersonic",
+    "unit": "%"
+  },
+  {
+    "id": "move.pct_ground",
+    "unit": "%"
+  },
+  {
+    "id": "move.pct_low_air",
+    "unit": "%"
+  },
+  {
+    "id": "move.pct_high_air",
+    "unit": "%"
+  },
+  {
+    "id": "pos.pct_def_third",
+    "unit": "%"
+  },
+  {
+    "id": "pos.pct_mid_third",
+    "unit": "%"
+  },
+  {
+    "id": "pos.pct_att_third",
+    "unit": "%"
+  },
+  {
+    "id": "pos.pct_ahead_ball",
+    "unit": "%"
+  },
+  {
+    "id": "pos.pct_behind_ball",
+    "unit": "%"
+  },
+  {
+    "id": "pos.dist_ball_avg",
+    "unit": "uu"
+  },
+  {
+    "id": "pos.pct_last_back",
+    "unit": "%"
+  },
+  {
+    "id": "event.demos_inflicted",
+    "unit": "count"
+  },
+  {
+    "id": "event.demos_taken",
+    "unit": "count"
+  }
+]

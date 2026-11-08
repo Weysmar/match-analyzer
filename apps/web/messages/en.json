@@ -9,8 +9,142 @@
     "anonymous": "Session without an account",
     "nav": {
       "label": "Main navigation",
-      "upload": "Analyze"
+      "upload": "Analyze",
+      "matches": "My matches"
     }
+  },
+  "notFound": {
+    "title": "Page not found",
+    "lead": "This page does not exist, or it is not yours.",
+    "home": "Back to the home page"
+  },
+  "matches": {
+    "title": "My matches",
+    "filter": {
+      "label": "Matches shown",
+      "all": "All",
+      "verified": "Verified"
+    },
+    "empty": "No match yet.",
+    "emptyCta": "Analyze a replay",
+    "more": "Older matches",
+    "unverified": "unverified",
+    "unknownDate": "Unknown date",
+    "result": {
+      "won": "Win",
+      "lost": "Loss",
+      "unknown": "Unknown result"
+    },
+    "status": {
+      "pending": "Waiting",
+      "parsing": "Reading",
+      "parsed": "Analyzing",
+      "analyzing": "Analyzing",
+      "ready": "Ready",
+      "header_only": "Partial",
+      "failed": "Failed"
+    },
+    "kinds": {
+      "casual": "Casual",
+      "ranked": "Ranked",
+      "private": "Private match",
+      "other": "Other mode"
+    }
+  },
+  "match": {
+    "back": "My matches",
+    "title": "Match of {date}",
+    "titleNoDate": "Match",
+    "blue": "Blue",
+    "orange": "Orange",
+    "duration": "Duration {duration}",
+    "inProgress": "Analysis in progress: the page updates by itself.",
+    "partial": "Only the basic stats are available: the details of this replay could not be read. It will be processed again after an update of the tool.",
+    "failed": "The analysis of this replay failed.",
+    "identity": {
+      "question": "Which of these players are you?",
+      "hint": "Your choice is remembered for your next matches.",
+      "choose": "That's me",
+      "change": "Not you?",
+      "cancel": "Cancel",
+      "you": "you",
+      "unverified": "Unverified",
+      "unverifiedHint": "This match is not tied to your game account: it counts in your stats, but not in comparisons.",
+      "locked": "This match is verified: your player can no longer change.",
+      "error": "The choice could not be saved. Try again."
+    },
+    "players": {
+      "title": "Scoreboard",
+      "name": "Player",
+      "score": "Score",
+      "goals": "Goals",
+      "assists": "Assists",
+      "saves": "Saves",
+      "shots": "Shots",
+      "bot": "bot"
+    },
+    "metrics": {
+      "title": "Detailed stats",
+      "metric": "Stat",
+      "none": "No detailed stats for this match yet.",
+      "groups": {
+        "boost": "Boost",
+        "move": "Movement",
+        "pos": "Positioning",
+        "event": "Events"
+      }
+    },
+    "timeline": {
+      "title": "Goals",
+      "empty": "No goal in this match.",
+      "label": "Timeline of the goals",
+      "overtime": "Overtime",
+      "remaining": "{clock} left",
+      "intoOvertime": "+{clock} in overtime",
+      "approximate": "Clock rebuilt from the replay: within a few seconds.",
+      "noClock": "Goals are in the replay's order; the match clock is unknown.",
+      "unknownScorer": "Unknown scorer",
+      "score": "{blue} – {orange}"
+    }
+  },
+  "metrics": {
+    "boost": {
+      "used_per_min": "Boost used per minute",
+      "avg": "Average boost",
+      "pct_zero": "Time without boost",
+      "pct_full": "Time at full boost",
+      "pads_big": "Big pads",
+      "pads_small": "Small pads",
+      "pads_enemy_half": "Pads in the opponent's half"
+    },
+    "move": {
+      "speed_avg": "Average speed",
+      "pct_supersonic": "Time supersonic",
+      "pct_ground": "Time on the ground",
+      "pct_low_air": "Time in the air, low",
+      "pct_high_air": "Time in the air, high"
+    },
+    "pos": {
+      "pct_def_third": "Defensive third",
+      "pct_mid_third": "Middle third",
+      "pct_att_third": "Attacking third",
+      "pct_ahead_ball": "Ahead of the ball",
+      "pct_behind_ball": "Behind the ball",
+      "dist_ball_avg": "Average distance to the ball",
+      "pct_last_back": "Last back"
+    },
+    "event": {
+      "demos_inflicted": "Demolitions inflicted",
+      "demos_taken": "Demolitions taken"
+    }
+  },
+  "units": {
+    "percent": "{value}%",
+    "perMinute": "{value} %/min",
+    "count": "{value}",
+    "kmh": "{value} km/h",
+    "meters": "{value} m",
+    "none": "—"
   },
   "home": {
     "title": "Understand your matches, replay after replay",
