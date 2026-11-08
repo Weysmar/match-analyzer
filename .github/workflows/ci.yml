@@ -111,6 +111,21 @@ jobs:
           uv run pytest -m s3
           uv run python -c "import os, psycopg; print(psycopg.connect(os.environ['API_DATABASE_URL']).execute('SELECT current_user').fetchone())"
       - run: docker compose -f compose.dev.yaml exec -T db pg_isready -U ma_dev
+      # The site's upload engine, from the API to the S3 store (T8.4).
+      - uses: pnpm/action-setup@v6
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 22
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - name: Upload engine against the API and the S3 store
+        run: |
+          set -a; . ./.env; set +a
+          uv run ma-api > api.log 2>&1 &
+          for i in $(seq 1 60); do curl -sf -o /dev/null http://127.0.0.1:8000/health && break; sleep 0.5; done
+          WEB_IT_API_URL=http://127.0.0.1:8000 pnpm --filter @match-analyzer/web exec vitest run test/it
+      - run: cat api.log
+        if: failure()
       - run: docker compose -f compose.dev.yaml logs
         if: failure()
 

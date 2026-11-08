@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import en from "../messages/en.json";
 import fr from "../messages/fr.json";
+import { PHASES, REASONS } from "../src/lib/upload/state";
 
 type Messages = { [key: string]: string | Messages };
 
@@ -36,6 +37,13 @@ describe("messages", () => {
         placeholders(english.get(key) ?? ""),
       );
     });
+  });
+
+  it("explain every phase and every reason of an upload", () => {
+    for (const messages of [fr, en]) {
+      for (const phase of PHASES) expect(messages.upload.phases).toHaveProperty(phase);
+      for (const reason of REASONS) expect(messages.upload.reasons).toHaveProperty(reason);
+    }
   });
 
   it("never name the game's publisher or the game in the product's name", () => {

@@ -31,9 +31,18 @@ export class ApiError extends Error {
   constructor(
     readonly status: number,
     readonly code: string,
+    readonly details: Record<string, unknown> = {},
   ) {
     super(code);
   }
+}
+
+export interface CallOptions {
+  /** Empty in the browser (the site's relay); the API's address on the server. */
+  base?: string;
+  parameters?: Record<string, string>;
+  query?: Record<string, string | number | undefined>;
+  init?: RequestInit;
 }
 
 /** Fills `{name}` in a path from `parameters`, encoded. */
@@ -45,21 +54,58 @@ export function fillPath(path: string, parameters: Record<string, string> = {}):
   });
 }
 
+function urlOf(path: string, options: CallOptions): string {
+  const query = new URLSearchParams();
+  for (const [name, value] of Object.entries(options.query ?? {})) {
+    if (value !== undefined) query.set(name, String(value));
+  }
+  const search = query.size > 0 ? `?${query}` : "";
+  return `${options.base ?? ""}${fillPath(path, options.parameters)}${search}`;
+}
+
+/** The API's error, read from its single error format. */
+async function failure(response: Response): Promise<ApiError> {
+  const body: unknown = await response.json().catch(() => null);
+  if (typeof body === "object" && body !== null && "error" in body) {
+    const error = (body as { error: { code?: unknown; details?: unknown } }).error;
+    const details =
+      typeof error.details === "object" && error.details !== null
+        ? (error.details as Record<string, unknown>)
+        : {};
+    return new ApiError(response.status, String(error.code ?? "internal"), details);
+  }
+  return new ApiError(response.status, "internal");
+}
+
 export async function getJson<P extends GetPath>(
   path: P,
-  options: { base?: string; parameters?: Record<string, string>; init?: RequestInit } = {},
+  options: CallOptions = {},
 ): Promise<GetResult<P>> {
-  const response = await fetch(`${options.base ?? ""}${fillPath(path, options.parameters)}`, {
+  const response = await fetch(urlOf(path, options), {
     ...options.init,
     headers: { Accept: "application/json", ...options.init?.headers },
   });
-  if (!response.ok) {
-    const body: unknown = await response.json().catch(() => null);
-    const code =
-      typeof body === "object" && body !== null && "error" in body
-        ? String((body as { error: { code?: unknown } }).error.code ?? "internal")
-        : "internal";
-    throw new ApiError(response.status, code);
-  }
+  if (!response.ok) throw await failure(response);
   return (await response.json()) as GetResult<P>;
+}
+
+/** A call that changes something. Its answer, or null when the API answers without a body. */
+export async function sendJson<Result>(
+  method: "POST" | "PUT" | "DELETE",
+  path: keyof paths,
+  body?: unknown,
+  options: CallOptions = {},
+): Promise<Result | null> {
+  const headers: Record<string, string> = { Accept: "application/json" };
+  if (body !== undefined) headers["Content-Type"] = "application/json";
+  const response = await fetch(urlOf(path, options), {
+    ...options.init,
+    method,
+    headers: { ...headers, ...options.init?.headers },
+    body: body === undefined ? null : JSON.stringify(body),
+  });
+  if (!response.ok) throw await failure(response);
+  if (response.status === 204 || response.headers.get("content-length") === "0") return null;
+  const text = await response.text();
+  return text ? (JSON.parse(text) as Result) : null;
 }

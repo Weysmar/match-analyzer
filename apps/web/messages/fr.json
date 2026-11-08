@@ -6,7 +6,11 @@
   "header": {
     "language": "Langue",
     "signedInAs": "Connecté : {name}",
-    "anonymous": "Session sans compte"
+    "anonymous": "Session sans compte",
+    "nav": {
+      "label": "Navigation principale",
+      "upload": "Analyser"
+    }
   },
   "home": {
     "title": "Comprends tes matchs, replay après replay",
@@ -19,5 +23,62 @@
       "positioning": "Positionnement : tiers du terrain, place par rapport à la balle, dernier défenseur"
     },
     "pcOnly": "Les replays se trouvent sur PC, dans ton dossier Demos. Sur console, ils ne sont pas accessibles."
+  },
+  "upload": {
+    "title": "Analyser des replays",
+    "lead": "Dépose tes fichiers .replay : ils partent directement au stockage, puis sont analysés en quelques secondes.",
+    "drop": {
+      "title": "Glisse tes replays ici",
+      "hint": "Jusqu'à {max} fichiers .replay à la fois, 20 Mo au plus chacun.",
+      "choose": "Choisir des fichiers"
+    },
+    "folder": {
+      "choose": "Choisir mon dossier Demos",
+      "importNew": "Importer les nouveaux replays",
+      "change": "Changer de dossier",
+      "where": "Tes replays sont dans {path}. Pense à les sauvegarder en fin de match.",
+      "unsupported": "Ton navigateur ne peut pas ouvrir un dossier : choisis les fichiers .replay dans {path}. Chrome et Edge peuvent importer le dossier directement.",
+      "denied": "Le navigateur n'a pas donné accès au dossier.",
+      "nothingNew": "Aucun nouveau replay dans le dossier.",
+      "found": "{count, plural, one {# nouveau replay} other {# nouveaux replays}} à envoyer.",
+      "error": "Impossible de lire le dossier. Choisis les fichiers à la main."
+    },
+    "tooMany": "{max} fichiers au plus par envoi : {left, plural, one {# fichier n'a pas été envoyé} other {# fichiers n'ont pas été envoyés}}. Dépose-les ensuite.",
+    "list": {
+      "title": "Fichiers envoyés",
+      "summary": "{ready} prêt(s) · {processing} en cours · {problems} en échec",
+      "progress": "Envoi de {name}",
+      "mb": "Mo",
+      "open": "Voir le match",
+      "partial": "seules les stats de base sont disponibles pour l'instant"
+    },
+    "phases": {
+      "checking": "Vérification",
+      "waiting": "En attente",
+      "sending": "Envoi",
+      "processing": "Analyse en cours",
+      "ready": "Prêt",
+      "duplicate": "Déjà analysé",
+      "partial": "Partiel",
+      "rejected": "Refusé",
+      "failed": "Échec"
+    },
+    "reasons": {
+      "extension": "ce n'est pas un fichier .replay",
+      "empty": "fichier vide",
+      "too_large": "fichier trop gros (20 Mo au plus)",
+      "not_a_replay": "ce fichier n'est pas un replay",
+      "corrupt": "replay illisible",
+      "size_mismatch": "le fichier reçu n'a pas la bonne taille",
+      "read_failed": "le navigateur n'a pas pu lire le fichier",
+      "send_failed": "l'envoi a échoué, réessaie",
+      "processing_failed": "l'analyse a échoué",
+      "too_many_files": "trop de fichiers dans cet envoi",
+      "quota_exceeded": "limite d'envois atteinte pour aujourd'hui",
+      "rate_limited": "trop de requêtes, réessaie dans un moment",
+      "bad_origin": "requête refusée",
+      "internal": "erreur inattendue, réessaie plus tard"
+    },
+    "console": "Les joueurs console n'ont pas accès à leurs fichiers de replay : l'outil ne fonctionne que sur PC pour l'instant."
   }
 }

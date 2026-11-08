@@ -6,7 +6,11 @@
   "header": {
     "language": "Language",
     "signedInAs": "Signed in: {name}",
-    "anonymous": "Session without an account"
+    "anonymous": "Session without an account",
+    "nav": {
+      "label": "Main navigation",
+      "upload": "Analyze"
+    }
   },
   "home": {
     "title": "Understand your matches, replay after replay",
@@ -19,5 +23,62 @@
       "positioning": "Positioning: thirds of the field, place relative to the ball, last back"
     },
     "pcOnly": "Replays live on PC, in your Demos folder. On console, they cannot be reached."
+  },
+  "upload": {
+    "title": "Analyze replays",
+    "lead": "Drop your .replay files: they go straight to storage, then get analyzed within seconds.",
+    "drop": {
+      "title": "Drop your replays here",
+      "hint": "Up to {max} .replay files at once, 20 MB at most each.",
+      "choose": "Choose files"
+    },
+    "folder": {
+      "choose": "Choose my Demos folder",
+      "importNew": "Import new replays",
+      "change": "Change folder",
+      "where": "Your replays are in {path}. Remember to save them at the end of a match.",
+      "unsupported": "Your browser cannot open a folder: choose the .replay files in {path}. Chrome and Edge can import the folder directly.",
+      "denied": "The browser did not give access to the folder.",
+      "nothingNew": "No new replay in the folder.",
+      "found": "{count, plural, one {# new replay} other {# new replays}} to send.",
+      "error": "The folder could not be read. Choose the files by hand."
+    },
+    "tooMany": "{max} files at most per batch: {left, plural, one {# file was not sent} other {# files were not sent}}. Drop them next.",
+    "list": {
+      "title": "Files sent",
+      "summary": "{ready} ready · {processing} in progress · {problems} failed",
+      "progress": "Sending {name}",
+      "mb": "MB",
+      "open": "Open the match",
+      "partial": "only the basic stats are available for now"
+    },
+    "phases": {
+      "checking": "Checking",
+      "waiting": "Waiting",
+      "sending": "Sending",
+      "processing": "Analyzing",
+      "ready": "Ready",
+      "duplicate": "Already analyzed",
+      "partial": "Partial",
+      "rejected": "Refused",
+      "failed": "Failed"
+    },
+    "reasons": {
+      "extension": "not a .replay file",
+      "empty": "empty file",
+      "too_large": "file too large (20 MB at most)",
+      "not_a_replay": "this file is not a replay",
+      "corrupt": "unreadable replay",
+      "size_mismatch": "the file received does not have the right size",
+      "read_failed": "the browser could not read the file",
+      "send_failed": "sending failed, try again",
+      "processing_failed": "the analysis failed",
+      "too_many_files": "too many files in this batch",
+      "quota_exceeded": "upload limit reached for today",
+      "rate_limited": "too many requests, try again in a moment",
+      "bad_origin": "request refused",
+      "internal": "unexpected error, try again later"
+    },
+    "console": "Console players cannot reach their replay files: the tool works on PC only for now."
   }
 }

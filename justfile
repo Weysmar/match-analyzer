@@ -90,6 +90,10 @@ api:
 test-s3:
     uv run pytest -m s3
 
+# The site's upload engine against the API and the S3 store (needs `just dev-up` and `just api`)
+test-web-it:
+    WEB_IT_API_URL=http://127.0.0.1:8000 pnpm --filter @match-analyzer/web exec vitest run test/it
+
 # subtr-actor's statistics for each replay, computed once: the reference of the metrics
 oracle-cache:
     cargo build --release --manifest-path {{parser}}
