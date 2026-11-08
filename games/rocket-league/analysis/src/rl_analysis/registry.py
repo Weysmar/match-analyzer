@@ -4,7 +4,7 @@ Adding one needs no migration: `player_match_metrics` holds a row per player and
 from collections.abc import Callable
 from dataclasses import dataclass
 
-from rl_analysis import boost, movement
+from rl_analysis import boost, movement, positioning
 from rl_analysis.frames import PerPlayer
 from rl_analysis.match import Match
 
@@ -34,6 +34,15 @@ METRICS: tuple[Metric, ...] = (
     Metric("move.pct_ground", "%", movement.time_on_ground),
     Metric("move.pct_low_air", "%", movement.time_in_low_air),
     Metric("move.pct_high_air", "%", movement.time_in_high_air),
+    Metric("pos.pct_def_third", "%", positioning.defensive_third),
+    Metric("pos.pct_mid_third", "%", positioning.middle_third),
+    Metric("pos.pct_att_third", "%", positioning.attacking_third),
+    Metric("pos.pct_ahead_ball", "%", positioning.ahead_of_ball),
+    Metric("pos.pct_behind_ball", "%", positioning.behind_ball),
+    Metric("pos.dist_ball_avg", "uu", positioning.distance_to_ball),
+    Metric("pos.pct_last_back", "%", positioning.last_back),
+    Metric("event.demos_inflicted", "count", positioning.demolitions_inflicted),
+    Metric("event.demos_taken", "count", positioning.demolitions_taken),
 )
 
 
