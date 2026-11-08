@@ -99,7 +99,7 @@ def _matches_of_session(connection: Connection, session: uuid.UUID) -> list[uuid
 router = APIRouter()
 
 
-@router.delete("/me", status_code=202)
+@router.delete("/me", status_code=202, response_class=Response)
 def erase_account(
     request: Request, connection: ConnectionDep, settings: SettingsDep, identity: IdentityDep
 ) -> Response:
@@ -124,7 +124,7 @@ def erase_account(
     return response
 
 
-@router.delete("/me/anonymous", status_code=202)
+@router.delete("/me/anonymous", status_code=202, response_class=Response)
 def erase_anonymous_session(
     request: Request, connection: ConnectionDep, settings: SettingsDep
 ) -> Response:

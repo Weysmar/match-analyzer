@@ -12,6 +12,7 @@ from typing import Annotated
 
 from fastapi import APIRouter, Depends, Request, Response
 
+from ma_api import models
 from ma_api.db import Connection, ConnectionDep
 from ma_api.errors import ApiError
 from ma_api.owner import Owner
@@ -172,7 +173,7 @@ def open_user_session(
 router = APIRouter()
 
 
-@router.post("/auth/logout", status_code=204)
+@router.post("/auth/logout", status_code=204, response_class=Response)
 def logout(request: Request, connection: ConnectionDep, settings: SettingsDep) -> Response:
     """Deletes the session itself: a copy of the cookie stops working as well."""
     token = request.cookies.get(cookie_name(settings, _SESSION_COOKIE))
@@ -183,7 +184,7 @@ def logout(request: Request, connection: ConnectionDep, settings: SettingsDep) -
     return response
 
 
-@router.get("/me")
+@router.get("/me", response_model=models.Me)
 def me(
     connection: ConnectionDep, settings: SettingsDep, identity: IdentityDep
 ) -> dict[str, object]:

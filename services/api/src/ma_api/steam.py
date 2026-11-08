@@ -11,6 +11,7 @@ from collections.abc import Sequence
 
 import httpx2
 from fastapi import APIRouter, Request, Response
+from fastapi.responses import RedirectResponse
 
 from ma_api import flow, signin
 from ma_api.sessions import SettingsDep
@@ -104,7 +105,7 @@ def verified_steam_id(
 router = APIRouter()
 
 
-@router.get("/auth/steam")
+@router.get("/auth/steam", status_code=303, response_class=RedirectResponse)
 def start(request: Request, settings: SettingsDep, return_to: str = "/") -> Response:
     """Sends the browser to Steam, and remembers where to bring it back."""
     response, started = signin.begin(request, settings, _FLOW, return_to)
@@ -112,7 +113,7 @@ def start(request: Request, settings: SettingsDep, return_to: str = "/") -> Resp
     return response
 
 
-@router.get(_CALLBACK)
+@router.get(_CALLBACK, status_code=303, response_class=RedirectResponse)
 def callback(request: Request, settings: SettingsDep) -> Response:
     """Where Steam brings the browser back."""
     signin.count_attempt(request, settings)

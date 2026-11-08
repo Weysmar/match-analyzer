@@ -13,7 +13,7 @@ from psycopg import sql
 from psycopg.rows import dict_row
 from pydantic import BaseModel
 
-from ma_api import attach, pagination, sessions
+from ma_api import attach, models, pagination, sessions
 from ma_api.db import Connection, ConnectionDep
 from ma_api.errors import ApiError
 from ma_api.owner import Owner, owned_match
@@ -43,7 +43,7 @@ def _iso(value: Any) -> str | None:
 router = APIRouter()
 
 
-@router.get("/matches")
+@router.get("/matches", response_model=models.MatchPage)
 def list_matches(
     connection: ConnectionDep,
     identity: IdentityDep,
@@ -155,7 +155,7 @@ def _metrics(connection: Connection, match_id: uuid.UUID) -> dict[str, dict[str,
     return dict(metrics)
 
 
-@router.get("/matches/{match_id}")
+@router.get("/matches/{match_id}", response_model=models.MatchSheet)
 def get_match(
     match_id: uuid.UUID, connection: ConnectionDep, identity: IdentityDep
 ) -> dict[str, Any]:
@@ -244,7 +244,7 @@ def _memorize(connection: Connection, owner: Owner, platform: str, platform_id: 
     attach.apply_claims(connection, owner)
 
 
-@router.post("/matches/{match_id}/identity")
+@router.post("/matches/{match_id}/identity", response_model=models.IdentityChosen)
 def choose_identity(
     match_id: uuid.UUID,
     choice: IdentityIn,
