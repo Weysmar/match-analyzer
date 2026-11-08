@@ -21,6 +21,7 @@ from rl_analysis.boost import with_drops
 from rl_analysis.constants import BOOST_RAW_MAX
 from rl_analysis.frames import in_motion
 from rl_analysis.match import Match, load
+from rl_analysis.positioning import ahead_and_behind, thirds
 from rl_analysis.registry import compute
 
 pytestmark = pytest.mark.replays
@@ -71,7 +72,16 @@ THEIRS: dict[str, Callable[[dict[str, Any]], float | None]] = {
     "move.pct_ground": lambda o: share(o, "movement", "time_on_ground", 100.0),
     "move.pct_low_air": lambda o: share(o, "movement", "time_low_air", 100.0),
     "move.pct_high_air": lambda o: share(o, "movement", "time_high_air", 100.0),
+    "pos.dist_ball_avg": lambda o: share(o, "positioning", "sum_distance_to_ball", 1.0),
+    "pos.pct_last_back": lambda o: share(o, "positioning", "time_most_back", 100.0),
+    "event.demos_inflicted": lambda o: stat(o, "demo", "demos_inflicted"),
+    "event.demos_taken": lambda o: stat(o, "demo", "demos_taken"),
 }
+
+# The plan's thirds and its ahead / behind differ from subtr-actor's on purpose (D4, no margin).
+# Computed with subtr-actor's settings instead, they check the computation itself, as the spike did.
+SUBTR_THIRD_CUT = 2300.0
+SUBTR_BALL_MARGIN = 150.0
 
 # Bounds on the median and the 95th percentile of the absolute difference. They come from the
 # spike's measures (section 7 of its report) with a margin, and from the plan's criteria: T7.5 asks
@@ -93,6 +103,17 @@ BOUNDS = {
     "move.pct_ground": (0.05, 0.3),
     "move.pct_low_air": (0.05, 0.3),
     "move.pct_high_air": (0.05, 0.3),
+    # The spike: 0.004 uu at the median, 65 uu at the 95th percentile.
+    "pos.dist_ball_avg": (0.1, 80.0),
+    # A definition of our own, without subtr-actor's role logic (T7.10): the spike measured 4.4 and
+    # 7.8 points. Documented, not corrected (D8).
+    "pos.pct_last_back": (6.0, 12.0),
+    "event.demos_inflicted": (0.0, 0.0),
+    "event.demos_taken": (0.0, 0.0),
+    # With subtr-actor's settings; the spike: 0.04 / 0.83 point for the thirds, 0.05 / 0.46 for
+    # ahead and behind.
+    "pos.thirds_at_2300": (0.1, 1.0),
+    "pos.ahead_behind_with_margin": (0.1, 0.6),
 }
 # Consumption is checked against two other ways of counting it, as relative differences (T7.4).
 CONSUMPTION_BOUND = 0.05
@@ -144,6 +165,29 @@ def check_consumption(corpus: Corpus, match: Match, theirs: dict[int, dict[str, 
             corpus.consumption["every frame, against amount_used"].append(difference)
 
 
+def check_with_subtr_settings(
+    corpus: Corpus, match: Match, theirs: dict[int, dict[str, Any]]
+) -> None:
+    pairs = list(
+        zip(
+            thirds(match, SUBTR_THIRD_CUT),
+            ["time_defensive_third", "time_neutral_third", "time_offensive_third"],
+            strict=True,
+        )
+    )
+    for values, name in pairs:
+        for player, mine in values.items():
+            expected = share(theirs[player], "positioning", name, 100.0)
+            if mine is not None and expected is not None:
+                corpus.differences["pos.thirds_at_2300"].append(abs(mine - expected))
+    ahead, behind = ahead_and_behind(match, SUBTR_BALL_MARGIN)
+    for values, name in ((ahead, "time_in_front_of_ball"), (behind, "time_behind_ball")):
+        for player, mine in values.items():
+            expected = share(theirs[player], "positioning", name, 100.0)
+            if mine is not None and expected is not None:
+                corpus.differences["pos.ahead_behind_with_margin"].append(abs(mine - expected))
+
+
 @pytest.fixture(scope="module")
 def corpus(tmp_path_factory: pytest.TempPathFactory) -> Corpus:
     found = Corpus()
@@ -178,6 +222,7 @@ def corpus(tmp_path_factory: pytest.TempPathFactory) -> Corpus:
             for member in match.events["roster"]
         )
         check_consumption(found, match, theirs)
+        check_with_subtr_settings(found, match, theirs)
         for player, values in compute(match).items():
             bands = [values[band] for band in ("move.pct_ground", "move.pct_low_air")]
             bands.append(values["move.pct_high_air"])
