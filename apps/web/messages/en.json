@@ -11,7 +11,142 @@
       "label": "Main navigation",
       "upload": "Analyze",
       "matches": "My matches",
-      "stats": "My stats"
+      "stats": "My stats",
+      "settings": "Settings"
+    },
+    "skip": "Skip to content"
+  },
+  "footer": {
+    "label": "Information",
+    "privacy": "Privacy",
+    "terms": "Terms of use",
+    "legal": "Legal notice",
+    "settings": "Settings",
+    "disclaimer": "An independent tool, neither affiliated with nor endorsed by Psyonix, Epic Games or Valve. Rocket League is a trademark of Psyonix LLC."
+  },
+  "settings": {
+    "title": "Settings",
+    "nothing": "Nothing to set for now: no data is tied to this browser.",
+    "accounts": {
+      "title": "Linked accounts",
+      "steam": "Steam",
+      "epic": "Epic Games",
+      "linked": "linked",
+      "add": "Link another game account: the matches where it appears become verified."
+    },
+    "erase": {
+      "title": "Delete my data",
+      "cancel": "Cancel",
+      "failed": "The deletion did not go through. Try again.",
+      "account": {
+        "lead": "Your account, its linked accounts and its sessions are deleted at once. Your matches go as soon as no other player has uploaded them.",
+        "button": "Delete my account",
+        "confirmText": "Delete your account and your history? This cannot be undone.",
+        "confirm": "Yes, delete"
+      },
+      "session": {
+        "lead": "The matches uploaded from this browser without an account are detached at once, and deleted as soon as no other player has uploaded them.",
+        "button": "Erase this session's data",
+        "confirmText": "Erase this session's matches? This cannot be undone.",
+        "confirm": "Yes, erase"
+      }
+    }
+  },
+  "legal": {
+    "draft": "A draft, written from what the service does. It will be replaced by the final version before the public opening.",
+    "privacy": {
+      "title": "Privacy policy",
+      "sections": [
+        {
+          "title": "Controller",
+          "body": ["[To complete: name or company name, address and contact e-mail.]"]
+        },
+        {
+          "title": "Data processed",
+          "body": [
+            "The replays you upload, and the stats drawn from them. A replay holds the name and platform id of every player of the match.",
+            "If you sign in: your Steam id (SteamID), or your Epic account id and Epic display name.",
+            "Technical cookies (see below) and your IP address, hashed, to limit abuse."
+          ]
+        },
+        {
+          "title": "The other players of your matches",
+          "body": [
+            "They only appear by their name, on the sheets of the matches you uploaded, and never by their platform id. A player anonymized in game stays anonymized.",
+            "There is no public profile page and no search by name."
+          ]
+        },
+        {
+          "title": "Retention",
+          "body": [
+            "Replay files are deleted 30 days after their analysis, or 180 days for a replay read in part, kept to be processed again.",
+            "A session without an account expires after 30 days. An account's data is kept until it is deleted."
+          ]
+        },
+        {
+          "title": "Cookies",
+          "body": [
+            "Only those the service needs: the account session, the session without an account, the course of a sign-in and the chosen language. No advertising or audience cookie."
+          ]
+        },
+        {
+          "title": "Your rights",
+          "body": [
+            "You can delete your account or your session's data from the settings. For any other request (access, correction): [to complete: contact e-mail].",
+            "You may also lodge a complaint with the CNIL."
+          ]
+        }
+      ]
+    },
+    "legal": {
+      "title": "Legal notice",
+      "sections": [
+        {
+          "title": "Publisher",
+          "body": [
+            "[To complete: name or company name, address, e-mail, and registration number if any.]"
+          ]
+        },
+        {
+          "title": "Hosting",
+          "body": [
+            "[To complete: host of the server and of the file storage, with their addresses.]"
+          ]
+        },
+        {
+          "title": "Trademarks",
+          "body": [
+            "Rocket League is a trademark of Psyonix LLC. This site is an independent tool, neither affiliated with nor endorsed by Psyonix, Epic Games or Valve. Steam is a trademark of Valve Corporation."
+          ]
+        }
+      ]
+    },
+    "terms": {
+      "title": "Terms of use",
+      "sections": [
+        {
+          "title": "The service",
+          "body": [
+            "The tool analyzes the replays you upload and draws stats from them. It is provided as is, without any warranty of accuracy or availability."
+          ]
+        },
+        {
+          "title": "What you upload",
+          "body": [
+            "Only upload replays of matches you played in. Every file is checked; a file that is not a replay is refused."
+          ]
+        },
+        {
+          "title": "Your account",
+          "body": [
+            "Signing in goes through Steam or Epic Games; the tool never knows your password. You can delete your account at any time from the settings."
+          ]
+        },
+        {
+          "title": "Changes",
+          "body": ["[To complete: how changes to these terms are announced.]"]
+        }
+      ]
     }
   },
   "account": {
@@ -21,6 +156,7 @@
     "steam": "Sign in through Steam",
     "epic": "Sign in with Epic Games",
     "failed": "Signing in did not work. Try again, or go on without an account.",
+    "erased": "Your data has been deleted.",
     "prompt": {
       "title": "Keep your history",
       "lead": "Sign in to find your matches and stats anywhere. This session's matches move to your account, and those where your game account appears become verified."

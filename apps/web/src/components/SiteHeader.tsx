@@ -33,6 +33,9 @@ export async function SiteHeader({ me }: { me: Me | null }) {
               <span className="text-sm text-slate-600 dark:text-slate-400">
                 {t("header.signedInAs", { name: user.display_name })}
               </span>
+              <Link href="/settings" className="text-sm hover:underline">
+                {t("header.nav.settings")}
+              </Link>
               <SignOutButton />
             </>
           ) : (

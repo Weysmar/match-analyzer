@@ -11,7 +11,142 @@
       "label": "Navigation principale",
       "upload": "Analyser",
       "matches": "Mes matchs",
-      "stats": "Mes stats"
+      "stats": "Mes stats",
+      "settings": "Paramètres"
+    },
+    "skip": "Aller au contenu"
+  },
+  "footer": {
+    "label": "Informations",
+    "privacy": "Confidentialité",
+    "terms": "Conditions d'utilisation",
+    "legal": "Mentions légales",
+    "settings": "Paramètres",
+    "disclaimer": "Outil indépendant, ni affilié ni approuvé par Psyonix, Epic Games ou Valve. Rocket League est une marque de Psyonix LLC."
+  },
+  "settings": {
+    "title": "Paramètres",
+    "nothing": "Rien à régler pour l'instant : aucune donnée n'est liée à ce navigateur.",
+    "accounts": {
+      "title": "Comptes liés",
+      "steam": "Steam",
+      "epic": "Epic Games",
+      "linked": "lié",
+      "add": "Lier un autre compte de jeu : les matchs où il apparaît deviennent vérifiés."
+    },
+    "erase": {
+      "title": "Supprimer mes données",
+      "cancel": "Annuler",
+      "failed": "La suppression n'a pas abouti. Réessaie.",
+      "account": {
+        "lead": "Ton compte, ses comptes liés et ses sessions sont supprimés tout de suite. Tes matchs disparaissent dès qu'aucun autre joueur ne les a déposés.",
+        "button": "Supprimer mon compte",
+        "confirmText": "Supprimer ton compte et ton historique ? Ce n'est pas réversible.",
+        "confirm": "Oui, supprimer"
+      },
+      "session": {
+        "lead": "Les matchs déposés depuis ce navigateur, sans compte, sont détachés tout de suite et supprimés dès qu'aucun autre joueur ne les a déposés.",
+        "button": "Effacer les données de cette session",
+        "confirmText": "Effacer les matchs de cette session ? Ce n'est pas réversible.",
+        "confirm": "Oui, effacer"
+      }
+    }
+  },
+  "legal": {
+    "draft": "Texte provisoire, rédigé à partir de ce que fait le service. Il sera remplacé par la version définitive avant l'ouverture publique.",
+    "privacy": {
+      "title": "Politique de confidentialité",
+      "sections": [
+        {
+          "title": "Responsable du traitement",
+          "body": ["[À compléter : nom ou raison sociale, adresse et e-mail de contact.]"]
+        },
+        {
+          "title": "Données traitées",
+          "body": [
+            "Les replays que tu déposes, et les statistiques qui en sont tirées. Un replay contient le pseudo et l'identifiant de plateforme de chaque joueur du match.",
+            "Si tu te connectes : ton identifiant Steam (SteamID), ou ton identifiant de compte Epic et ton nom d'affichage Epic.",
+            "Des cookies techniques (voir plus bas) et ton adresse IP, sous forme hachée, pour limiter les abus."
+          ]
+        },
+        {
+          "title": "Les autres joueurs de tes matchs",
+          "body": [
+            "Ils n'apparaissent que par leur pseudo, dans les fiches des matchs que tu as déposés, et jamais par leur identifiant de plateforme. Un joueur anonymisé en jeu reste anonymisé.",
+            "Il n'existe ni page de profil publique, ni recherche par pseudo."
+          ]
+        },
+        {
+          "title": "Durées de conservation",
+          "body": [
+            "Les fichiers de replay sont supprimés 30 jours après leur analyse, ou 180 jours pour un replay lu partiellement, gardé pour être retraité.",
+            "Une session sans compte expire après 30 jours. Les données d'un compte sont gardées jusqu'à sa suppression."
+          ]
+        },
+        {
+          "title": "Cookies",
+          "body": [
+            "Seulement ceux nécessaires au service : la session de compte, la session sans compte, le déroulement d'une connexion et la langue choisie. Aucun cookie publicitaire ni de mesure d'audience."
+          ]
+        },
+        {
+          "title": "Tes droits",
+          "body": [
+            "Tu peux supprimer ton compte ou les données de ta session depuis les paramètres. Pour toute autre demande (accès, rectification) : [à compléter : e-mail de contact].",
+            "Tu peux aussi adresser une réclamation à la CNIL."
+          ]
+        }
+      ]
+    },
+    "legal": {
+      "title": "Mentions légales",
+      "sections": [
+        {
+          "title": "Éditeur",
+          "body": [
+            "[À compléter : nom ou raison sociale, adresse, e-mail, et numéro d'immatriculation le cas échéant.]"
+          ]
+        },
+        {
+          "title": "Hébergement",
+          "body": [
+            "[À compléter : hébergeur du serveur et du stockage des fichiers, avec leurs adresses.]"
+          ]
+        },
+        {
+          "title": "Marques",
+          "body": [
+            "Rocket League est une marque de Psyonix LLC. Ce site est un outil indépendant, ni affilié ni approuvé par Psyonix, Epic Games ou Valve. Steam est une marque de Valve Corporation."
+          ]
+        }
+      ]
+    },
+    "terms": {
+      "title": "Conditions d'utilisation",
+      "sections": [
+        {
+          "title": "Le service",
+          "body": [
+            "L'outil analyse les replays que tu déposes et en tire des statistiques. Il est fourni en l'état, sans garantie d'exactitude ni de disponibilité."
+          ]
+        },
+        {
+          "title": "Ce que tu déposes",
+          "body": [
+            "Dépose seulement des replays de matchs auxquels tu as participé. Chaque fichier est vérifié ; un fichier qui n'est pas un replay est refusé."
+          ]
+        },
+        {
+          "title": "Ton compte",
+          "body": [
+            "La connexion passe par Steam ou Epic Games ; l'outil ne connaît pas ton mot de passe. Tu peux supprimer ton compte à tout moment depuis les paramètres."
+          ]
+        },
+        {
+          "title": "Modifications",
+          "body": ["[À compléter : comment les changements de ces conditions sont annoncés.]"]
+        }
+      ]
     }
   },
   "account": {
@@ -21,6 +156,7 @@
     "steam": "Se connecter avec Steam",
     "epic": "Se connecter avec Epic Games",
     "failed": "La connexion n'a pas abouti. Réessaie, ou continue sans compte.",
+    "erased": "Tes données ont été supprimées.",
     "prompt": {
       "title": "Garde ton historique",
       "lead": "Connecte-toi pour retrouver tes matchs et tes stats partout. Tes matchs de cette session sont rattachés à ton compte, et ceux où ton compte de jeu apparaît deviennent vérifiés."

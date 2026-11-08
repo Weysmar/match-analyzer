@@ -32,12 +32,12 @@ export function HistoryChart({
   useEffect(() => {
     const element = box.current;
     if (!element) return;
-    const fit = (measured: number) => setWidth(Math.max(200, Math.round(measured)));
+    const fitTo = (measured: number) => setWidth(Math.max(200, Math.round(measured)));
     // Measured at once: an observer only reports at the next rendering step, which a page in a
     // background tab may not reach for a while.
-    fit(element.getBoundingClientRect().width);
+    fitTo(element.getBoundingClientRect().width);
     const observer = new ResizeObserver(([entry]) => {
-      if (entry) fit(entry.contentRect.width);
+      if (entry) fitTo(entry.contentRect.width);
     });
     observer.observe(element);
     return () => observer.disconnect();
