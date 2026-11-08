@@ -103,7 +103,7 @@ pub fn frames_batch(collected: &Collected) -> Result<RecordBatch, Failure> {
             dt_s.push(dt);
             phase.push(phase_code(collected.phases[index]));
             player_idx.push(player as u8);
-            team.push(collected.team[player]);
+            team.push(collected.frame_team[player][index]);
             let values = [
                 ball_location.map(|v| v.x),
                 ball_location.map(|v| v.y),
