@@ -553,6 +553,7 @@ export interface components {
         Upload: {
             /** Match Id */
             match_id: string | null;
+            match_status: components["schemas"]["MatchStatus"] | null;
             /** Name */
             name: string;
             /** Rejection */

@@ -421,6 +421,7 @@ def test_the_list_shows_each_uploads_state(
     conn.execute(
         "UPDATE uploads SET status = 'done', match_id = %s WHERE id = %s", (match, upload_id)
     )
+    match_status = conn.execute("SELECT status FROM matches WHERE id = %s", (match,)).fetchone()[0]  # type: ignore[index]
     body = uploader.get(UPLOADS).json()
     assert body == {
         "items": [
@@ -430,6 +431,7 @@ def test_the_list_shows_each_uploads_state(
                 "status": "done",
                 "rejection": None,
                 "match_id": str(match),
+                "match_status": match_status,
             }
         ],
         "next_cursor": None,
