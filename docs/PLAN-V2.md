@@ -192,7 +192,7 @@ Chaque fiche garde aussi des faits non étiquetés : temps entre la perte de bal
   - pour chaque échantillon : temps du replay, horloge du jeu, phase ; balle `x, y, z` ; pour chaque joueur `x, y, z`, cap, boost et indicateurs (présent, démoli, boost actif) ;
   - les événements : touches, buts, démolitions, situations ;
   - **aucun nom** : les joueurs sont désignés par `match_player_id`, et les pseudos viennent de la fiche, avec les mêmes règles de confidentialité qu'en V1.
-- **Stockage** : clé `views/<match_id>.json.gz`, effacée par `gc_match`, régénérée par `reprocess`. Budget : 300 Ko compressés par match au plus.
+- **Stockage** : clé `views/<match_id>.json.gz`, effacée par `gc_match`, régénérée par `reprocess`. 15 Hz (DV2). Budget : environ 35 Ko compressés par minute de jeu.
 - **Lecteur** :
   - terrain à l'échelle, vu de dessus, vertical sur mobile et horizontal sur ordinateur ;
   - interpolation entre deux échantillons, hauteur de la balle suggérée par une ombre ;
@@ -235,7 +235,7 @@ Chaque fiche garde aussi des faits non étiquetés : temps entre la perte de bal
 
 | ID    | Tâche | Fin |
 | ----- | ----- | --- |
-| T11.1 | `rl-parse` écrit `touches` dans `events.json` (frame, temps, joueur, équipe, Δv de la balle, contesté), selon DV1. `parser_version` 0.2.0. | Tests Rust, corpus en CI vert |
+| T11.1 | `rl-parse` écrit dans `events.json`, par le graphe de `subtr-actor` limité aux nœuds utiles : `touches` (frame, temps, joueur, équipe, Δv de la balle, contesté), `kickoffs`, `fifty_fifty` et `beaten_to_ball` (DV1, DV7). `parser_version` 0.2.0. **En tête de la V2 (DV6).** | Tests Rust, corpus en CI vert, mémoire de pointe mesurée sous 512 Mo dans le bac à sable |
 | T11.2 | Schéma `events` v2, validation, chargement dans `Match`. | Les anciens `events.json` restent lisibles (touches absentes = métriques `null`) |
 | T11.3 | `thresholds.py` et la règle des sources (section 4). | Un test refuse un seuil sans source |
 | T11.4 | Métriques `touch.*`. | Tests synthétiques, contrôle réel |
@@ -274,9 +274,9 @@ Chaque fiche garde aussi des faits non étiquetés : temps entre la perte de bal
 
 | ID    | Tâche | Fin |
 | ----- | ----- | --- |
-| T13.1 | Détection des kickoffs : type (centre, décalé, diagonale) d'après la position de départ, preneur, temps jusqu'à la balle. | Tests sur les cinq positions de départ, en miroir pour l'équipe orange |
+| T13.1 | Kickoffs lus dans `events.json` (DV7) : type (centre, décalé, diagonale), preneur, temps jusqu'à la balle, métriques `kick.*`. | Tests sur les cinq positions de départ, en miroir pour l'équipe orange |
 | T13.2 | Issue d'un kickoff et but de kickoff. | Tests, contrôle réel |
-| T13.3 | Duels et « devancé sur la balle ». | Tests, contrôle réel |
+| T13.3 | Duels et « devancé sur la balle », lus dans `events.json` (DV7), métriques `duel.*`. | Tests, contrôle réel |
 | T13.4 | Situations `kickoff` et `fifty_fifty` en base, visibles dans la vue 2D. | Marqueurs présents sur le curseur |
 
 ---
