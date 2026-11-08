@@ -316,6 +316,31 @@ def test_the_loop_survives_losing_the_database(
     assert state(conn, job_id)["status"] == "done"
 
 
+def test_maintenance_runs_at_start_then_every_so_often(conn: Connection, worker_url: str) -> None:
+    """The purge rides the job loop (T9.8): at start, then once per interval, between jobs."""
+    jobs = [add_job(conn) for _ in range(3)]
+    stop = threading.Event()
+    passes: list[int] = []
+
+    def handle(*_: Any) -> None:
+        done = conn.execute("SELECT count(*) FROM jobs WHERE status = 'done'").fetchone()
+        assert done is not None
+        if done[0] == 2:
+            stop.set()
+
+    Runner(
+        lambda: psycopg.connect(worker_url, autocommit=True),
+        {"parse": handle},
+        ME,
+        600,
+        poll_s=0.01,
+        maintenance=lambda _: passes.append(1),
+        maintenance_every_s=3600,
+    ).run(stop)
+    assert passes == [1]
+    assert {state(conn, job_id)["status"] for job_id in jobs} == {"done"}
+
+
 def test_the_worker_role_cannot_touch_accounts(worker_conn: Connection) -> None:
     with pytest.raises(psycopg.errors.InsufficientPrivilege):
         worker_conn.execute("DELETE FROM users")

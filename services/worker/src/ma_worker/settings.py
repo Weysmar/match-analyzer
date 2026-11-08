@@ -37,6 +37,10 @@ class Settings:
     concurrency: int = 1
     job_timeout_s: int = 600
     upload_max_bytes: int = 20_971_520
+    # Section 11 of CLAUDE.md: raw replays go once derived data exists, header_only ones later.
+    raw_retention_days: int = 30
+    raw_retention_header_only_days: int = 180
+    purge_every_s: int = 3600
 
     @classmethod
     def from_env(cls, env: Mapping[str, str] | None = None) -> Settings:
@@ -60,6 +64,9 @@ class Settings:
             concurrency=_integer(values, "WORKER_CONCURRENCY", 1),
             job_timeout_s=_integer(values, "WORKER_JOB_TIMEOUT_S", 600),
             upload_max_bytes=_integer(values, "UPLOAD_MAX_BYTES", 20_971_520),
+            raw_retention_days=_integer(values, "RAW_RETENTION_DAYS", 30),
+            raw_retention_header_only_days=_integer(values, "RAW_RETENTION_HEADER_ONLY_DAYS", 180),
+            purge_every_s=_integer(values, "PURGE_EVERY_S", 3600),
         )
         # A job has to outlast both of its parser runs, or it would be taken for abandoned.
         if settings.job_timeout_s <= 2 * settings.parser_timeout_s:
