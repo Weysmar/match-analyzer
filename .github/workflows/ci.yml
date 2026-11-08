@@ -134,7 +134,7 @@ jobs:
       - uses: actions/cache@v6
         with:
           path: tests/fixtures/oracle
-          key: oracle-${{ hashFiles('tests/fixtures/manifest.toml', 'games/rocket-league/parser/Cargo.lock', 'games/rocket-league/parser/src/bin/rl-oracle.rs') }}
+          key: oracle-${{ hashFiles('tests/fixtures/manifest.toml', 'tests/fixtures/oracle.py', 'games/rocket-league/parser/src/bin/rl-oracle.rs') }}
       - run: uv run python tests/fixtures/oracle.py build
       - run: uv run pytest -m replays
       # Real replays, from the API to the database. Public ones only here, personal ones locally.

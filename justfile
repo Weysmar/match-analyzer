@@ -95,6 +95,10 @@ oracle-cache:
     cargo build --release --manifest-path {{parser}}
     uv run python tests/fixtures/oracle.py build
 
+# Every metric against subtr-actor on the corpus: counts and differences only, no name
+oracle-report: oracle-cache
+    uv run pytest -m replays tests/replays/test_metrics_against_oracle.py -q -p no:cacheprovider
+
 # Real replays through the API, the worker, the parser and S3 (needs `just dev-up` and the corpus)
 test-pipeline:
     cargo build --release --manifest-path {{parser}}
