@@ -118,8 +118,8 @@ def test_a_missing_parser_stops_the_start(tmp_path: Path, monkeypatch: pytest.Mo
         resolve_parser(Settings(database_url="unused"))
 
 
-def test_parse_jobs_have_a_handler() -> None:
-    assert set(build_handlers(Settings(database_url="unused"))) == {"parse"}
+def test_parse_and_analyze_jobs_have_a_handler() -> None:
+    assert set(build_handlers(Settings(database_url="unused"))) == {"parse", "analyze"}
 
 
 def test_the_upload_limit_comes_from_the_environment() -> None:

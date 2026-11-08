@@ -10,6 +10,7 @@ requires-python = ">=3.14"
 dependencies = [
     "boto3==1.43.126",
     "ma-schemas",
+    "rl-analysis",
     "psycopg[binary]==3.3.8",
 ]
 
@@ -18,6 +19,7 @@ ma-worker = "ma_worker.cli:main"
 
 [tool.uv.sources]
 ma-schemas = { workspace = true }
+rl-analysis = { workspace = true }
 
 [tool.hatch.build.targets.wheel]
 packages = ["src/ma_worker"]
