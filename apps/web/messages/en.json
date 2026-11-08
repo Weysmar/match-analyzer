@@ -10,7 +10,38 @@
     "nav": {
       "label": "Main navigation",
       "upload": "Analyze",
-      "matches": "My matches"
+      "matches": "My matches",
+      "stats": "My stats"
+    }
+  },
+  "account": {
+    "signIn": "Sign in",
+    "signOut": "Sign out",
+    "why": "Keep your history on all your devices. This session's matches move to your account.",
+    "steam": "Sign in through Steam",
+    "epic": "Sign in with Epic Games",
+    "failed": "Signing in did not work. Try again, or go on without an account.",
+    "prompt": {
+      "title": "Keep your history",
+      "lead": "Sign in to find your matches and stats anywhere. This session's matches move to your account, and those where your game account appears become verified."
+    }
+  },
+  "stats": {
+    "title": "My stats",
+    "lastLabel": "Number of matches",
+    "last": "Last {count}",
+    "counted": "Averages over {count, plural, =0 {no match} one {# match} other {# matches}}, {verified, plural, =0 {none verified} one {# verified} other {# verified}}.",
+    "empty": "No stats yet: drop a replay and choose your player on the match sheet.",
+    "emptyVerified": "No verified match: sign in with the game account that appears in your replays.",
+    "toMatches": "Open my matches",
+    "averages": "Averages",
+    "pick": "Choose a stat to see how it evolves.",
+    "chart": {
+      "label": "{metric} over {count, plural, one {# match} other {# matches}}",
+      "caption": "Oldest to most recent. Hollow points: unverified matches.",
+      "empty": "No value for this stat over these matches.",
+      "table": "Show the values",
+      "date": "Date"
     }
   },
   "notFound": {

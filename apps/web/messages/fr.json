@@ -10,7 +10,38 @@
     "nav": {
       "label": "Navigation principale",
       "upload": "Analyser",
-      "matches": "Mes matchs"
+      "matches": "Mes matchs",
+      "stats": "Mes stats"
+    }
+  },
+  "account": {
+    "signIn": "Se connecter",
+    "signOut": "Se déconnecter",
+    "why": "Garde ton historique sur tous tes appareils. Les matchs de cette session passent sur ton compte.",
+    "steam": "Se connecter avec Steam",
+    "epic": "Se connecter avec Epic Games",
+    "failed": "La connexion n'a pas abouti. Réessaie, ou continue sans compte.",
+    "prompt": {
+      "title": "Garde ton historique",
+      "lead": "Connecte-toi pour retrouver tes matchs et tes stats partout. Tes matchs de cette session sont rattachés à ton compte, et ceux où ton compte de jeu apparaît deviennent vérifiés."
+    }
+  },
+  "stats": {
+    "title": "Mes stats",
+    "lastLabel": "Nombre de matchs",
+    "last": "{count} derniers",
+    "counted": "Moyennes sur {count, plural, =0 {aucun match} one {# match} other {# matchs}}, dont {verified, plural, =0 {aucun vérifié} one {# vérifié} other {# vérifiés}}.",
+    "empty": "Pas encore de stats : dépose un replay et choisis ton joueur dans la fiche du match.",
+    "emptyVerified": "Aucun match vérifié : connecte-toi avec le compte de jeu qui apparaît dans tes replays.",
+    "toMatches": "Voir mes matchs",
+    "averages": "Moyennes",
+    "pick": "Choisis une statistique pour voir son évolution.",
+    "chart": {
+      "label": "Évolution de {metric} sur {count, plural, one {# match} other {# matchs}}",
+      "caption": "Du plus ancien au plus récent. Points creux : matchs non vérifiés.",
+      "empty": "Pas de valeur pour cette statistique sur ces matchs.",
+      "table": "Voir les valeurs",
+      "date": "Date"
     }
   },
   "notFound": {
