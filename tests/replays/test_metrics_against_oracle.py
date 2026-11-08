@@ -1,4 +1,4 @@
-"""The real-replay check of each metric (section 8.2 of CLAUDE.md): rl_analysis on the frames that
+"""The real-replay check of each metric (section 8.2 of CLAUDE.md): rl_analysis on the files that
 `rl-parse` writes, against subtr-actor's own statistics through `rl-oracle`.
 
 Only counts and differences are printed, never a name or an id.
@@ -10,13 +10,17 @@ import statistics
 import subprocess
 from collections import defaultdict
 from collections.abc import Callable
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any
 
+import polars as pl
 import pytest
 
-from rl_analysis.frames import read
+from rl_analysis.boost import with_drops
+from rl_analysis.constants import BOOST_RAW_MAX
+from rl_analysis.frames import in_motion
+from rl_analysis.match import Match, load
 from rl_analysis.registry import compute
 
 pytestmark = pytest.mark.replays
@@ -25,9 +29,12 @@ ROOT = Path(__file__).parents[2]
 RELEASE = ROOT / "games/rocket-league/parser/target/release"
 REPLAYS = ROOT / "tests/fixtures/replays"
 UNSUPPORTED_MODE = 14
-RAW_TO_PERCENT = 100.0 / 255.0
+RAW_TO_PERCENT = 100.0 / BOOST_RAW_MAX
 # Written by `just oracle-cache` (tests/fixtures/oracle.py), keyed by the replay's hash.
 ORACLE_CACHE = ROOT / "tests/fixtures/oracle/subtr-actor-1.5.1"
+# What a car burns per second with boost held, as the spike measured it: 80 raw units per 0.93 s.
+# Only used to check consumption, which never relies on it.
+USE_RATE_PER_S = 80 / 0.93 * RAW_TO_PERCENT
 
 
 def cached_oracle(replay: Path) -> Any:
@@ -37,12 +44,19 @@ def cached_oracle(replay: Path) -> Any:
     return json.loads(path.read_bytes())
 
 
-def share(oracle: dict[str, Any], module: str, field: str, scale: float) -> float | None:
-    """`field` over the module's tracked time, scaled. None when subtr-actor tracked nothing."""
+def stat(oracle: dict[str, Any], module: str, name: str) -> float | None:
     stats = oracle.get(module)
-    if not isinstance(stats, dict) or not stats.get("tracked_time"):
+    if not isinstance(stats, dict) or name not in stats:
         return None
-    return scale * float(stats[field]) / float(stats["tracked_time"])
+    return float(stats[name])
+
+
+def share(oracle: dict[str, Any], module: str, name: str, scale: float) -> float | None:
+    """`name` over the module's tracked time, scaled. None when subtr-actor tracked nothing."""
+    value, tracked = stat(oracle, module, name), stat(oracle, module, "tracked_time")
+    if value is None or not tracked:
+        return None
+    return scale * value / tracked
 
 
 # What subtr-actor says for each metric, in our units. Its boost is raw, from 0 to 255.
@@ -50,10 +64,18 @@ THEIRS: dict[str, Callable[[dict[str, Any]], float | None]] = {
     "boost.avg": lambda o: share(o, "boost", "boost_integral", RAW_TO_PERCENT),
     "boost.pct_zero": lambda o: share(o, "boost", "time_zero_boost", 100.0),
     "boost.pct_full": lambda o: share(o, "boost", "time_hundred_boost", 100.0),
+    "boost.pads_big": lambda o: stat(o, "boost", "big_pads_collected"),
+    "boost.pads_small": lambda o: stat(o, "boost", "small_pads_collected"),
+    "move.speed_avg": lambda o: share(o, "movement", "speed_integral", 1.0),
+    "move.pct_supersonic": lambda o: share(o, "movement", "time_supersonic_speed", 100.0),
+    "move.pct_ground": lambda o: share(o, "movement", "time_on_ground", 100.0),
+    "move.pct_low_air": lambda o: share(o, "movement", "time_low_air", 100.0),
+    "move.pct_high_air": lambda o: share(o, "movement", "time_high_air", 100.0),
 }
 
-# Measured by the spike (section 7 of its report) on 277 players: median and 95th percentile of the
-# absolute difference. The bounds leave a margin on top of them.
+# Bounds on the median and the 95th percentile of the absolute difference. They come from the
+# spike's measures (section 7 of its report) with a margin, and from the plan's criteria: T7.5 asks
+# for a median of 0 and a 95th percentile of at most 4 big and 5 small pads.
 #
 # Like the spike, the comparison keeps the current replay format (`net` 10 or more): 5 replays of
 # the corpus are older. On two of them, from 2016, subtr-actor's boost module tracks a player 30 to
@@ -64,16 +86,27 @@ BOUNDS = {
     "boost.avg": (0.02, 0.1),
     "boost.pct_zero": (0.3, 1.5),
     "boost.pct_full": (0.3, 0.5),
+    "boost.pads_big": (0.0, 4.0),
+    "boost.pads_small": (0.0, 5.0),
+    "move.speed_avg": (0.5, 5.0),
+    "move.pct_supersonic": (0.05, 0.2),
+    "move.pct_ground": (0.05, 0.3),
+    "move.pct_low_air": (0.05, 0.3),
+    "move.pct_high_air": (0.05, 0.3),
 }
+# Consumption is checked against two other ways of counting it, as relative differences (T7.4).
+CONSUMPTION_BOUND = 0.05
 
 
 @dataclass
 class Corpus:
-    differences: dict[str, list[float]]
-    replays: int
-    skipped: int
-    old_format: int
-    teams_mismatched: int
+    differences: dict[str, list[float]] = field(default_factory=lambda: defaultdict(list))
+    consumption: dict[str, list[float]] = field(default_factory=lambda: defaultdict(list))
+    band_sums: list[float] = field(default_factory=list)
+    replays: int = 0
+    skipped: int = 0
+    old_format: int = 0
+    teams_mismatched: int = 0
 
 
 def distinct_replays() -> list[Path]:
@@ -83,10 +116,37 @@ def distinct_replays() -> list[Path]:
     return list(seen.values())
 
 
+def relative(mine: float, theirs: float) -> float | None:
+    return abs(mine - theirs) / theirs if theirs > 0 else None
+
+
+def check_consumption(corpus: Corpus, match: Match, theirs: dict[int, dict[str, Any]]) -> None:
+    """T7.4: the falls of the boost against `boost_active` times the rate, on the same time; and,
+    counted on every frame, against subtr-actor's `amount_used`, which counts them all (A5)."""
+    frames = with_drops(match.frames)
+    kept = in_motion() & pl.col("boost").is_not_null()
+    sums = frames.group_by("player_idx").agg(
+        pl.when(kept).then(pl.col("drop")).otherwise(0.0).sum().alias("falls"),
+        pl.when(kept & pl.col("boost_active"))
+        .then(pl.col("dt_s") * USE_RATE_PER_S)
+        .otherwise(0.0)
+        .sum()
+        .alias("by_rate"),
+        pl.when(pl.col("present")).then(pl.col("drop")).otherwise(0.0).sum().alias("all_falls"),
+    )
+    for player, falls, by_rate, all_falls in sums.select(
+        "player_idx", "falls", "by_rate", "all_falls"
+    ).rows():
+        if (difference := relative(falls, by_rate)) is not None:
+            corpus.consumption["against the rate"].append(difference)
+        used = stat(theirs[player], "boost", "amount_used")
+        if used is not None and (difference := relative(all_falls, used * RAW_TO_PERCENT)):
+            corpus.consumption["every frame, against amount_used"].append(difference)
+
+
 @pytest.fixture(scope="module")
 def corpus(tmp_path_factory: pytest.TempPathFactory) -> Corpus:
-    differences: dict[str, list[float]] = defaultdict(list)
-    replays = skipped = old_format = mismatched = 0
+    found = Corpus()
     for replay in distinct_replays():
         folder = tmp_path_factory.mktemp("frames")
         parsed = subprocess.run(
@@ -104,24 +164,37 @@ def corpus(tmp_path_factory: pytest.TempPathFactory) -> Corpus:
         )
         net = json.loads(header_path.read_text(encoding="utf-8"))["replay_version"]["net"]
         if net is None or net < CURRENT_FORMAT_NET:
-            old_format += 1
+            found.old_format += 1
             continue
         oracle = cached_oracle(replay)
         if oracle is None:
-            skipped += 1
+            found.skipped += 1
             continue
-        replays += 1
+        found.replays += 1
         theirs = {row["player_idx"]: row for row in oracle["players"]}
-        roster = json.loads((folder / "events.json").read_text(encoding="utf-8"))["roster"]
-        mismatched += sum(
-            theirs[member["player_idx"]]["team"] != member["team"] for member in roster
+        match = load(folder / "frames.parquet", folder / "events.json")
+        found.teams_mismatched += sum(
+            theirs[member["player_idx"]]["team"] != member["team"]
+            for member in match.events["roster"]
         )
-        for player, values in compute(read(folder / "frames.parquet")).items():
+        check_consumption(found, match, theirs)
+        for player, values in compute(match).items():
+            bands = [values[band] for band in ("move.pct_ground", "move.pct_low_air")]
+            bands.append(values["move.pct_high_air"])
+            if None not in bands:
+                found.band_sums.append(sum(band for band in bands if band is not None))
             for metric_id, mine in values.items():
+                if metric_id not in THEIRS:
+                    continue
                 expected = THEIRS[metric_id](theirs[player])
                 if mine is not None and expected is not None:
-                    differences[metric_id].append(abs(mine - expected))
-    return Corpus(differences, replays, skipped, old_format, mismatched)
+                    found.differences[metric_id].append(abs(mine - expected))
+    return found
+
+
+def percentile_95(values: list[float]) -> float:
+    ordered = sorted(values)
+    return ordered[int(0.95 * (len(ordered) - 1))]
 
 
 def test_the_oracle_lines_up_with_the_roster(corpus: Corpus) -> None:
@@ -136,15 +209,34 @@ def test_a_metric_agrees_with_subtr_actor(
 ) -> None:
     found = sorted(corpus.differences[metric_id])
     assert found
-    median = statistics.median(found)
-    p95 = found[int(0.95 * (len(found) - 1))]
+    median, p95 = statistics.median(found), percentile_95(found)
     with capsys.disabled():
         print(
             f"\n{metric_id}: {len(found)} players in {corpus.replays} replays "
             f"({corpus.skipped} unread by subtr-actor, {corpus.old_format} of an old format "
-            f"left out), |diff| median {median:.4f}, "
-            f"p95 {p95:.4f}, max {found[-1]:.4f}"
+            f"left out), |diff| median {median:.4f}, p95 {p95:.4f}, max {found[-1]:.4f}"
         )
     median_bound, p95_bound = BOUNDS[metric_id]
     assert median <= median_bound
     assert p95 <= p95_bound
+
+
+@pytest.mark.parametrize("check", ["against the rate", "every frame, against amount_used"])
+def test_consumption_agrees_with_other_ways_of_counting(
+    corpus: Corpus, check: str, capsys: pytest.CaptureFixture[str]
+) -> None:
+    found = corpus.consumption[check]
+    assert found
+    median = statistics.median(found)
+    with capsys.disabled():
+        print(
+            f"\nboost.used_per_min, {check}: {len(found)} players, relative difference "
+            f"median {100 * median:.2f} %, p95 {100 * percentile_95(found):.2f} %"
+        )
+    assert median < CONSUMPTION_BOUND
+
+
+def test_the_altitude_bands_add_up_to_the_whole_time(corpus: Corpus) -> None:
+    """T7.7: 100 % within 0.1."""
+    assert corpus.band_sums
+    assert all(abs(total - 100.0) <= 0.1 for total in corpus.band_sums)
