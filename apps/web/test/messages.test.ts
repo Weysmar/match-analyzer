@@ -18,7 +18,8 @@ function values(messages: Messages): string[] {
 }
 
 function placeholders(text: string): string[] {
-  return [...text.matchAll(/\{(\w+)/g)].map((match) => match[1] ?? "").sort();
+  // `{name}` or `{name, plural, ...}`: the words inside a plural's branches are text, not names.
+  return [...new Set([...text.matchAll(/\{(\w+)[,}]/g)].map((match) => match[1] ?? ""))].sort();
 }
 
 describe("messages", () => {

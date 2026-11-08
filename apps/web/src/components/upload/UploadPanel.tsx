@@ -17,12 +17,13 @@ import {
 import { type NamedBlob, newItems, runBatch } from "@/lib/upload/engine";
 import { MAX_FILES, splitBatch } from "@/lib/upload/precheck";
 import { type Item, summary } from "@/lib/upload/state";
+import { SignInPrompt } from "../account/SignInPrompt";
 import { UploadList } from "./UploadList";
 
 type Folder = Awaited<ReturnType<typeof savedFolder>>;
 type FolderState = "unsupported" | "none" | "saved";
 
-export function UploadPanel() {
+export function UploadPanel({ signedIn, epic }: { signedIn: boolean; epic: boolean }) {
   const t = useTranslations("upload");
   const inputId = useId();
   const [batches, setBatches] = useState<{ id: number; items: Item[] }[]>([]);
@@ -189,6 +190,10 @@ export function UploadPanel() {
           </p>
           <UploadList items={items} />
         </section>
+      ) : null}
+
+      {!signedIn && counts.ready + counts.partial + counts.duplicate > 0 ? (
+        <SignInPrompt epic={epic} returnTo="/matches" />
       ) : null}
 
       <p className="text-sm text-slate-500 dark:text-slate-400">{t("console")}</p>

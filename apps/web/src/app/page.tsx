@@ -1,10 +1,25 @@
 import Link from "next/link";
 import { getTranslations } from "next-intl/server";
 
-export default async function Home() {
+export default async function Home({
+  searchParams,
+}: {
+  searchParams: Promise<{ auth_error?: string }>;
+}) {
   const t = await getTranslations("home");
+  const ta = await getTranslations("account");
+  // The API sends a failed sign-in back here, with a code that names no one.
+  const { auth_error: authError } = await searchParams;
   return (
     <div className="flex flex-col gap-10">
+      {authError ? (
+        <p
+          role="alert"
+          className="rounded-lg bg-red-50 p-4 text-sm text-red-900 dark:bg-red-950 dark:text-red-100"
+        >
+          {ta("failed")}
+        </p>
+      ) : null}
       <section className="flex flex-col gap-4">
         <h1 className="text-3xl font-bold tracking-tight sm:text-4xl">{t("title")}</h1>
         <p className="max-w-2xl text-lg text-slate-600 dark:text-slate-300">{t("lead")}</p>

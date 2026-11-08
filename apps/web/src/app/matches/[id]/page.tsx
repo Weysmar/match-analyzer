@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { getFormatter, getTranslations } from "next-intl/server";
+import { SignInPrompt } from "@/components/account/SignInPrompt";
 import { AutoRefresh } from "@/components/match/AutoRefresh";
 import { GoalTimeline } from "@/components/match/GoalTimeline";
 import { IdentityPicker } from "@/components/match/IdentityPicker";
@@ -31,7 +32,7 @@ export async function generateMetadata(): Promise<Metadata> {
 
 export default async function MatchPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
-  const data = await sheet(id);
+  const [data, me] = await Promise.all([sheet(id), serverGet("/api/v1/me").catch(() => null)]);
   const { match } = data;
   const t = await getTranslations("match");
   const tm = await getTranslations("matches");
@@ -112,6 +113,10 @@ export default async function MatchPage({ params }: { params: Promise<{ id: stri
         verified={data.me.verified}
         open={data.needs_identity}
       />
+
+      {me && me.kind !== "user" && !inProgress(match.status) ? (
+        <SignInPrompt epic={me.features.epic_login} returnTo={`/matches/${match.match_id}`} />
+      ) : null}
 
       <PlayersTable players={data.players} />
       <GoalTimeline goals={data.goals} match={match} />
