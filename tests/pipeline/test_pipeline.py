@@ -31,7 +31,7 @@ from ma_api.settings import PREFIX
 from ma_api.settings import Settings as ApiSettings
 from ma_db.testing import Connection, role_url, temporary_database
 from ma_schemas import frames_problems, parse_events
-from ma_worker import parse, queue
+from ma_worker import analyze, parse, queue
 from ma_worker.runner import Runner
 from ma_worker.settings import Settings as WorkerSettings
 from ma_worker.store import S3Store
@@ -139,13 +139,17 @@ def send(client: TestClient, body: bytes, name: str = "a.replay") -> str:
     return upload_id
 
 
-def work(settings: WorkerSettings) -> int:
-    """Runs every queued parse job, the way the worker's loop does. Returns how many."""
+def work(settings: WorkerSettings, *, analysis: bool = False) -> int:
+    """Runs every queued parse job, and analyze job if asked, the way the worker's loop does.
+    Returns how many."""
     store = S3Store(settings)
+    handlers: dict[str, Any] = {"parse": lambda c, job: parse.handle(c, job, store, settings)}
+    if analysis:
+        handlers["analyze"] = lambda c, job: analyze.handle(c, job, store, settings)
     with psycopg.connect(settings.database_url, autocommit=True) as connection:
         runner = Runner(
             lambda: psycopg.connect(settings.database_url, autocommit=True),
-            {"parse": lambda c, job: parse.handle(c, job, store, settings)},
+            handlers,
             "pipeline-test",
             settings.job_timeout_s,
         )
@@ -385,6 +389,59 @@ def test_the_worker_refuses_to_start_without_its_parser(
     )
     assert result.returncode != 0
     assert "PARSER_BIN" in result.stderr
+
+
+def test_a_signed_in_player_sees_the_metrics_of_their_match(
+    api_settings: ApiSettings,
+    worker_settings: WorkerSettings,
+    conn: Connection,
+    tmp_path: Path,
+) -> None:
+    """The whole V1: a real replay, parsed, analyzed, and read back through the API."""
+    found = first_with("steam", tmp_path) or first_with("epic", tmp_path)
+    if found is None:
+        pytest.skip("no player with an id in this corpus")
+    replay, account_id = found
+    platform = "steam" if first_with("steam", tmp_path) == found else "epic"
+    user = conn.execute(
+        "INSERT INTO users (display_name) VALUES ('Player') RETURNING id"
+    ).fetchone()
+    assert user is not None
+    conn.execute(
+        "INSERT INTO linked_accounts (user_id, provider, provider_account_id) VALUES (%s, %s, %s)",
+        (user[0], platform, account_id),
+    )
+    token = sessions.new_token()
+    conn.execute(
+        "INSERT INTO auth_sessions (token_hash, user_id, expires_at) VALUES (%s, %s, now() + %s)",
+        (sessions.token_hash(token), user[0], timedelta(days=1)),
+    )
+    with browser(api_settings) as client:
+        client.cookies.set("session", token)
+        send(client, replay.read_bytes())
+        # The parse job, then the analyze job it queued.
+        assert work(worker_settings, analysis=True) == 2
+        match_id = client.get(MATCHES).json()["items"][0]["match_id"]
+        sheet = client.get(f"{MATCHES}/{match_id}").json()
+        stats = client.get(f"{PREFIX}/stats/me").json()
+        history = client.get(f"{PREFIX}/stats/me/history", params={"metric_id": "boost.avg"})
+    assert sheet["match"]["status"] == "ready"
+    me = str(sheet["me"]["match_player_id"])
+    assert len(sheet["metrics"][me]) == 21
+    assert 0 <= sheet["metrics"][me]["boost.avg"] <= 100
+    assert stats["matches_count"] == 1
+    assert stats["verified_count"] == 1
+    assert stats["averages"]["boost.avg"] == pytest.approx(sheet["metrics"][me]["boost.avg"])
+    assert [point["match_id"] for point in history.json()["points"]] == [match_id]
+    assert account_id not in json.dumps([sheet, stats])
+    # Analyzed again, nothing is added.
+    rows = conn.execute("SELECT count(*) FROM player_match_metrics").fetchone()
+    conn.execute(
+        "INSERT INTO jobs (kind, payload) VALUES ('analyze', %s)",
+        (json.dumps({"match_id": match_id}),),
+    )
+    assert work(worker_settings, analysis=True) == 1
+    assert conn.execute("SELECT count(*) FROM player_match_metrics").fetchone() == rows
 
 
 def first_with(platform: str, folder: Path) -> tuple[Path, str] | None:
