@@ -3,17 +3,18 @@ import en from "../messages/en.json";
 import fr from "../messages/fr.json";
 import { PHASES, REASONS } from "../src/lib/upload/state";
 
-type Messages = { [key: string]: string | Messages };
+/** Texts, nested in objects and, for the legal pages, in lists. */
+type Messages = object;
 
 function keys(messages: Messages, prefix = ""): string[] {
-  return Object.entries(messages).flatMap(([key, value]) =>
-    typeof value === "string" ? [`${prefix}${key}`] : keys(value, `${prefix}${key}.`),
+  return Object.entries(messages).flatMap(([key, value]: [string, unknown]) =>
+    typeof value === "string" ? [`${prefix}${key}`] : keys(value as Messages, `${prefix}${key}.`),
   );
 }
 
 function values(messages: Messages): string[] {
-  return Object.values(messages).flatMap((value) =>
-    typeof value === "string" ? [value] : values(value),
+  return Object.values(messages).flatMap((value: unknown) =>
+    typeof value === "string" ? [value] : values(value as Messages),
   );
 }
 

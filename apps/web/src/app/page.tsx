@@ -4,14 +4,22 @@ import { getTranslations } from "next-intl/server";
 export default async function Home({
   searchParams,
 }: {
-  searchParams: Promise<{ auth_error?: string }>;
+  searchParams: Promise<{ auth_error?: string; erased?: string }>;
 }) {
   const t = await getTranslations("home");
   const ta = await getTranslations("account");
   // The API sends a failed sign-in back here, with a code that names no one.
-  const { auth_error: authError } = await searchParams;
+  const { auth_error: authError, erased } = await searchParams;
   return (
     <div className="flex flex-col gap-10">
+      {erased ? (
+        <p
+          role="status"
+          className="rounded-lg bg-emerald-50 p-4 text-sm text-emerald-900 dark:bg-emerald-950 dark:text-emerald-100"
+        >
+          {ta("erased")}
+        </p>
+      ) : null}
       {authError ? (
         <p
           role="alert"
