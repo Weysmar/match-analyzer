@@ -25,8 +25,8 @@ from ma_worker.store import ObjectStore, TooLargeError
 
 log = logging.getLogger("ma_worker")
 
-_INPUT = "input.replay"
-_HEADER = "header.json"
+INPUT = "input.replay"
+HEADER = "header.json"
 _OUTPUT_FOLDER = "out"
 _FRAMES = "frames.parquet"
 _EVENTS = "events.json"
@@ -37,11 +37,11 @@ _EVENTS_MAX_BYTES = 268_435_456
 _HASH_CHUNK_BYTES = 1_048_576
 _OVER = ("done", "duplicate", "rejected", "failed")
 
-_EXIT_OK = 0
+EXIT_OK = 0
 _EXIT_BAD_ARGUMENTS = 2
 _EXIT_NOT_A_REPLAY = 10
 _EXIT_CORRUPT = 11
-_EXIT_OUTPUT_ERROR = 15
+EXIT_OUTPUT_ERROR = 15
 # What a failed read of the network stream is called in `matches.error_code`.
 _FRAMES_FAILURES = {12: "network_failed", 13: "processor_failed", 14: "unsupported_mode"}
 
@@ -127,9 +127,9 @@ def _attach_to_known_match(
     store.delete(upload.key)
 
 
-def _read_header(workdir: Path) -> HeaderDocument:
+def read_header(workdir: Path) -> HeaderDocument:
     """A document the parser wrote from a stranger's file: checked like any other input."""
-    path = workdir / _HEADER
+    path = workdir / HEADER
     try:
         if path.stat().st_size > _HEADER_MAX_BYTES:
             raise PermanentError("invalid_header")
@@ -145,16 +145,16 @@ def _run_header(
     """The header, or None when the file was rejected."""
     result = sandbox.run(
         settings.parser_bin,
-        ["--header", "--input", _INPUT, "--output", _HEADER],
+        ["--header", "--input", INPUT, "--output", HEADER],
         workdir,
         sandbox.Limits(timeout_s=settings.parser_timeout_s, memory_mb=settings.parser_memory_mb),
     )
     code = result.exit_code
-    if code == _EXIT_OK:
-        return _read_header(workdir)
+    if code == EXIT_OK:
+        return read_header(workdir)
     if code == _EXIT_BAD_ARGUMENTS:
         raise PermanentError("parser_bad_arguments")
-    if code == _EXIT_OUTPUT_ERROR:
+    if code == EXIT_OUTPUT_ERROR:
         raise ParserOutputError
     if code == _EXIT_NOT_A_REPLAY:
         _reject(connection, store, upload, "not_a_replay")
@@ -186,9 +186,8 @@ def _read_events(output: Path) -> EventsDocument | None:
         return None
 
 
-def _run_frames(
+def run_frames(
     store: ObjectStore,
-    upload: Upload,
     settings: Settings,
     workdir: Path,
     match_id: uuid.UUID,
@@ -196,7 +195,7 @@ def _run_frames(
     """The network stream, with the files stored, or the reason it cannot be read."""
     output = workdir / _OUTPUT_FOLDER
     output.mkdir()
-    arguments = ["--frames", "--input", _INPUT, "--output-dir", _OUTPUT_FOLDER]
+    arguments = ["--frames", "--input", INPUT, "--output-dir", _OUTPUT_FOLDER]
     if settings.parser_max_fps is not None:
         arguments += ["--fps", str(settings.parser_max_fps)]
     result = sandbox.run(
@@ -208,9 +207,9 @@ def _run_frames(
     code = result.exit_code
     if code == _EXIT_BAD_ARGUMENTS:
         raise PermanentError("parser_bad_arguments")
-    if code == _EXIT_OUTPUT_ERROR:
+    if code == EXIT_OUTPUT_ERROR:
         raise ParserOutputError
-    if code != _EXIT_OK:
+    if code != EXIT_OK:
         if result.timed_out:
             return None, "parser_timeout"
         # A panic, or running out of memory: this file would only do the same again.
@@ -227,7 +226,7 @@ def _run_frames(
 def _process(
     connection: Connection, store: ObjectStore, upload: Upload, settings: Settings, workdir: Path
 ) -> None:
-    source = workdir / _INPUT
+    source = workdir / INPUT
     try:
         store.download(upload.key, source, settings.upload_max_bytes)
     except TooLargeError:
@@ -263,7 +262,7 @@ def _process(
     match_id = load.match_id_for(key)
     target = raw_key(sha256)
     store.copy(upload.key, target)
-    frames, error_code = _run_frames(store, upload, settings, workdir, match_id)
+    frames, error_code = run_frames(store, settings, workdir, match_id)
     with connection.transaction():
         created = load.insert_match(connection, match_id, header, key, target, frames, error_code)
         if created:
