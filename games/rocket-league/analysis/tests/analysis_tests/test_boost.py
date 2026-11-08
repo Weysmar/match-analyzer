@@ -143,6 +143,17 @@ def test_pads_by_size_and_half() -> None:
     assert boost.pads_enemy_half(match) == {0: 2.0, 1: 1.0}
 
 
+def test_a_player_who_switches_teams_attacks_the_other_half_afterwards() -> None:
+    """Blue on frame 0, orange from frame 1 on: the same pad at y = -3000 is in the opponents'
+    half only once orange."""
+    frame = frames(row(frame=0, team=0), row(frame=1, team=1))
+    first = pickup(0, "big", -3000.0) | {"frame": 0}
+    later = pickup(0, "big", -3000.0) | {"frame": 1}
+    match = match_of(frame.filter(frame["frame"] == 0), pad_pickups=[first, later])
+    switched = type(match)(frame, match.events)
+    assert boost.pads_enemy_half(switched) == {0: 1.0}
+
+
 def test_a_pad_on_the_halfway_line_is_not_in_the_opponents_half() -> None:
     match = match_of(frames(row()), pad_pickups=[pickup(0, "small", 0.0)])
     assert boost.pads_enemy_half(match) == {0: 0.0}
