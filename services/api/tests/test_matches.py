@@ -294,6 +294,8 @@ def test_the_match_sheet(browser: TestClient, conn: Connection, make: Factory) -
         "score": {"blue": 1, "orange": 1},
         "status": "ready",
         "arena_out_of_bounds": True,
+        "game_length_s": None,
+        "overtime_from_s": None,
     }
     assert body["players"] == [
         {
@@ -322,9 +324,9 @@ def test_the_match_sheet(browser: TestClient, conn: Connection, make: Factory) -
         },
     ]
     assert body["goals"] == [
-        {"time_s": 10.5, "team": 0, "player_name": "Me"},
-        {"time_s": 20.5, "team": 1, "player_name": "Them"},
-        {"time_s": 30.5, "team": 0, "player_name": None},
+        {"time_s": 10.5, "team": 0, "player_name": "Me", "game_time_s": None},
+        {"time_s": 20.5, "team": 1, "player_name": "Them", "game_time_s": None},
+        {"time_s": 30.5, "team": 0, "player_name": None, "game_time_s": None},
     ]
     assert body["metrics"] == {str(me): {"boost.avg": 42.5}, str(them): {"boost.avg": 12.5}}
     assert body["me"] == {
@@ -595,3 +597,23 @@ def test_an_anonymous_choice_comes_along_at_sign_in(
     with browser_for(settings, providers, FakeStore()) as client:
         steam_sign_in(client, steam_id)
     assert link_state(conn, link) == (same_one, "memorized", False)
+
+
+def test_the_sheet_gives_the_game_clock(
+    browser: TestClient, conn: Connection, make: Factory
+) -> None:
+    """Written by the analysis (A63): the timeline of goals runs on it."""
+    user = signed_in(browser, conn, make)
+    match = make.match("ready")
+    scorer = make.player(match, team=0, name="Me")
+    goal(conn, match, 400.0, 0, scorer)
+    conn.execute(
+        "UPDATE matches SET game_length_s = 342.0, overtime_from_s = 302.0 WHERE id = %s", (match,)
+    )
+    conn.execute("UPDATE match_events SET game_time_s = 342.0 WHERE match_id = %s", (match,))
+    make.user_match(match, user_id=user, match_player_id=scorer, identity_source="claimed")
+    body = browser.get(f"{MATCHES}/{match}").json()
+    assert body["match"]["game_length_s"] == 342.0
+    assert body["match"]["overtime_from_s"] == 302.0
+    assert body["goals"][0]["game_time_s"] == 342.0
+    assert body["goals"][0]["time_s"] == 400.0

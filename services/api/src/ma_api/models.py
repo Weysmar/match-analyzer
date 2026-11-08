@@ -113,6 +113,9 @@ class MatchInfo(BaseModel):
     score: Score
     status: MatchStatus
     arena_out_of_bounds: bool
+    # Seconds of play, from the analysis: None before it and for a match read from its header.
+    game_length_s: float | None
+    overtime_from_s: float | None
 
 
 class Player(BaseModel):
@@ -131,7 +134,9 @@ class Player(BaseModel):
 
 
 class Goal(BaseModel):
+    # `time_s` runs with the replay; `game_time_s` with the game clock (A63).
     time_s: float
+    game_time_s: float | None
     team: int | None
     player_name: str | None
 

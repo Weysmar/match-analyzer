@@ -105,7 +105,7 @@ def _match_row(connection: Connection, match_id: uuid.UUID) -> dict[str, Any]:
         row = rows.execute(
             """
             SELECT id, played_at, map, match_type, playlist, team_size, duration_s, score_blue,
-                   score_orange, status, arena_out_of_bounds
+                   score_orange, status, arena_out_of_bounds, game_length_s, overtime_from_s
             FROM matches WHERE id = %s
             """,
             (match_id,),
@@ -128,7 +128,7 @@ def _players(connection: Connection, match_id: uuid.UUID) -> list[dict[str, Any]
 def _goals(connection: Connection, match_id: uuid.UUID) -> list[dict[str, Any]]:
     rows = connection.execute(
         """
-        SELECT event.time_s, event.team, player.display_name
+        SELECT event.time_s, event.team, player.display_name, event.game_time_s
         FROM match_events event
         LEFT JOIN match_players player ON player.id = event.actor_player_id
         WHERE event.match_id = %s AND event.kind = 'goal'
@@ -136,7 +136,10 @@ def _goals(connection: Connection, match_id: uuid.UUID) -> list[dict[str, Any]]:
         """,
         (match_id,),
     ).fetchall()
-    return [{"time_s": row[0], "team": row[1], "player_name": row[2]} for row in rows]
+    return [
+        {"time_s": row[0], "team": row[1], "player_name": row[2], "game_time_s": row[3]}
+        for row in rows
+    ]
 
 
 def _metrics(connection: Connection, match_id: uuid.UUID) -> dict[str, dict[str, float | None]]:
@@ -175,6 +178,8 @@ def get_match(
             "score": _score(match),
             "status": match["status"],
             "arena_out_of_bounds": match["arena_out_of_bounds"],
+            "game_length_s": match["game_length_s"],
+            "overtime_from_s": match["overtime_from_s"],
         },
         "players": [
             {

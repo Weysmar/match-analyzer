@@ -103,6 +103,17 @@
       },
       "Goal": {
         "properties": {
+          "game_time_s": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Game Time S"
+          },
           "player_name": {
             "anyOf": [
               {
@@ -132,6 +143,7 @@
         },
         "required": [
           "time_s",
+          "game_time_s",
           "team",
           "player_name"
         ],
@@ -286,6 +298,17 @@
             ],
             "title": "Duration S"
           },
+          "game_length_s": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Game Length S"
+          },
           "map": {
             "anyOf": [
               {
@@ -311,6 +334,17 @@
               }
             ],
             "title": "Match Type"
+          },
+          "overtime_from_s": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Overtime From S"
           },
           "played_at": {
             "anyOf": [
@@ -362,7 +396,9 @@
           "duration_s",
           "score",
           "status",
-          "arena_out_of_bounds"
+          "arena_out_of_bounds",
+          "game_length_s",
+          "overtime_from_s"
         ],
         "title": "MatchInfo",
         "type": "object"
