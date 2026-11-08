@@ -5,10 +5,14 @@ import uuid
 from dataclasses import dataclass
 from datetime import UTC, datetime
 
+from psycopg import sql
+
 from ma_schemas import EventsDocument, HeaderDocument
 from ma_worker.queue import Connection
 
 log = logging.getLogger("ma_worker")
+
+__all__ = ["HeaderDocument"]
 
 # Any fixed value: it only has to give every match key one lasting identifier.
 _MATCH_NAMESPACE = uuid.UUID("6f1c2f9e-3b5d-4f0a-9a57-2d5e8c1b7a40")
@@ -148,56 +152,18 @@ def insert_match(
     error_code: str | None,
 ) -> bool:
     """False when another worker has just created the same match."""
-    version = header["replay_version"]
     events = None if frames is None else frames.events
-    playlist = header["playlist"]
-    if playlist is None and events is not None and events["playlist_id"] is not None:
-        playlist = str(events["playlist_id"])
-    duration = header["duration_s"]
-    if duration is None and events is not None:
-        duration = events["duration_s"]
+    columns = {"id": match_id, "dedupe_key": key, "raw_key": raw_key}
+    columns |= _match_columns(header, frames, error_code)
     row = connection.execute(
-        """
-        INSERT INTO matches (
-            id, dedupe_key, match_guid, status, game_build, build_id, changelist, replay_major,
-            replay_minor, replay_net, map, played_at, played_at_source, duration_s, match_type,
-            playlist, team_size, score_blue, score_orange, arena_out_of_bounds, raw_key,
-            frames_key, events_key, parser_version, error_code, parsed_at
-        )
-        VALUES (
-            %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s,
-            %s, %s, %s, now()
-        )
-        ON CONFLICT (dedupe_key) DO NOTHING
-        RETURNING id
-        """,
-        (
-            match_id,
-            key,
-            header["match_guid"],
-            "parsed" if frames is not None else "header_only",
-            header["game_build"],
-            header["build_id"],
-            header["changelist"],
-            version["major"],
-            version["minor"],
-            version["net"],
-            header["map"],
-            played_at_utc(header),
-            header["played_at_source"],
-            duration,
-            header["match_type"],
-            playlist,
-            header["team_size"],
-            header["score"]["blue"],
-            header["score"]["orange"],
-            events["arena_out_of_bounds"] if events is not None else False,
-            raw_key,
-            None if frames is None else frames.frames_key,
-            None if frames is None else frames.events_key,
-            header["parser_version"],
-            error_code,
+        sql.SQL(
+            "INSERT INTO matches ({}, parsed_at) VALUES ({}, now()) "
+            "ON CONFLICT (dedupe_key) DO NOTHING RETURNING id"
+        ).format(
+            sql.SQL(", ").join(sql.Identifier(name) for name in columns),
+            sql.SQL(", ").join(sql.Placeholder(name) for name in columns),
         ),
+        columns,
     ).fetchone()
     if row is None:
         return False
@@ -326,3 +292,145 @@ def _insert_events(
                 player_id_of(demolition["victim_idx"]),
             ),
         )
+
+
+def _match_columns(
+    header: HeaderDocument, frames: Frames | None, error_code: str | None
+) -> dict[str, object]:
+    """What a parse says about a match, the same for a first parse and a later one."""
+    version = header["replay_version"]
+    events = None if frames is None else frames.events
+    playlist = header["playlist"]
+    if playlist is None and events is not None and events["playlist_id"] is not None:
+        playlist = str(events["playlist_id"])
+    duration = header["duration_s"]
+    if duration is None and events is not None:
+        duration = events["duration_s"]
+    return {
+        "match_guid": header["match_guid"],
+        "status": "parsed" if frames is not None else "header_only",
+        "game_build": header["game_build"],
+        "build_id": header["build_id"],
+        "changelist": header["changelist"],
+        "replay_major": version["major"],
+        "replay_minor": version["minor"],
+        "replay_net": version["net"],
+        "map": header["map"],
+        "played_at": played_at_utc(header),
+        "played_at_source": header["played_at_source"],
+        "duration_s": duration,
+        "match_type": header["match_type"],
+        "playlist": playlist,
+        "team_size": header["team_size"],
+        "score_blue": header["score"]["blue"],
+        "score_orange": header["score"]["orange"],
+        "arena_out_of_bounds": events["arena_out_of_bounds"] if events is not None else False,
+        "frames_key": None if frames is None else frames.frames_key,
+        "events_key": None if frames is None else frames.events_key,
+        "parser_version": header["parser_version"],
+        "error_code": error_code,
+    }
+
+
+def update_match(
+    connection: Connection,
+    match_id: uuid.UUID,
+    header: HeaderDocument,
+    frames: Frames | None,
+    error_code: str | None,
+) -> None:
+    """A match parsed again. Its key and its raw file stay: they say which match it is. Its
+    analysis starts over."""
+    columns = _match_columns(header, frames, error_code)
+    assignments = sql.SQL(", ").join(
+        sql.SQL("{} = {}").format(sql.Identifier(name), sql.Placeholder(name)) for name in columns
+    )
+    connection.execute(
+        sql.SQL(
+            "UPDATE matches SET {}, parsed_at = now(), analysis_version = NULL, analyzed_at = NULL "
+            "WHERE id = {}"
+        ).format(assignments, sql.Placeholder("match_id")),
+        columns | {"match_id": match_id},
+    )
+
+
+def _same_player(old: tuple[object, ...], new: PlayerRow) -> int:
+    """How surely an existing row is this player: 3 by platform id, 2 by row in the frames, 1 by
+    name and team, 0 not at all."""
+    _, frames_idx, platform, platform_id, name, team = old
+    if platform_id is not None and new.platform_id is not None:
+        return 3 if (platform, platform_id) == (new.platform, new.platform_id) else 0
+    if frames_idx is not None and frames_idx == new.frames_idx:
+        return 2
+    return 1 if (name, team) == (new.name, new.team) else 0
+
+
+def replace_players(
+    connection: Connection, match_id: uuid.UUID, players: list[PlayerRow]
+) -> dict[PlayerRow, int]:
+    """The players of a match parsed again, updated in place so that their ids, which links to
+    users hold, stay. A row no longer matched goes, and the links on it lose their identity."""
+    existing = connection.execute(
+        "SELECT id, frames_idx, platform, platform_id, display_name, team FROM match_players "
+        "WHERE match_id = %s ORDER BY id",
+        (match_id,),
+    ).fetchall()
+    # Frees `frames_idx`, unique in a match, for the rows to take theirs in any order.
+    connection.execute(
+        "UPDATE match_players SET frames_idx = NULL WHERE match_id = %s", (match_id,)
+    )
+    available = list(existing)
+    ids: dict[PlayerRow, int] = {}
+    for player in players:
+        best = max(available, key=lambda old: _same_player(old, player), default=None)
+        if best is not None and _same_player(best, player) > 0:
+            available.remove(best)
+            connection.execute(
+                """
+                UPDATE match_players
+                SET frames_idx = %s, platform = %s, platform_id = %s, display_name = %s, team = %s,
+                    score = %s, goals = %s, assists = %s, saves = %s, shots = %s, is_bot = %s,
+                    anonymized = %s
+                WHERE id = %s
+                """,
+                (
+                    player.frames_idx,
+                    player.platform,
+                    player.platform_id,
+                    player.name,
+                    player.team,
+                    player.score,
+                    player.goals,
+                    player.assists,
+                    player.saves,
+                    player.shots,
+                    player.is_bot,
+                    player.anonymized,
+                    best[0],
+                ),
+            )
+            ids[player] = best[0]
+        else:
+            ids |= _insert_players(connection, match_id, [player])
+    for gone in available:
+        connection.execute(
+            "UPDATE user_matches SET match_player_id = NULL, identity_source = 'none', "
+            "verified = false WHERE match_player_id = %s",
+            (gone[0],),
+        )
+        connection.execute("DELETE FROM match_players WHERE id = %s", (gone[0],))
+    return ids
+
+
+def replace_events(
+    connection: Connection,
+    match_id: uuid.UUID,
+    header: HeaderDocument,
+    events: EventsDocument | None,
+    ids: dict[PlayerRow, int],
+) -> None:
+    connection.execute("DELETE FROM match_events WHERE match_id = %s", (match_id,))
+    if events is None:
+        _insert_header_goals(connection, match_id, header, ids)
+    else:
+        _insert_events(connection, match_id, events, ids)
