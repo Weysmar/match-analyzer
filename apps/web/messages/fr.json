@@ -9,8 +9,142 @@
     "anonymous": "Session sans compte",
     "nav": {
       "label": "Navigation principale",
-      "upload": "Analyser"
+      "upload": "Analyser",
+      "matches": "Mes matchs"
     }
+  },
+  "notFound": {
+    "title": "Page introuvable",
+    "lead": "Cette page n'existe pas, ou elle n'est pas à toi.",
+    "home": "Retour à l'accueil"
+  },
+  "matches": {
+    "title": "Mes matchs",
+    "filter": {
+      "label": "Matchs affichés",
+      "all": "Tous",
+      "verified": "Vérifiés"
+    },
+    "empty": "Aucun match pour l'instant.",
+    "emptyCta": "Analyser un replay",
+    "more": "Matchs plus anciens",
+    "unverified": "non vérifié",
+    "unknownDate": "Date inconnue",
+    "result": {
+      "won": "Victoire",
+      "lost": "Défaite",
+      "unknown": "Résultat inconnu"
+    },
+    "status": {
+      "pending": "En attente",
+      "parsing": "Lecture en cours",
+      "parsed": "Analyse en cours",
+      "analyzing": "Analyse en cours",
+      "ready": "Prêt",
+      "header_only": "Partiel",
+      "failed": "Échec"
+    },
+    "kinds": {
+      "casual": "Partie rapide",
+      "ranked": "Classé",
+      "private": "Partie privée",
+      "other": "Autre mode"
+    }
+  },
+  "match": {
+    "back": "Mes matchs",
+    "title": "Match du {date}",
+    "titleNoDate": "Match",
+    "blue": "Bleus",
+    "orange": "Orange",
+    "duration": "Durée {duration}",
+    "inProgress": "Analyse en cours : la page se met à jour toute seule.",
+    "partial": "Seules les stats de base sont disponibles : le détail de ce replay n'a pas pu être lu. Il sera retraité après une mise à jour de l'outil.",
+    "failed": "L'analyse de ce replay a échoué.",
+    "identity": {
+      "question": "Lequel de ces joueurs es-tu ?",
+      "hint": "Ton choix est mémorisé pour tes prochains matchs.",
+      "choose": "C'est moi",
+      "change": "Ce n'est pas toi ?",
+      "cancel": "Annuler",
+      "you": "toi",
+      "unverified": "Non vérifié",
+      "unverifiedHint": "Ce match n'est pas relié à ton compte de jeu : il compte dans tes stats, mais pas dans les comparaisons.",
+      "locked": "Ce match est vérifié : ton joueur ne peut plus changer.",
+      "error": "Le choix n'a pas pu être enregistré. Réessaie."
+    },
+    "players": {
+      "title": "Tableau des scores",
+      "name": "Joueur",
+      "score": "Score",
+      "goals": "Buts",
+      "assists": "Passes",
+      "saves": "Arrêts",
+      "shots": "Tirs",
+      "bot": "bot"
+    },
+    "metrics": {
+      "title": "Statistiques détaillées",
+      "metric": "Statistique",
+      "none": "Pas encore de statistiques détaillées pour ce match.",
+      "groups": {
+        "boost": "Boost",
+        "move": "Mouvement",
+        "pos": "Positionnement",
+        "event": "Événements"
+      }
+    },
+    "timeline": {
+      "title": "Buts",
+      "empty": "Aucun but dans ce match.",
+      "label": "Chronologie des buts",
+      "overtime": "Prolongation",
+      "remaining": "{clock} restantes",
+      "intoOvertime": "+{clock} en prolongation",
+      "approximate": "Horloge reconstituée à partir du replay : à quelques secondes près.",
+      "noClock": "Les buts sont dans l'ordre du replay ; l'horloge du match n'est pas connue.",
+      "unknownScorer": "Buteur inconnu",
+      "score": "{blue} – {orange}"
+    }
+  },
+  "metrics": {
+    "boost": {
+      "used_per_min": "Boost consommé par minute",
+      "avg": "Boost moyen",
+      "pct_zero": "Temps sans boost",
+      "pct_full": "Temps à 100 de boost",
+      "pads_big": "Gros pads",
+      "pads_small": "Petits pads",
+      "pads_enemy_half": "Pads pris chez l'adversaire"
+    },
+    "move": {
+      "speed_avg": "Vitesse moyenne",
+      "pct_supersonic": "Temps supersonique",
+      "pct_ground": "Temps au sol",
+      "pct_low_air": "Temps en l'air, bas",
+      "pct_high_air": "Temps en l'air, haut"
+    },
+    "pos": {
+      "pct_def_third": "Tiers défensif",
+      "pct_mid_third": "Tiers central",
+      "pct_att_third": "Tiers offensif",
+      "pct_ahead_ball": "Devant la balle",
+      "pct_behind_ball": "Derrière la balle",
+      "dist_ball_avg": "Distance moyenne à la balle",
+      "pct_last_back": "Dernier défenseur"
+    },
+    "event": {
+      "demos_inflicted": "Démolitions infligées",
+      "demos_taken": "Démolitions subies"
+    }
+  },
+  "units": {
+    "percent": "{value} %",
+    "perMinute": "{value} %/min",
+    "count": "{value}",
+    "kmh": "{value} km/h",
+    "meters": "{value} m",
+    "none": "—"
   },
   "home": {
     "title": "Comprends tes matchs, replay après replay",

@@ -1,5 +1,6 @@
-"""Writes the API's OpenAPI description to `apps/web/openapi.json`, which the site's client is
-generated from. `--check` fails when the file is out of date instead, as the CI runs it.
+"""Writes what the site is built from: the API's OpenAPI description to `apps/web/openapi.json`, and
+the catalog of metrics (id and unit, in display order) to `apps/web/metrics.json`. `--check` fails
+when either file is out of date instead, as the CI runs it.
 
 Usage: `python scripts/openapi.py [--check]`, through `just openapi`.
 """
@@ -10,25 +11,36 @@ from pathlib import Path
 
 from ma_api.app import create_app
 from ma_api.settings import Settings
+from rl_analysis.registry import METRICS
 
-TARGET = Path(__file__).parents[1] / "apps/web/openapi.json"
+WEB = Path(__file__).parents[1] / "apps/web"
 
 
-def document() -> str:
+def openapi() -> str:
     # The description needs no database: the address is never used.
     app = create_app(Settings(database_url="postgresql://unused@localhost/unused"))
     return json.dumps(app.openapi(), indent=2, sort_keys=True, ensure_ascii=False) + "\n"
 
 
+def metrics() -> str:
+    catalog = [{"id": metric.id, "unit": metric.unit} for metric in METRICS]
+    return json.dumps(catalog, indent=2) + "\n"
+
+
 def main() -> int:
-    text = document()
+    outputs = {WEB / "openapi.json": openapi(), WEB / "metrics.json": metrics()}
     if sys.argv[1:] == ["--check"]:
-        if not TARGET.exists() or TARGET.read_text(encoding="utf-8") != text:
-            print("apps/web/openapi.json is out of date: run `just openapi`", file=sys.stderr)
-            return 1
-        return 0
-    TARGET.write_text(text, encoding="utf-8")
-    print(f"written: {TARGET}")
+        stale = [
+            path.name
+            for path, text in outputs.items()
+            if not path.exists() or path.read_text(encoding="utf-8") != text
+        ]
+        for name in stale:
+            print(f"apps/web/{name} is out of date: run `just openapi`", file=sys.stderr)
+        return 1 if stale else 0
+    for path, text in outputs.items():
+        path.write_text(text, encoding="utf-8")
+        print(f"written: {path}")
     return 0
 
 
