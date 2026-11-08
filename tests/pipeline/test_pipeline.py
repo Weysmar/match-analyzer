@@ -31,7 +31,7 @@ from ma_api.settings import PREFIX
 from ma_api.settings import Settings as ApiSettings
 from ma_db.testing import Connection, role_url, temporary_database
 from ma_schemas import frames_problems, parse_events
-from ma_worker import analyze, parse, queue
+from ma_worker import analyze, parse, queue, reparse, reprocess
 from ma_worker.runner import Runner
 from ma_worker.settings import Settings as WorkerSettings
 from ma_worker.store import S3Store
@@ -140,10 +140,13 @@ def send(client: TestClient, body: bytes, name: str = "a.replay") -> str:
 
 
 def work(settings: WorkerSettings, *, analysis: bool = False) -> int:
-    """Runs every queued parse job, and analyze job if asked, the way the worker's loop does.
-    Returns how many."""
+    """Runs every queued parse and reparse job, and analyze job if asked, the way the worker's loop
+    does. Returns how many."""
     store = S3Store(settings)
-    handlers: dict[str, Any] = {"parse": lambda c, job: parse.handle(c, job, store, settings)}
+    handlers: dict[str, Any] = {
+        "parse": lambda c, job: parse.handle(c, job, store, settings),
+        "reparse": lambda c, job: reparse.handle(c, job, store, settings),
+    }
     if analysis:
         handlers["analyze"] = lambda c, job: analyze.handle(c, job, store, settings)
     with psycopg.connect(settings.database_url, autocommit=True) as connection:
@@ -442,6 +445,31 @@ def test_a_signed_in_player_sees_the_metrics_of_their_match(
     )
     assert work(worker_settings, analysis=True) == 1
     assert conn.execute("SELECT count(*) FROM player_match_metrics").fetchone() == rows
+
+    # As if an older parser had read it: reprocessed, parsed again, analyzed again, the same.
+    players = conn.execute(
+        "SELECT id FROM match_players WHERE match_id = %s ORDER BY id", (match_id,)
+    ).fetchall()
+    conn.execute("UPDATE matches SET parser_version = '0.0.1' WHERE id = %s", (match_id,))
+    with psycopg.connect(worker_settings.database_url, autocommit=True) as connection:
+        version = reprocess.parser_version(worker_settings)
+        summary = reprocess.parser_outdated(connection, version)
+    assert summary.selected == [uuid.UUID(match_id)]
+    assert work(worker_settings, analysis=True) == 2
+    with browser(api_settings) as client:
+        client.cookies.set("session", token)
+        again = client.get(f"{MATCHES}/{match_id}").json()
+    assert again["match"]["status"] == "ready"
+    assert again["me"] == sheet["me"]
+    assert again["metrics"] == sheet["metrics"]
+    assert (
+        conn.execute(
+            "SELECT id FROM match_players WHERE match_id = %s ORDER BY id", (match_id,)
+        ).fetchall()
+        == players
+    )
+    row = conn.execute("SELECT parser_version FROM matches WHERE id = %s", (match_id,)).fetchone()
+    assert row == (version,)
 
 
 def first_with(platform: str, folder: Path) -> tuple[Path, str] | None:
