@@ -147,7 +147,11 @@ def create(
     return {"uploads": uploads}
 
 
-_COLUMNS = sql.SQL("id, file_name, status, rejection, match_id, created_at")
+# The match's own state comes along: following a batch takes one request, whatever its size.
+_COLUMNS = sql.SQL(
+    "id, file_name, status, rejection, match_id, created_at, "
+    "(SELECT m.status FROM matches m WHERE m.id = uploads.match_id) AS match_status"
+)
 
 
 def _item(row: dict[str, Any]) -> dict[str, Any]:
@@ -157,6 +161,7 @@ def _item(row: dict[str, Any]) -> dict[str, Any]:
         "status": row["status"],
         "rejection": row["rejection"],
         "match_id": None if row["match_id"] is None else str(row["match_id"]),
+        "match_status": row["match_status"],
     }
 
 

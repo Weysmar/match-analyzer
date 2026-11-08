@@ -802,6 +802,16 @@
             ],
             "title": "Match Id"
           },
+          "match_status": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/MatchStatus"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
           "name": {
             "title": "Name",
             "type": "string"
@@ -836,7 +846,8 @@
           "name",
           "status",
           "rejection",
-          "match_id"
+          "match_id",
+          "match_status"
         ],
         "title": "Upload",
         "type": "object"

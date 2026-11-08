@@ -70,6 +70,8 @@ class Upload(BaseModel):
     status: UploadStatus
     rejection: Literal["not_a_replay", "corrupt", "too_large", "size_mismatch"] | None
     match_id: str | None
+    # Where the match is, once the file has given one: analysis goes on after the upload ends.
+    match_status: MatchStatus | None
 
 
 class UploadPage(BaseModel):
