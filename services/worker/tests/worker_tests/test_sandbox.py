@@ -27,7 +27,7 @@ def alive(pid: int) -> bool:
     status is read makes the read fail with ESRCH: dead as well."""
     try:
         status = Path(f"/proc/{pid}/stat").read_text(encoding="utf-8")
-    except (FileNotFoundError, ProcessLookupError):
+    except FileNotFoundError, ProcessLookupError:
         return False
     return status.rsplit(")", 1)[1].split()[0] != "Z"
 
