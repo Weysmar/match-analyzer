@@ -285,3 +285,13 @@ def test_the_altitude_bands_add_up_to_the_whole_time(corpus: Corpus) -> None:
     """T7.7: 100 % within 0.1."""
     assert corpus.band_sums
     assert all(abs(total - 100.0) <= 0.1 for total in corpus.band_sums)
+
+
+def test_the_cache_names_the_subtr_actor_in_use() -> None:
+    """The cache's folder, and the CI's cache key through tests/fixtures/oracle.py, name
+    subtr-actor's version: a new one has to start afresh."""
+    cargo = (ROOT / "games/rocket-league/parser/Cargo.toml").read_text(encoding="utf-8")
+    oracle = (ROOT / "tests/fixtures/oracle.py").read_text(encoding="utf-8")
+    version = ORACLE_CACHE.name.removeprefix("subtr-actor-")
+    assert f'subtr-actor = "={version}"' in cargo
+    assert f'SUBTR_ACTOR = "{version}"' in oracle
