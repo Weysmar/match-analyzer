@@ -1,0 +1,6 @@
+@import "tailwindcss";
+
+/* Tailwind's dark variant follows the system theme: nothing to choose on the site. */
+:root {
+  color-scheme: light dark;
+}
