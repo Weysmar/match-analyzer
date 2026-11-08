@@ -4,6 +4,8 @@ Provisional code name. Web platform that analyzes replay files. Reference: `CLAU
 
 ## Development
 
+Step by step from a blank PC, in French: [`docs/demarrage-local.md`](docs/demarrage-local.md).
+
 Under WSL2, in the Linux file system. Requires Rust (`rustup`), `uv`, Node.js 22+, `pnpm`, `just` and Docker.
 
 ```bash
