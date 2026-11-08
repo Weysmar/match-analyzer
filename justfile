@@ -138,6 +138,11 @@ reprocess *args:
     cargo build --release --manifest-path {{parser}}
     PARSER_BIN=games/rocket-league/parser/target/release/rl-parse uv run ma-worker reprocess {{args}}
 
+# One pass of the purge now: raw files, files never sent, expired sessions, old counters.
+# The worker also runs it every PURGE_EVERY_S seconds.
+purge:
+    uv run ma-worker purge
+
 # Download the public replays of the manifest
 corpus-fetch:
     uv run python tests/fixtures/corpus.py fetch

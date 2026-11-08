@@ -10,12 +10,13 @@ import socket
 import threading
 from collections.abc import Mapping
 from dataclasses import replace
+from datetime import UTC, datetime
 from pathlib import Path
 from typing import Any
 
 import psycopg
 
-from ma_worker import analyze, parse, queue, reparse, reprocess
+from ma_worker import analyze, erase, parse, purge, queue, reparse, reprocess
 from ma_worker.queue import Connection
 from ma_worker.runner import Handler, Runner
 from ma_worker.settings import Settings, SettingsError
@@ -29,7 +30,12 @@ def build_handlers(settings: Settings) -> Mapping[str, Handler]:
         "parse": lambda connection, job: parse.handle(connection, job, store, settings),
         "analyze": lambda connection, job: analyze.handle(connection, job, store, settings),
         "reparse": lambda connection, job: reparse.handle(connection, job, store, settings),
+        "gc_match": lambda connection, job: erase.handle(connection, job, store),
     }
+
+
+def _purge(settings: Settings, connection: Connection) -> purge.Report:
+    return purge.run(connection, S3Store(settings), settings, datetime.now(UTC))
 
 
 def resolve_parser(settings: Settings) -> Settings:
@@ -53,7 +59,15 @@ def _serve(settings: Settings, index: int) -> None:
         signal.signal(name, lambda *_: stop.set())
     worker = f"{socket.gethostname()}-{os.getpid()}-{index}"
     handlers = build_handlers(settings)
-    Runner(lambda: _connect(settings), handlers, worker, settings.job_timeout_s).run(stop)
+    Runner(
+        lambda: _connect(settings),
+        handlers,
+        worker,
+        settings.job_timeout_s,
+        # One process purges: the others would only wait on the same rows.
+        maintenance=(lambda connection: _purge(settings, connection)) if index == 0 else None,
+        maintenance_every_s=settings.purge_every_s,
+    ).run(stop)
 
 
 def run(settings: Settings) -> None:
@@ -117,6 +131,7 @@ def parser() -> argparse.ArgumentParser:
     again.add_argument("--build-from", type=int, help="the game's BuildID, inclusive")
     again.add_argument("--build-to", type=int, help="the game's BuildID, inclusive")
     again.add_argument("--dry-run", action="store_true", help="say what would be queued")
+    commands.add_parser("purge", help="one pass of the purge, which `run` also does every hour")
     return command_line
 
 
@@ -127,6 +142,10 @@ def main(argv: list[str] | None = None) -> None:
         run(resolve_parser(settings))
     elif arguments.command == "status":
         status(settings)
+    elif arguments.command == "purge":
+        logging.basicConfig(level=os.environ.get("LOG_LEVEL", "INFO"))
+        with _connect(settings) as connection:
+            print(_purge(settings, connection))
     else:
         reprocess_command(resolve_parser(settings), arguments)
 

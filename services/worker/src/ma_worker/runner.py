@@ -35,6 +35,8 @@ class Runner:
         *,
         poll_s: float = 2.0,
         recover_every_s: float = 60.0,
+        maintenance: Callable[[Connection], object] | None = None,
+        maintenance_every_s: float = 3600.0,
     ) -> None:
         self._connect = connect
         self._handlers = handlers
@@ -43,6 +45,9 @@ class Runner:
         self._poll_s = poll_s
         self._recover_every_s = recover_every_s
         self._last_recovery = float("-inf")
+        self._maintenance = maintenance
+        self._maintenance_every_s = maintenance_every_s
+        self._last_maintenance = float("-inf")
 
     def run_once(self, connection: Connection) -> bool:
         """Runs one job if there is one. Logs never quote an exception's text: it can hold a
@@ -76,6 +81,16 @@ class Runner:
         if requeued or dead:
             log.warning("abandoned jobs: %d requeued, %d dead", requeued, dead)
 
+    def _maintain_if_due(self, connection: Connection) -> None:
+        """Housekeeping between jobs, such as the purge: at start, then every so often."""
+        if self._maintenance is None:
+            return
+        now = time.monotonic()
+        if now - self._last_maintenance < self._maintenance_every_s:
+            return
+        self._last_maintenance = now
+        self._maintenance(connection)
+
     def run(self, stop: threading.Event) -> None:
         """Until `stop` is set, which lets the current job finish. Survives losing the database."""
         while not stop.is_set():
@@ -83,6 +98,7 @@ class Runner:
                 with self._connect() as connection:
                     while not stop.is_set():
                         self._recover_if_due(connection)
+                        self._maintain_if_due(connection)
                         if not self.run_once(connection):
                             stop.wait(self._poll_s)
             except psycopg.OperationalError as error:

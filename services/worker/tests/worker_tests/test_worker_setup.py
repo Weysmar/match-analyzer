@@ -120,7 +120,22 @@ def test_a_missing_parser_stops_the_start(tmp_path: Path, monkeypatch: pytest.Mo
 
 def test_every_job_of_v1_has_a_handler() -> None:
     handlers = set(build_handlers(Settings(database_url="unused")))
-    assert handlers == {"parse", "analyze", "reparse"}
+    assert handlers == {"parse", "analyze", "reparse", "gc_match"}
+
+
+def test_retention_comes_from_the_environment() -> None:
+    settings = Settings.from_env(
+        {
+            "WORKER_DATABASE_URL": "postgresql://unused",
+            "RAW_RETENTION_DAYS": "7",
+            "RAW_RETENTION_HEADER_ONLY_DAYS": "90",
+            "PURGE_EVERY_S": "600",
+        }
+    )
+    assert (settings.raw_retention_days, settings.raw_retention_header_only_days) == (7, 90)
+    assert settings.purge_every_s == 600
+    defaults = Settings.from_env({"WORKER_DATABASE_URL": "postgresql://unused"})
+    assert (defaults.raw_retention_days, defaults.raw_retention_header_only_days) == (30, 180)
 
 
 @pytest.mark.parametrize(
