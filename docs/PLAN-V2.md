@@ -1,6 +1,6 @@
 # Plan d'implémentation V2 : différenciation, vue 2D et seuils
 
-> **Statut : validé par Vincent le 2026-11-08. Les décisions DV1 à DV6 restent à trancher sur les mesures de l'étape 10.** Rien n'est commencé.
+> **Statut : validé par Vincent le 2026-11-08. Étape 10 : rapport livré (`spikes/s10-v2/RAPPORT.md`) ; DV1 à DV7 à trancher par Vincent, et test du lecteur sur téléphone à faire.**
 > Périmètre : section 9 de `CLAUDE.md` (« V2, différenciation »), sur la base de la V1 livrée (étapes 0 à 8, `docs/PLAN.md`). L'étape 9 (production) se termine en parallèle : la V2 n'en dépend pas, sauf pour sa mise en ligne.
 > Mêmes conventions que le plan V1 (section 5) : tâches d'une demi-journée au plus, une « fin » vérifiable par tâche, 👤 pour ce qui demande ton action ou ton accord.
 

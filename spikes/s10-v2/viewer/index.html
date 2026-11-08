@@ -1,0 +1,44 @@
+<!doctype html>
+<!-- Spike of step 10, T10.5: the 2D view's player. Throwaway code.
+     `../out/view.js` comes from measure_view.py (a public replay); out/ is never versioned. -->
+<html lang="fr">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Prototype vue 2D</title>
+    <style>
+      :root { color-scheme: dark; }
+      body { margin: 0; font: 14px system-ui, sans-serif; background: #0b1020; color: #e6e9f0; }
+      main { max-width: 720px; margin: 0 auto; padding: 16px; display: flex; flex-direction: column; gap: 12px; }
+      .stage { display: flex; justify-content: center; }
+      .controls { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+      button, select { font: inherit; padding: 6px 12px; border-radius: 6px; border: 1px solid #3a4256; background: #1a2236; color: inherit; }
+      input[type=range] { flex: 1 1 200px; }
+      #fps { margin-left: auto; color: #8a93a8; font-variant-numeric: tabular-nums; }
+      #goals { display: flex; flex-wrap: wrap; gap: 6px; }
+      p { color: #8a93a8; margin: 0; }
+    </style>
+  </head>
+  <body>
+    <main>
+      <h1>Prototype de la vue 2D</h1>
+      <p>Replay public du corpus de test, 15 échantillons par seconde, interpolés. Espace : lecture ; flèches : ±5 s.</p>
+      <div class="stage"><canvas id="field" aria-label="Terrain vu de dessus"></canvas></div>
+      <div class="controls">
+        <button id="play" type="button">Lecture</button>
+        <select id="speed" aria-label="Vitesse">
+          <option value="0.5">×0,5</option>
+          <option value="1" selected>×1</option>
+          <option value="2">×2</option>
+          <option value="4">×4</option>
+        </select>
+        <span id="clock"></span>
+        <span id="fps"></span>
+      </div>
+      <input id="scrub" type="range" min="0" value="0" step="10" aria-label="Position dans le replay" />
+      <div id="goals"></div>
+    </main>
+    <script src="../out/view.js"></script>
+    <script src="viewer.js"></script>
+  </body>
+</html>
