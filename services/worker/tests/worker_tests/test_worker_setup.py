@@ -4,7 +4,7 @@ from pathlib import Path
 
 import pytest
 
-from ma_worker.cli import build_handlers, resolve_parser
+from ma_worker.cli import build_handlers, parser, resolve_parser
 from ma_worker.settings import Settings, SettingsError
 from ma_worker.store import S3Store, StoreError
 
@@ -118,8 +118,31 @@ def test_a_missing_parser_stops_the_start(tmp_path: Path, monkeypatch: pytest.Mo
         resolve_parser(Settings(database_url="unused"))
 
 
-def test_parse_and_analyze_jobs_have_a_handler() -> None:
-    assert set(build_handlers(Settings(database_url="unused"))) == {"parse", "analyze"}
+def test_every_job_of_v1_has_a_handler() -> None:
+    handlers = set(build_handlers(Settings(database_url="unused")))
+    assert handlers == {"parse", "analyze", "reparse"}
+
+
+@pytest.mark.parametrize(
+    "argv",
+    [
+        ["reprocess"],
+        ["reprocess", "--parser-outdated", "--analysis-outdated"],
+        ["reprocess", "--parser-outdated", "--build-from", "soon"],
+        ["nothing"],
+    ],
+)
+def test_the_command_line_refuses_what_makes_no_sense(argv: list[str]) -> None:
+    with pytest.raises(SystemExit):
+        parser().parse_args(argv)
+
+
+def test_the_command_line_reads_a_reprocess() -> None:
+    arguments = parser().parse_args(
+        ["reprocess", "--parser-outdated", "--build-from", "100", "--build-to", "200", "--dry-run"]
+    )
+    assert arguments.parser_outdated
+    assert (arguments.build_from, arguments.build_to, arguments.dry_run) == (100, 200, True)
 
 
 def test_the_upload_limit_comes_from_the_environment() -> None:
