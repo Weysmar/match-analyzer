@@ -1,6 +1,6 @@
 # Plan d'implémentation V2 : différenciation, vue 2D et seuils
 
-> **Statut : validé par Vincent le 2026-11-08. Étape 10 : rapport livré (`spikes/s10-v2/RAPPORT.md`) ; DV1 à DV7 à trancher par Vincent, et test du lecteur sur téléphone à faire.**
+> **Statut : validé par Vincent le 2026-11-08. Étape 10 close le 2026-11-08 (`spikes/s10-v2/RAPPORT.md`) ; DV1 à DV7 tranchées par Vincent le même jour, telles que recommandées (section 2). DV3 reste sous réserve du test du lecteur sur téléphone.**
 > Périmètre : section 9 de `CLAUDE.md` (« V2, différenciation »), sur la base de la V1 livrée (étapes 0 à 8, `docs/PLAN.md`). L'étape 9 (production) se termine en parallèle : la V2 n'en dépend pas, sauf pour sa mise en ligne.
 > Mêmes conventions que le plan V1 (section 5) : tâches d'une demi-journée au plus, une « fin » vérifiable par tâche, 👤 pour ce qui demande ton action ou ton accord.
 
@@ -36,6 +36,18 @@ La V1 répond à « combien » : boost, vitesse, temps par zone. La V2 doit rép
 ## 2. À trancher avant de commencer
 
 L'étape 10 mesure, puis tu décides. Les recommandations ci-dessous sont celles que je défendrai si les mesures les confirment.
+
+**Décisions prises le 2026-11-08, après l'étape 10 : DV1 à DV7 suivent la recommandation du rapport.** Elles changent le plan sur ces points :
+
+| #   | Décision | Effet sur le plan |
+| --- | -------- | ----------------- |
+| DV1 | Touches détectées par `subtr-actor`, émises par `rl-parse` | T11.1 tel quel. Le buteur a touché la balle dans 98,6 % des buts du corpus, contre 95,0 % en Python. |
+| DV2 | Document de la vue 2D à **15 Hz**, stocké dans le S3 | Budget révisé : **environ 35 Ko par minute de jeu** au lieu de 300 Ko par match (le match de 38 minutes du corpus pèse 1,4 Mo). Codage en différences à essayer à T12.1. |
+| DV3 | Canvas | Sous réserve du nombre d'images par seconde sur ton téléphone (T10.5) ; repli SVG sinon. |
+| DV4 | Mode étiquetage en développement, export JSON | Inchangé |
+| DV5 | Pas de rotations en 1v1 | Inchangé |
+| DV6 | Émission des touches au plus tôt | T11.1 passe en tête de la V2, à livrer avant ou juste après la mise en production de la V1. |
+| DV7 | `rl-parse` émet aussi **kickoffs, duels et « devancé sur la balle »** (détecteurs de `subtr-actor`) ; possession, rôles, double commits et overcommits restent **calculés en Python** depuis les touches et les frames | T11.1 couvre les quatre flux. L'étape 13 lit les kickoffs et les duels dans `events.json` au lieu de les détecter, puis calcule ses métriques et ses situations. Les sorties de `subtr-actor` pour possession et rotation servent de référence de comparaison (`rl-oracle`). |
 
 | #   | Décision | Recommandation | L'autre option |
 | --- | -------- | -------------- | -------------- |
