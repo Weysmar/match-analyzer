@@ -15,7 +15,7 @@ from typing import Any
 
 import psycopg
 
-from ma_worker import parse, queue
+from ma_worker import analyze, parse, queue
 from ma_worker.queue import Connection
 from ma_worker.runner import Handler, Runner
 from ma_worker.settings import Settings, SettingsError
@@ -25,7 +25,10 @@ from ma_worker.store import S3Store
 def build_handlers(settings: Settings) -> Mapping[str, Handler]:
     """A job of another kind waits in the queue until its handler gets written."""
     store = S3Store(settings)
-    return {"parse": lambda connection, job: parse.handle(connection, job, store, settings)}
+    return {
+        "parse": lambda connection, job: parse.handle(connection, job, store, settings),
+        "analyze": lambda connection, job: analyze.handle(connection, job, store, settings),
+    }
 
 
 def resolve_parser(settings: Settings) -> Settings:
