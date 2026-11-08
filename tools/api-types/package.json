@@ -1,0 +1,13 @@
+{
+  "name": "@match-analyzer/api-types",
+  "private": true,
+  "description": "Generates the site's API types from the API's OpenAPI description. openapi-typescript drives the TypeScript compiler API, which TypeScript 7 no longer ships: it gets TypeScript 5 here, apart from the site.",
+  "type": "module",
+  "scripts": {
+    "gen": "openapi-typescript ../../apps/web/openapi.json -o ../../apps/web/src/lib/api/schema.ts"
+  },
+  "devDependencies": {
+    "openapi-typescript": "7.13.0",
+    "typescript": "5.9.3"
+  }
+}

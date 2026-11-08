@@ -1,2 +1,7 @@
 packages:
   - apps/*
+  - tools/*
+# Install scripts stay off: neither package needs its native build for this project.
+allowBuilds:
+  "@parcel/watcher": false
+  "@swc/core": false

@@ -45,9 +45,13 @@ jobs:
       - run: uv run ruff format --check .
       - run: uv run mypy
       - run: uv run pytest
+      # The site's copy of the API's description follows the API's code.
+      - run: uv run python scripts/openapi.py --check
 
   typescript:
     runs-on: ubuntu-latest
+    env:
+      NEXT_TELEMETRY_DISABLED: "1"
     steps:
       - uses: actions/checkout@v7
       - uses: pnpm/action-setup@v6
@@ -59,6 +63,11 @@ jobs:
       - run: pnpm lint
       - run: pnpm typecheck
       - run: pnpm test
+      - name: The site's API types follow openapi.json
+        run: |
+          pnpm --filter @match-analyzer/api-types gen
+          git diff --exit-code -- apps/web/src/lib/api/schema.ts
+      - run: pnpm --filter @match-analyzer/web build
 
   # Migrations, constraints, roles and erasure, on PostgreSQL 16.
   database:

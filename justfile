@@ -167,3 +167,16 @@ spike-light file:
 # T0.7: count the replays where this Epic account id appears. Prints counts only.
 spike-epic account_id:
     cargo run --quiet --release --manifest-path spikes/s0-parse/Cargo.toml -- epic-check {{account_id}} tests/fixtures/replays/vincent tests/fixtures/replays/legacy
+
+# The site, against `just api` (http://localhost:3000)
+web:
+    pnpm --filter @match-analyzer/web dev
+
+# The site as it runs in production
+web-build:
+    pnpm --filter @match-analyzer/web build
+
+# The API's description and the site's types, regenerated from the API's code
+openapi:
+    uv run python scripts/openapi.py
+    pnpm --filter @match-analyzer/api-types gen

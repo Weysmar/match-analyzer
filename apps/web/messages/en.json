@@ -1,0 +1,23 @@
+{
+  "app": {
+    "name": "match-analyzer",
+    "tagline": "Your replays, analyzed"
+  },
+  "header": {
+    "language": "Language",
+    "signedInAs": "Signed in: {name}",
+    "anonymous": "Session without an account"
+  },
+  "home": {
+    "title": "Understand your matches, replay after replay",
+    "lead": "Drop a replay to see your boost, your movement and your positioning. No account, nothing to install.",
+    "cta": "Analyze a replay",
+    "metrics": {
+      "title": "What you get",
+      "boost": "Boost: usage, pads, time empty or full",
+      "movement": "Movement: speed, supersonic, time on the ground and in the air",
+      "positioning": "Positioning: thirds of the field, place relative to the ball, last back"
+    },
+    "pcOnly": "Replays live on PC, in your Demos folder. On console, they cannot be reached."
+  }
+}

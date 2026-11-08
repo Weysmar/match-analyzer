@@ -14,5 +14,9 @@ __pycache__/
 .pytest_cache/
 .ruff_cache/
 node_modules/
+# Next.js output
+.next/
+next-env.d.ts
+*.tsbuildinfo
 # Derived from the replays, never versioned either.
 tests/fixtures/oracle/
