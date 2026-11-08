@@ -94,6 +94,12 @@ test-s3:
 test-web-it:
     WEB_IT_API_URL=http://127.0.0.1:8000 pnpm --filter @match-analyzer/web exec vitest run test/it
 
+# The whole journey in a browser, FR and EN at 375 px, with a stand-in for Steam (needs `just dev-up`)
+test-e2e *args:
+    cargo build --release --manifest-path {{parser}}
+    pnpm --filter @match-analyzer/web exec playwright install chromium
+    scripts/e2e.sh {{args}}
+
 # subtr-actor's statistics for each replay, computed once: the reference of the metrics
 oracle-cache:
     cargo build --release --manifest-path {{parser}}

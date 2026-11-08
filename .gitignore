@@ -18,5 +18,8 @@ node_modules/
 .next/
 next-env.d.ts
 *.tsbuildinfo
+# Playwright output: it would hold the names of the replays' players.
+test-results/
+playwright-report/
 # Derived from the replays, never versioned either.
 tests/fixtures/oracle/

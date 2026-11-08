@@ -172,6 +172,51 @@ jobs:
       - run: docker compose -f compose.dev.yaml logs
         if: failure()
 
+  # The whole journey in a browser (end of step 8): FR and EN at 375 px, Steam simulated (A70).
+  # Nothing is uploaded on failure: Playwright's output would hold the players' names.
+  e2e:
+    runs-on: ubuntu-latest
+    env:
+      NEXT_TELEMETRY_DISABLED: "1"
+    steps:
+      - uses: actions/checkout@v7
+      - uses: astral-sh/setup-uv@v10.3.3
+        with:
+          version: ${{ env.UV_VERSION }}
+      - uses: pnpm/action-setup@v6
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 22
+          cache: pnpm
+      - uses: actions/cache@v6
+        with:
+          path: tests/fixtures/replays/public
+          key: replays-${{ hashFiles('tests/fixtures/manifest.toml') }}
+      - uses: actions/cache@v6
+        with:
+          path: |
+            ~/.cargo/registry
+            games/rocket-league/parser/target
+          key: rust-release-${{ hashFiles('rust-toolchain.toml', 'games/rocket-league/parser/Cargo.lock') }}
+          restore-keys: rust-release-
+      - run: uv sync --all-packages --locked
+      - run: uv run python tests/fixtures/corpus.py fetch
+      - run: cargo build --release --locked --manifest-path games/rocket-league/parser/Cargo.toml
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm --filter @match-analyzer/web exec playwright install --with-deps chromium
+      - run: cp .env.example .env
+      - run: docker compose -f compose.dev.yaml up -d --wait
+      - name: Stack ready
+        run: |
+          set -a; . ./.env; set +a
+          uv run python scripts/s3_init.py
+          uv run ma-db upgrade
+      - run: scripts/e2e.sh
+      - name: Service logs
+        if: failure()
+        # The API and worker logs name no player; the site's build log neither.
+        run: tail -n 40 /tmp/ma-e2e/api.log /tmp/ma-e2e/worker.log /tmp/ma-e2e/build.log
+
   parser-image:
     runs-on: ubuntu-latest
     steps:
