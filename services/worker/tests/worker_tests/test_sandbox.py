@@ -23,10 +23,11 @@ def program(path: Path, body: str, *, shell: bool = True) -> Path:
 
 
 def alive(pid: int) -> bool:
-    """A zombie is dead: only its parent's bookkeeping is left."""
+    """A zombie is dead: only its parent's bookkeeping is left. A process that goes away while its
+    status is read makes the read fail with ESRCH: dead as well."""
     try:
         status = Path(f"/proc/{pid}/stat").read_text(encoding="utf-8")
-    except FileNotFoundError:
+    except (FileNotFoundError, ProcessLookupError):
         return False
     return status.rsplit(")", 1)[1].split()[0] != "Z"
 
