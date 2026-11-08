@@ -7,6 +7,7 @@ from collections.abc import Mapping
 from dataclasses import dataclass, field
 
 PREFIX = "/api/v1"
+_STEAM_OPENID_URL = "https://steamcommunity.com/openid/login"
 
 
 class SettingsError(ValueError):
@@ -42,7 +43,7 @@ class Settings:
     trusted_proxy_count: int = 1
     epic_login: bool = False
     database_timeout_s: float = 5.0
-    steam_openid_url: str = "https://steamcommunity.com/openid/login"
+    steam_openid_url: str = _STEAM_OPENID_URL
     s3_endpoint: str = ""
     s3_public_endpoint: str = ""
     s3_region: str = "auto"
@@ -79,6 +80,10 @@ class Settings:
             for name in ("S3_ENDPOINT", "S3_BUCKET", "S3_ACCESS_KEY_ID", "S3_SECRET_ACCESS_KEY"):
                 if not values.get(name, "").strip():
                     raise SettingsError(f"{name} is needed in production")
+        steam_openid_url = values.get("STEAM_OPENID_URL", "").strip() or _STEAM_OPENID_URL
+        # Another provider only stands in for Steam in end-to-end tests: never in production.
+        if production and steam_openid_url != _STEAM_OPENID_URL:
+            raise SettingsError("STEAM_OPENID_URL cannot be changed in production")
         epic_login = _flag(values, "FEATURE_EPIC_LOGIN")
         epic = {
             name: values.get(name, "").strip()
@@ -110,6 +115,7 @@ class Settings:
             rate_upload_anon_per_day=_integer(values, "RATE_UPLOAD_ANON_PER_DAY", 100),
             rate_upload_ip_per_day=_integer(values, "RATE_UPLOAD_IP_PER_DAY", 200),
             rate_upload_user_per_day=_integer(values, "RATE_UPLOAD_USER_PER_DAY", 500),
+            steam_openid_url=steam_openid_url,
             epic_login=epic_login,
             epic_client_id=epic["EPIC_CLIENT_ID"],
             epic_client_secret=epic["EPIC_CLIENT_SECRET"],

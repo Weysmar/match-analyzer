@@ -85,6 +85,31 @@ def test_invalid_numbers_are_refused(name: str, value: str) -> None:
         Settings.from_env({"API_DATABASE_URL": URL, name: value})
 
 
+def test_a_stand_in_for_steam_serves_tests_only() -> None:
+    """End-to-end tests sign in through a fake provider (A70): production refuses one."""
+    fake = "http://127.0.0.1:8090/openid/login"
+    assert Settings.from_env({"API_DATABASE_URL": URL}).steam_openid_url.startswith(
+        "https://steamcommunity.com/"
+    )
+    assert (
+        Settings.from_env({"API_DATABASE_URL": URL, "STEAM_OPENID_URL": fake}).steam_openid_url
+        == fake
+    )
+    env = {
+        "API_DATABASE_URL": URL,
+        "APP_ENV": "production",
+        "SITE_URL": "https://example.test",
+        "SESSION_SECRET": SECRET,
+        "S3_ENDPOINT": "https://store.example.test",
+        "S3_BUCKET": "a-bucket",
+        "S3_ACCESS_KEY_ID": "a",
+        "S3_SECRET_ACCESS_KEY": "b",
+        "STEAM_OPENID_URL": fake,
+    }
+    with pytest.raises(SettingsError, match="STEAM_OPENID_URL"):
+        Settings.from_env(env)
+
+
 def test_production_needs_an_object_store() -> None:
     env = {
         "API_DATABASE_URL": URL,
