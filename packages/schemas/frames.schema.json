@@ -43,7 +43,7 @@
       "name": "team",
       "type": "uint8",
       "nullable": false,
-      "description": "0 blue, which defends y < 0; 1 orange."
+      "description": "The player's team on this frame: 0 blue, which defends y < 0; 1 orange. It changes when a player switches teams in a private match."
     },
     {
       "name": "present",

@@ -83,7 +83,35 @@ pub struct Collected {
     pub phases: Vec<GameplayPhase>,
     /// Per player then per frame, in the order of `data.frame_data.players`.
     pub demolished: Vec<Vec<bool>>,
+    /// The team at the end of the match, per player: what the roster says.
     pub team: Vec<u8>,
+    /// The team on each frame, per player then per frame. A player who switches teams in a
+    /// private match changes here (A52).
+    pub frame_team: Vec<Vec<u8>>,
+}
+
+/// The team on each frame, from what the replay replicates. Before the first frame that says,
+/// the first known team stands in; when the replay never says, the final team does.
+pub fn teams_by_frame(frames: &[PlayerFrame], frame_count: usize, final_team: u8) -> Vec<u8> {
+    let known: Vec<Option<u8>> = (0..frame_count)
+        .map(|index| match frames.get(index) {
+            Some(PlayerFrame::Data {
+                is_team_0: Some(team_0),
+                ..
+            }) => Some(u8::from(!*team_0)),
+            _ => None,
+        })
+        .collect();
+    let mut current = known.iter().flatten().next().copied().unwrap_or(final_team);
+    known
+        .iter()
+        .map(|team| {
+            if let Some(team) = team {
+                current = *team;
+            }
+            current
+        })
+        .collect()
 }
 
 /// Decodes the network stream. Its failure leaves the header usable: `header_only`.
@@ -198,7 +226,7 @@ pub fn collect(replay: &Replay, fps: Option<f32>) -> Result<Collected, Failure> 
             demolished_window(&times, &phases, demolition.time, &mut demolished[index]);
         }
     }
-    let team = players
+    let team: Vec<u8> = players
         .iter()
         .map(|(id, _)| {
             u8::from(
@@ -209,6 +237,11 @@ pub fn collect(replay: &Replay, fps: Option<f32>) -> Result<Collected, Failure> 
             )
         })
         .collect();
+    let frame_team = players
+        .iter()
+        .zip(&team)
+        .map(|((_, player), final_team)| teams_by_frame(player.frames(), times.len(), *final_team))
+        .collect();
     let kept = select_frames(&times, fps);
     Ok(Collected {
         data,
@@ -216,6 +249,7 @@ pub fn collect(replay: &Replay, fps: Option<f32>) -> Result<Collected, Failure> 
         phases,
         demolished,
         team,
+        frame_team,
     })
 }
 
