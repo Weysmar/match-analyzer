@@ -1,12 +1,14 @@
 # Schemas
 
-The source of truth for the parser's output.
+The source of truth for the parser's output, and for the 2D view's document that the analysis
+writes.
 
 | File | Describes | Format |
 |---|---|---|
 | `header.schema.json` | `header.json` | JSON Schema |
 | `events.schema.json` | `events.json` | JSON Schema |
 | `frames.schema.json` | `frames.parquet` | Columns and types, since JSON Schema does not describe Parquet |
+| `match2d.schema.json` | `views/<match_id>.json.gz`, the 2D view (`rl_analysis.view`) | JSON Schema |
 
 The `ma_schemas` package loads them, validates documents and gives the worker typed dictionaries.
 

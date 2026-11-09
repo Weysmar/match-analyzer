@@ -35,7 +35,7 @@ def _schema_path(name: str) -> Path:
 
 @lru_cache
 def load_schema(kind: str) -> dict[str, Any]:
-    """`kind` is `header`, `events` or `frames`."""
+    """`kind` is `header`, `events`, `frames` or `match2d`."""
     text = _schema_path(f"{kind}.schema.json").read_text(encoding="utf-8")
     return cast(dict[str, Any], json.loads(text))
 

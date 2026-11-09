@@ -1,0 +1,133 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://match-analyzer.local/schemas/match2d.schema.json",
+  "title": "match2d",
+  "description": "The 2D view of a match, written by the analysis (rl_analysis.view) and read by the browser. Samples on a regular grid: sample i is at replay time start_s + i / rate_hz. The fields named in `delta` hold the first value, then each sample minus the previous one. Players are named by match_player_id: no name, no platform id.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "version",
+    "rate_hz",
+    "start_s",
+    "samples",
+    "delta",
+    "clock_ds",
+    "phase",
+    "ball",
+    "players",
+    "goals",
+    "demolitions",
+    "touches"
+  ],
+  "$defs": {
+    "series": {
+      "type": "array",
+      "items": { "type": "integer" }
+    },
+    "time": { "type": "number", "minimum": 0 },
+    "player": { "type": ["integer", "null"], "minimum": 1 }
+  },
+  "properties": {
+    "version": { "const": 1 },
+    "rate_hz": { "type": "integer", "minimum": 1, "maximum": 60 },
+    "start_s": { "$ref": "#/$defs/time" },
+    "samples": { "type": "integer", "minimum": 1 },
+    "delta": {
+      "description": "The fields written as differences.",
+      "type": "array",
+      "items": {
+        "enum": ["clock_ds", "ball.x", "ball.y", "ball.z", "players.x", "players.y", "players.z"]
+      },
+      "uniqueItems": true
+    },
+    "clock_ds": {
+      "description": "The game clock in tenths of a second: it only runs in live play.",
+      "$ref": "#/$defs/series"
+    },
+    "phase": {
+      "description": "As in frames.parquet: 0 unknown, 1 kickoff countdown, 2 waiting for the kickoff touch, 3 live play, 4 after a goal.",
+      "type": "array",
+      "items": { "type": "integer", "minimum": 0, "maximum": 4 }
+    },
+    "ball": {
+      "description": "In whole uu.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["x", "y", "z"],
+      "properties": {
+        "x": { "$ref": "#/$defs/series" },
+        "y": { "$ref": "#/$defs/series" },
+        "z": { "$ref": "#/$defs/series" }
+      }
+    },
+    "players": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["id", "team", "x", "y", "z", "yaw", "boost", "flags"],
+        "properties": {
+          "id": { "type": "integer", "minimum": 1, "description": "match_players.id" },
+          "team": { "enum": [0, 1], "description": "The team the player spent most frames in." },
+          "x": { "$ref": "#/$defs/series" },
+          "y": { "$ref": "#/$defs/series" },
+          "z": { "$ref": "#/$defs/series" },
+          "yaw": {
+            "description": "Heading in whole degrees, 0 towards +x, 90 towards +y.",
+            "type": "array",
+            "items": { "type": "integer", "minimum": -180, "maximum": 180 }
+          },
+          "boost": {
+            "type": "array",
+            "items": { "type": "integer", "minimum": 0, "maximum": 100 }
+          },
+          "flags": {
+            "description": "Bits: 1 shown (there and not demolished), 2 demolished, 4 boosting. A car not shown keeps its last position.",
+            "type": "array",
+            "items": { "type": "integer", "minimum": 0, "maximum": 7 }
+          }
+        }
+      }
+    },
+    "goals": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["time_s", "clock_s", "team", "player"],
+        "properties": {
+          "time_s": { "$ref": "#/$defs/time" },
+          "clock_s": { "type": ["number", "null"], "minimum": 0 },
+          "team": { "enum": [0, 1, null] },
+          "player": { "$ref": "#/$defs/player" }
+        }
+      }
+    },
+    "demolitions": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["time_s", "attacker", "victim"],
+        "properties": {
+          "time_s": { "$ref": "#/$defs/time" },
+          "attacker": { "$ref": "#/$defs/player" },
+          "victim": { "$ref": "#/$defs/player" }
+        }
+      }
+    },
+    "touches": {
+      "description": "Null when the parser did not detect them (before rl-parse 0.2.0).",
+      "type": ["array", "null"],
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["time_s", "player"],
+        "properties": {
+          "time_s": { "$ref": "#/$defs/time" },
+          "player": { "type": "integer", "minimum": 1 }
+        }
+      }
+    }
+  }
+}
