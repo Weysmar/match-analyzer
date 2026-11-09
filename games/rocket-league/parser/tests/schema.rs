@@ -3,6 +3,7 @@
 use std::path::Path;
 
 use arrow::datatypes::DataType;
+use rl_parse::events::EVENTS_SCHEMA_VERSION;
 use rl_parse::header::SCHEMA_VERSION;
 use rl_parse::output::frames_schema;
 use serde_json::Value;
@@ -51,13 +52,14 @@ fn the_parquet_writer_follows_the_schema() {
 
 #[test]
 fn schema_versions_agree() {
-    for name in ["header.schema.json", "events.schema.json"] {
-        let schema = document(name);
-        assert_eq!(
-            schema["properties"]["schema_version"]["const"], SCHEMA_VERSION,
-            "{name}"
-        );
-    }
+    assert_eq!(
+        document("header.schema.json")["properties"]["schema_version"]["const"],
+        SCHEMA_VERSION
+    );
+    assert_eq!(
+        document("events.schema.json")["properties"]["schema_version"]["const"],
+        EVENTS_SCHEMA_VERSION
+    );
     assert_eq!(
         document("frames.schema.json")["schema_version"],
         SCHEMA_VERSION

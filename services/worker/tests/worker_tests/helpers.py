@@ -79,8 +79,8 @@ def member(
 def events(**fields: Any) -> dict[str, Any]:
     """A valid `events.json`, for the players of `header()`."""
     document: dict[str, Any] = {
-        "schema_version": 1,
-        "parser_version": "0.1.1",
+        "schema_version": 2,
+        "parser_version": "0.2.0",
         "fps": None,
         "playlist_id": 13,
         "duration_s": 300.0,
@@ -113,6 +113,11 @@ def events(**fields: Any) -> dict[str, Any]:
         "pad_pickups": [],
         "unresolved_pad_pickups": 0,
         "stat_events": [],
+        # Not detected unless a test gives them (T11.1).
+        "touches": None,
+        "kickoffs": None,
+        "fifty_fifties": None,
+        "beaten_to_ball": None,
     }
     return document | fields
 

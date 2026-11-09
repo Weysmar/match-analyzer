@@ -61,8 +61,22 @@ def parse_header(document: object) -> HeaderDocument:
     return cast(HeaderDocument, _parse("header", document))
 
 
+DETECTIONS = ("touches", "kickoffs", "fifty_fifties", "beaten_to_ball")
+
+
+def _upgraded(document: object) -> object:
+    """A version 1 document, from a parser older than 0.2.0, read as version 2 without
+    detections: the analysis treats them as not detected. Matches parsed before the V2 keep
+    working without being parsed again. The caller's document is left as it was."""
+    if not isinstance(document, dict) or document.get("schema_version") != 1:
+        return document
+    if any(key in document for key in DETECTIONS):
+        return document
+    return {**document, "schema_version": 2} | dict.fromkeys(DETECTIONS)
+
+
 def parse_events(document: object) -> EventsDocument:
-    return cast(EventsDocument, _parse("events", document))
+    return cast(EventsDocument, _parse("events", _upgraded(document)))
 
 
 def frames_columns() -> dict[str, str]:

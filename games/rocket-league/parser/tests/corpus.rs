@@ -131,7 +131,15 @@ fn the_binary_writes_its_outputs() {
             "{label}: stderr must be silent on success"
         );
         let events: Value = serde_json::from_slice(&read(&out.join("events.json"))).unwrap();
-        assert_eq!(events["schema_version"], 1, "{label}");
+        assert_eq!(events["schema_version"], 2, "{label}");
+        // subtr-actor's detectors ran on every replay of the standard mode (T11.1).
+        for key in ["touches", "kickoffs", "fifty_fifties", "beaten_to_ball"] {
+            assert!(events[key].is_array(), "{label}: {key}");
+        }
+        assert!(
+            !events["touches"].as_array().unwrap().is_empty(),
+            "{label}: no touch"
+        );
         let file = std::fs::File::open(out.join("frames.parquet")).unwrap();
         let reader = ParquetRecordBatchReaderBuilder::try_new(file).unwrap();
         assert_eq!(

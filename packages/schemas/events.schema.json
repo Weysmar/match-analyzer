@@ -2,7 +2,7 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "events.schema.json",
   "title": "events.json",
-  "description": "Who played and what happened at an exact time, written by `rl-parse --frames`. Unknown fields are accepted: a game patch can add some.",
+  "description": "Who played and what happened at an exact time, written by `rl-parse --frames`. Unknown fields are accepted: a game patch can add some. Version 2 adds subtr-actor's detections (touches, kickoffs, 50/50s, players beaten to the ball), all four null when its detectors failed on the replay; a version 1 document is read as version 2 without them.",
   "type": "object",
   "required": [
     "schema_version",
@@ -16,7 +16,11 @@
     "demolitions",
     "pad_pickups",
     "unresolved_pad_pickups",
-    "stat_events"
+    "stat_events",
+    "touches",
+    "kickoffs",
+    "fifty_fifties",
+    "beaten_to_ball"
   ],
   "$defs": {
     "player_idx": {
@@ -35,10 +39,26 @@
     "phase": {
       "description": "0 unknown, 1 kickoff countdown, 2 waiting for the kickoff touch, 3 live play, 4 after a goal.",
       "enum": [0, 1, 2, 3, 4]
+    },
+    "optional_team": {
+      "description": "A team, or null when none won or it is unknown.",
+      "enum": [0, 1, null]
+    },
+    "optional_time_s": {
+      "type": ["number", "null"],
+      "minimum": 0
+    },
+    "optional_frame": {
+      "type": ["integer", "null"],
+      "minimum": 0
+    },
+    "tag": {
+      "description": "subtr-actor's classification value, as it names it.",
+      "type": ["string", "null"]
     }
   },
   "properties": {
-    "schema_version": { "const": 1 },
+    "schema_version": { "const": 2 },
     "parser_version": { "type": "string", "minLength": 1 },
     "fps": {
       "description": "The --fps cap, null without one.",
@@ -134,6 +154,229 @@
           "time_s": { "$ref": "#/$defs/time_s" },
           "player_idx": { "$ref": "#/$defs/player_idx" },
           "kind": { "enum": ["shot", "save", "assist"] }
+        }
+      }
+    },
+    "touches": {
+      "description": "Ball touches in live play, by subtr-actor's detector (DV1).",
+      "type": ["array", "null"],
+      "items": {
+        "type": "object",
+        "required": [
+          "frame",
+          "time_s",
+          "player_idx",
+          "team",
+          "ball_speed_change",
+          "kind",
+          "height_band",
+          "surface",
+          "contested"
+        ],
+        "properties": {
+          "frame": {
+            "$ref": "#/$defs/frame"
+          },
+          "time_s": {
+            "$ref": "#/$defs/time_s"
+          },
+          "player_idx": {
+            "$ref": "#/$defs/player_idx"
+          },
+          "team": {
+            "$ref": "#/$defs/team"
+          },
+          "ball_speed_change": {
+            "description": "Change of the ball's speed the touch caused, in uu/s.",
+            "type": "number"
+          },
+          "kind": {
+            "$ref": "#/$defs/tag"
+          },
+          "height_band": {
+            "$ref": "#/$defs/tag"
+          },
+          "surface": {
+            "$ref": "#/$defs/tag"
+          },
+          "contested": {
+            "type": "boolean"
+          }
+        }
+      }
+    },
+    "kickoffs": {
+      "description": "Kickoffs, by subtr-actor's detector (DV7).",
+      "type": ["array", "null"],
+      "items": {
+        "type": "object",
+        "required": [
+          "start_frame",
+          "start_time_s",
+          "end_frame",
+          "end_time_s",
+          "kickoff_type",
+          "first_touch_frame",
+          "first_touch_time_s",
+          "first_touch_player_idx",
+          "winner_team",
+          "outcome",
+          "goal",
+          "time_to_goal_s",
+          "takers"
+        ],
+        "properties": {
+          "start_frame": {
+            "$ref": "#/$defs/frame"
+          },
+          "start_time_s": {
+            "$ref": "#/$defs/time_s"
+          },
+          "end_frame": {
+            "$ref": "#/$defs/frame"
+          },
+          "end_time_s": {
+            "$ref": "#/$defs/time_s"
+          },
+          "kickoff_type": {
+            "enum": ["center", "center_offset", "diagonal", "unknown"]
+          },
+          "first_touch_frame": {
+            "$ref": "#/$defs/optional_frame"
+          },
+          "first_touch_time_s": {
+            "$ref": "#/$defs/optional_time_s"
+          },
+          "first_touch_player_idx": {
+            "$ref": "#/$defs/optional_player_idx"
+          },
+          "winner_team": {
+            "$ref": "#/$defs/optional_team"
+          },
+          "outcome": {
+            "enum": ["win", "neutral", "unknown"]
+          },
+          "goal": {
+            "description": "A goal soon after the kickoff.",
+            "type": "boolean"
+          },
+          "time_to_goal_s": {
+            "type": ["number", "null"]
+          },
+          "takers": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "required": ["player_idx", "team", "time_to_ball_s", "start_boost", "boost_used"],
+              "properties": {
+                "player_idx": {
+                  "$ref": "#/$defs/player_idx"
+                },
+                "team": {
+                  "$ref": "#/$defs/team"
+                },
+                "time_to_ball_s": {
+                  "type": ["number", "null"]
+                },
+                "start_boost": {
+                  "type": ["number", "null"]
+                },
+                "boost_used": {
+                  "type": "number"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "fifty_fifties": {
+      "description": "50/50 contests, by subtr-actor's detector (DV7).",
+      "type": ["array", "null"],
+      "items": {
+        "type": "object",
+        "required": [
+          "start_frame",
+          "start_time_s",
+          "resolve_frame",
+          "resolve_time_s",
+          "is_kickoff",
+          "blue_player_idx",
+          "orange_player_idx",
+          "winner_team",
+          "possession_team"
+        ],
+        "properties": {
+          "start_frame": {
+            "$ref": "#/$defs/frame"
+          },
+          "start_time_s": {
+            "$ref": "#/$defs/time_s"
+          },
+          "resolve_frame": {
+            "$ref": "#/$defs/frame"
+          },
+          "resolve_time_s": {
+            "$ref": "#/$defs/time_s"
+          },
+          "is_kickoff": {
+            "type": "boolean"
+          },
+          "blue_player_idx": {
+            "$ref": "#/$defs/optional_player_idx"
+          },
+          "orange_player_idx": {
+            "$ref": "#/$defs/optional_player_idx"
+          },
+          "winner_team": {
+            "$ref": "#/$defs/optional_team"
+          },
+          "possession_team": {
+            "$ref": "#/$defs/optional_team"
+          }
+        }
+      }
+    },
+    "beaten_to_ball": {
+      "description": "A player committed to the ball and beaten to it by an opponent, by subtr-actor's detector (DV7).",
+      "type": ["array", "null"],
+      "items": {
+        "type": "object",
+        "required": [
+          "frame",
+          "time_s",
+          "player_idx",
+          "winner_idx",
+          "team",
+          "distance_at_touch",
+          "margin_s",
+          "approach_speed"
+        ],
+        "properties": {
+          "frame": {
+            "$ref": "#/$defs/frame"
+          },
+          "time_s": {
+            "$ref": "#/$defs/time_s"
+          },
+          "player_idx": {
+            "$ref": "#/$defs/player_idx"
+          },
+          "winner_idx": {
+            "$ref": "#/$defs/optional_player_idx"
+          },
+          "team": {
+            "$ref": "#/$defs/team"
+          },
+          "distance_at_touch": {
+            "type": "number"
+          },
+          "margin_s": {
+            "type": "number"
+          },
+          "approach_speed": {
+            "type": "number"
+          }
         }
       }
     }
