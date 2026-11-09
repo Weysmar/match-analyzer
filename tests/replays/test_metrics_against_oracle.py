@@ -32,7 +32,7 @@ REPLAYS = ROOT / "tests/fixtures/replays"
 UNSUPPORTED_MODE = 14
 RAW_TO_PERCENT = 100.0 / BOOST_RAW_MAX
 # Written by `just oracle-cache` (tests/fixtures/oracle.py), keyed by the replay's hash.
-ORACLE_CACHE = ROOT / "tests/fixtures/oracle/subtr-actor-1.5.1-format-2"
+ORACLE_CACHE = ROOT / "tests/fixtures/oracle/subtr-actor-1.5.1-format-3"
 # What a car burns per second with boost held, as the spike measured it: 80 raw units per 0.93 s.
 # Only used to check consumption, which never relies on it.
 USE_RATE_PER_S = 80 / 0.93 * RAW_TO_PERCENT
@@ -87,6 +87,8 @@ THEIRS: dict[str, Callable[[dict[str, Any]], float | None]] = {
     "touch.count": lambda o: stat(o, "touch", "touch_count"),
     "touch.pct_hard": lambda o: of_touches(o, "hard_hit_count"),
     "touch.pct_aerial": lambda o: of_touches(o, "high_aerial_touch_count"),
+    # Kickoffs where the player made the team's kickoff touch.
+    "kick.taken": lambda o: stat(o, "kickoff", "touches"),
 }
 
 # The plan's thirds and its ahead / behind differ from subtr-actor's on purpose (D4, no margin).
@@ -140,6 +142,10 @@ BOUNDS = {
     # points locally, 5.2 and 9.7 on the public replays. Documented, not corrected, like the last
     # back.
     "poss.player_pct": (6.0, 11.0),
+    # Ours is the first of the team to touch the ball within 6 s of the countdown, theirs the
+    # taker they designate who touched: the same player in 97 % of the team kickoffs (B16).
+    # Measured: 0 at the median, 2 at the 95th percentile, 3 at most.
+    "kick.taken": (0.0, 3.0),
 }
 # Consumption is checked against two other ways of counting it, as relative differences (T7.4).
 CONSUMPTION_BOUND = 0.05
