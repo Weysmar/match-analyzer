@@ -169,7 +169,7 @@ just dev-up
 Ce que fait cette commande :
 
 1. démarre PostgreSQL et RustFS dans Docker, accessibles seulement depuis ta machine ;
-2. crée le bucket S3 et sa règle CORS, qui autorise le site à y envoyer les fichiers ;
+2. crée le bucket S3 et sa règle CORS, qui autorise le site à y envoyer les fichiers et à y lire la vue 2D des matchs ;
 3. applique les migrations de la base et crée les rôles `ma_api` et `ma_worker`.
 
 Les données sont gardées entre deux démarrages.
