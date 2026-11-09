@@ -1,0 +1,38 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://match-analyzer.local/schemas/labels.schema.json",
+  "title": "labels",
+  "description": "Verdicts on the detected situations of one match, written by the 2D view's labeling mode in development (T12.7 of docs/PLAN-V2.md) into tests/fixtures/labels/, never versioned. Read by `just v2-report` to measure each detector's precision (section 4). No name, no platform id.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["version", "match_id", "detector", "labeled_at", "labels"],
+  "properties": {
+    "version": { "const": 1 },
+    "match_id": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$"
+    },
+    "detector": { "enum": ["turnover"], "description": "A situation kind of match2d." },
+    "labeled_at": { "type": "string", "format": "date-time" },
+    "labels": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["time_s", "clock_s", "verdict"],
+        "properties": {
+          "time_s": {
+            "type": "number",
+            "minimum": 0,
+            "description": "The situation's replay time, as in match2d: it names the situation."
+          },
+          "clock_s": { "type": "number", "minimum": 0, "description": "Seconds of play." },
+          "verdict": {
+            "enum": ["true", "false", "uncertain"],
+            "description": "Uncertain verdicts stay out of the precision (section 4, rule 4)."
+          }
+        }
+      }
+    }
+  }
+}

@@ -9,6 +9,7 @@ writes.
 | `events.schema.json` | `events.json` | JSON Schema |
 | `frames.schema.json` | `frames.parquet` | Columns and types, since JSON Schema does not describe Parquet |
 | `match2d.schema.json` | `views/<match_id>.json.gz`, the 2D view (`rl_analysis.view`) | JSON Schema |
+| `labels.schema.json` | `tests/fixtures/labels/*.json`, the labeling mode's verdicts (T12.7) | JSON Schema |
 
 The `ma_schemas` package loads them, validates documents and gives the worker typed dictionaries.
 
