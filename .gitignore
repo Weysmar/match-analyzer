@@ -23,3 +23,5 @@ test-results/
 playwright-report/
 # Derived from the replays, never versioned either.
 tests/fixtures/oracle/
+# The labeling mode's verdicts (T12.7): about matches of real players.
+tests/fixtures/labels/
