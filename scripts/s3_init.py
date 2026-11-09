@@ -5,7 +5,7 @@ import sys
 import time
 
 from botocore.exceptions import BotoCoreError, ClientError
-from s3_check import ALLOWED_ORIGIN, client
+from s3_check import ALLOWED_ORIGIN, client, cors_rules
 
 
 def main() -> int:
@@ -25,16 +25,7 @@ def main() -> int:
         api.create_bucket(Bucket=bucket)
     api.put_bucket_cors(
         Bucket=bucket,
-        CORSConfiguration={
-            "CORSRules": [
-                {
-                    "AllowedOrigins": [os.environ.get("SITE_URL", ALLOWED_ORIGIN)],
-                    "AllowedMethods": ["PUT"],
-                    "AllowedHeaders": ["content-type"],
-                    "MaxAgeSeconds": 600,
-                }
-            ]
-        },
+        CORSConfiguration={"CORSRules": cors_rules(os.environ.get("SITE_URL", ALLOWED_ORIGIN))},
     )
     print(f"bucket ready: {bucket}")
     return 0

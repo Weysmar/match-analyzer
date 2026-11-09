@@ -158,6 +158,13 @@ class MatchSheet(BaseModel):
     needs_identity: bool
 
 
+class ViewUrl(BaseModel):
+    """Where the browser reads the match's 2D view (`match2d`, gzip), until `expires_at`."""
+
+    url: str
+    expires_at: str
+
+
 class IdentityChosen(BaseModel):
     verified: bool
     identity_source: IdentitySource

@@ -5,6 +5,7 @@ Output holds counts only, never a name or an id.
 """
 
 import collections
+import gzip
 import http.client
 import json
 import os
@@ -31,7 +32,7 @@ from ma_api.settings import PREFIX
 from ma_api.settings import Settings as ApiSettings
 from ma_api.stats import METRIC_IDS
 from ma_db.testing import Connection, role_url, temporary_database
-from ma_schemas import frames_problems, parse_events
+from ma_schemas import frames_problems, parse_events, problems
 from ma_worker import analyze, parse, queue, reparse, reprocess
 from ma_worker.runner import Runner
 from ma_worker.settings import Settings as WorkerSettings
@@ -125,6 +126,18 @@ def put(url: str, headers: dict[str, str], body: bytes) -> int:
     try:
         connection.request("PUT", f"{parts.path}?{parts.query}", body=body, headers=headers)
         return connection.getresponse().status
+    finally:
+        connection.close()
+
+
+def get(url: str) -> tuple[int, bytes]:
+    """What the browser does with a presigned read URL (its CORS is checked by s3_check)."""
+    parts = urllib.parse.urlsplit(url)
+    connection = http.client.HTTPConnection(parts.netloc, timeout=30)
+    try:
+        connection.request("GET", f"{parts.path}?{parts.query}")
+        response = connection.getresponse()
+        return response.status, response.read()
     finally:
         connection.close()
 
@@ -429,7 +442,19 @@ def test_a_signed_in_player_sees_the_metrics_of_their_match(
         sheet = client.get(f"{MATCHES}/{match_id}").json()
         stats = client.get(f"{PREFIX}/stats/me").json()
         history = client.get(f"{PREFIX}/stats/me/history", params={"metric_id": "boost.avg"})
+        view_url = client.get(f"{MATCHES}/{match_id}/view").json()["url"]
     assert sheet["match"]["status"] == "ready"
+    # The 2D view, read as the browser does: valid, its players those of the sheet, no name.
+    status, packed = get(view_url)
+    assert status == 200
+    view = json.loads(gzip.decompress(packed))
+    assert problems("match2d", view) == []
+    assert {player["id"] for player in view["players"]} <= {
+        player["match_player_id"] for player in sheet["players"]
+    }
+    for player in sheet["players"]:
+        assert player["name"].encode() not in gzip.decompress(packed)
+    assert account_id.encode() not in gzip.decompress(packed)
     me = str(sheet["me"]["match_player_id"])
     # Every metric the API knows, the touches included: the parser finds them on a real replay.
     assert set(sheet["metrics"][me]) == METRIC_IDS

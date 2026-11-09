@@ -1,10 +1,12 @@
 """The `analyze` job: the metrics of a parsed match, per player and per team, written to the
-database.
+database, and its 2D view, written to the object store (T12.1 of docs/PLAN-V2.md).
 
 It can run again at any point, and as often as needed: each metric of each player or team is one
 row, which a new run overwrites. A match is `ready` once its metrics are all there.
 """
 
+import gzip
+import json
 import logging
 import tempfile
 import uuid
@@ -15,7 +17,7 @@ from ma_worker.queue import Connection, Job
 from ma_worker.runner import PermanentError
 from ma_worker.settings import Settings
 from ma_worker.store import ObjectStore
-from rl_analysis import ANALYSIS_VERSION, clock
+from rl_analysis import ANALYSIS_VERSION, clock, view
 from rl_analysis.frames import InvalidFramesError
 from rl_analysis.match import load
 from rl_analysis.registry import METRICS, TEAM_METRICS, compute, compute_teams
@@ -93,6 +95,30 @@ def _write_teams(
     return len(rows)
 
 
+def view_key(match_id: uuid.UUID) -> str:
+    return f"views/{match_id}.json.gz"
+
+
+def _player_ids(connection: Connection, match_id: uuid.UUID) -> dict[int, int]:
+    """`player_idx` to `match_player_id`, for the players found in the frames."""
+    rows = connection.execute(
+        "SELECT frames_idx, id FROM match_players WHERE match_id = %s AND frames_idx IS NOT NULL",
+        (match_id,),
+    ).fetchall()
+    return dict(rows)
+
+
+def _store_view(
+    store: ObjectStore, match_id: uuid.UUID, document: dict[str, object], folder: Path
+) -> str:
+    """The view, compressed, over the previous one: the browser unpacks it itself."""
+    path = folder / "view.json.gz"
+    path.write_bytes(gzip.compress(json.dumps(document, separators=(",", ":")).encode()))
+    key = view_key(match_id)
+    store.upload(path, key, "application/gzip")
+    return key
+
+
 def _write_clock(
     connection: Connection, match_id: uuid.UUID, game_clock: clock.Clock, goal_frames: list[int]
 ) -> None:
@@ -136,6 +162,10 @@ def handle(connection: Connection, job: Job, store: ObjectStore, settings: Setti
         results = compute(match)
         team_results = compute_teams(match)
         game_clock = clock.compute(match)
+        # Files first: if the database then fails, the next run writes the same key again.
+        stored_view = _store_view(
+            store, match_id, view.build(match, _player_ids(connection, match_id)), Path(folder)
+        )
     with connection.transaction():
         written = _write(connection, match_id, results)
         written += _write_teams(connection, match_id, team_results)
@@ -143,8 +173,8 @@ def handle(connection: Connection, job: Job, store: ObjectStore, settings: Setti
             connection, match_id, game_clock, [goal["frame"] for goal in match.events["goals"]]
         )
         connection.execute(
-            "UPDATE matches SET status = 'ready', analysis_version = %s, analyzed_at = now() "
-            "WHERE id = %s",
-            (ANALYSIS_VERSION, match_id),
+            "UPDATE matches SET status = 'ready', analysis_version = %s, analyzed_at = now(), "
+            "view_key = %s WHERE id = %s",
+            (ANALYSIS_VERSION, stored_view, match_id),
         )
     log.info("match %s analyzed: %d values, version %s", match_id, written, ANALYSIS_VERSION)

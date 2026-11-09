@@ -6,9 +6,10 @@ and nowhere else. Columns are always listed by hand, so that `platform_id` can n
 
 import uuid
 from collections import defaultdict
+from datetime import UTC, datetime, timedelta
 from typing import Annotated, Any, Literal
 
-from fastapi import APIRouter, Query
+from fastapi import APIRouter, Query, Request
 from psycopg import sql
 from psycopg.rows import dict_row
 from pydantic import BaseModel
@@ -17,7 +18,8 @@ from ma_api import attach, models, pagination, sessions
 from ma_api.db import Connection, ConnectionDep
 from ma_api.errors import ApiError
 from ma_api.owner import Owner, owned_match
-from ma_api.sessions import IdentityDep
+from ma_api.sessions import IdentityDep, SettingsDep
+from ma_api.storage import ObjectStore
 
 _LIST_MAX = 200
 # Bots and unknown platforms have nothing to remember a player by.
@@ -220,6 +222,30 @@ def get_match(
         },
         "needs_identity": link["identity_source"] == "none"
         and any(not player["is_bot"] for player in players),
+    }
+
+
+@router.get("/matches/{match_id}/view", response_model=models.ViewUrl)
+def get_view(
+    match_id: uuid.UUID,
+    request: Request,
+    connection: ConnectionDep,
+    settings: SettingsDep,
+    identity: IdentityDep,
+) -> dict[str, str]:
+    """A short presigned URL to the 2D view (T12.2): the API never relays its bytes. 404
+    `not_available` before the analysis, for a match read from its header only, and while a new
+    parse waits for its analysis."""
+    owner = sessions.require_owner(identity)
+    owned_match(connection, owner, match_id)
+    row = connection.execute("SELECT view_key FROM matches WHERE id = %s", (match_id,)).fetchone()
+    if row is None or row[0] is None:
+        raise ApiError(404, "not_available")
+    store: ObjectStore = request.app.state.storage
+    expires_at = datetime.now(UTC) + timedelta(seconds=settings.view_url_ttl_s)
+    return {
+        "url": store.presign_get(row[0], settings.view_url_ttl_s),
+        "expires_at": expires_at.isoformat(),
     }
 
 

@@ -53,6 +53,7 @@ class Settings:
     upload_max_bytes: int = 20_971_520
     upload_max_files: int = 50
     upload_url_ttl_s: int = 600
+    view_url_ttl_s: int = 600
     rate_upload_anon_per_day: int = 100
     rate_upload_ip_per_day: int = 200
     rate_upload_user_per_day: int = 500
@@ -112,6 +113,7 @@ class Settings:
             upload_max_bytes=_integer(values, "UPLOAD_MAX_BYTES", 20_971_520),
             upload_max_files=_integer(values, "UPLOAD_MAX_FILES_PER_BATCH", 50),
             upload_url_ttl_s=_integer(values, "UPLOAD_URL_TTL_S", 600),
+            view_url_ttl_s=_integer(values, "VIEW_URL_TTL_S", 600),
             rate_upload_anon_per_day=_integer(values, "RATE_UPLOAD_ANON_PER_DAY", 100),
             rate_upload_ip_per_day=_integer(values, "RATE_UPLOAD_IP_PER_DAY", 200),
             rate_upload_user_per_day=_integer(values, "RATE_UPLOAD_USER_PER_DAY", 500),

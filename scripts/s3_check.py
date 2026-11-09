@@ -2,6 +2,7 @@
 
 Used to choose the development emulator (T1.4), and again on R2 before production (T9.4): a
 presigned PUT must refuse a body larger than declared, a wrong content type and an expired URL.
+The site's origin must be allowed to PUT uploads and to GET a presigned 2D view (T12.2).
 """
 
 import http.client
@@ -20,6 +21,18 @@ ALLOWED_ORIGIN = "http://localhost:3000"
 OTHER_ORIGIN = "http://evil.test"
 CONTENT_TYPE = "application/octet-stream"
 BODY = b"x" * 100
+
+
+def cors_rules(origin: str) -> list[dict[str, object]]:
+    """The bucket's CORS: the site PUTs uploads and GETs 2D views, nothing else."""
+    return [
+        {
+            "AllowedOrigins": [origin],
+            "AllowedMethods": ["PUT", "GET"],
+            "AllowedHeaders": ["content-type"],
+            "MaxAgeSeconds": 600,
+        }
+    ]
 
 
 @dataclass(frozen=True)
@@ -117,19 +130,7 @@ def main() -> int:
     response = send(expiring, "PUT", headers, BODY)
     check("expired URL refused", response.status not in (200, 201), response.status)
 
-    api.put_bucket_cors(
-        Bucket=bucket,
-        CORSConfiguration={
-            "CORSRules": [
-                {
-                    "AllowedOrigins": [ALLOWED_ORIGIN],
-                    "AllowedMethods": ["PUT"],
-                    "AllowedHeaders": ["content-type"],
-                    "MaxAgeSeconds": 600,
-                }
-            ]
-        },
-    )
+    api.put_bucket_cors(Bucket=bucket, CORSConfiguration={"CORSRules": cors_rules(ALLOWED_ORIGIN)})
     preflight = {
         "Access-Control-Request-Method": "PUT",
         "Access-Control-Request-Headers": "content-type",
@@ -141,6 +142,19 @@ def main() -> int:
     response = send(target, "OPTIONS", {"Origin": OTHER_ORIGIN, **preflight})
     other = response.headers.get("access-control-allow-origin")
     check("CORS refuses another site", other not in (OTHER_ORIGIN, "*"), other)
+    reading: str = signer.generate_presigned_url(
+        "get_object", Params={"Bucket": bucket, "Key": incoming}, ExpiresIn=60
+    )
+    response = send(reading, "GET", {"Origin": ALLOWED_ORIGIN})
+    allowed = response.headers.get("access-control-allow-origin")
+    check(
+        "presigned GET readable by the site",
+        response.status == 200 and allowed == ALLOWED_ORIGIN and response.body == BODY,
+        f"{response.status} {allowed}",
+    )
+    response = send(reading, "GET", {"Origin": OTHER_ORIGIN})
+    other = response.headers.get("access-control-allow-origin")
+    check("presigned GET not readable by another site", other not in (OTHER_ORIGIN, "*"), other)
 
     api.copy_object(Bucket=bucket, Key=raw, CopySource={"Bucket": bucket, "Key": incoming})
     size = api.head_object(Bucket=bucket, Key=raw)["ContentLength"]

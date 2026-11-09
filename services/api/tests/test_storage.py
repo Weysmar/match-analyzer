@@ -50,3 +50,11 @@ def test_no_store_configured_is_unavailable() -> None:
     with pytest.raises(ApiError) as error:
         storage(s3_endpoint="", s3_public_endpoint="").presign_put("incoming/an-id", 1)
     assert (error.value.status, error.value.code) == (503, "unavailable")
+
+
+def test_a_view_url_reads_one_object_for_a_short_time() -> None:
+    url = httpx2.URL(storage().presign_get("views/a-match.json.gz", 600))
+    assert url.host == "public.test"
+    assert url.path == "/a-bucket/views/a-match.json.gz"
+    assert url.params["X-Amz-Expires"] == "600"
+    assert SECRET not in str(url)

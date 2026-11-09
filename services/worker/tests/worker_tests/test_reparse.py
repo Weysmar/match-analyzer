@@ -235,10 +235,18 @@ def test_old_metrics_go_and_events_are_not_doubled(
     match = parsed(conn, worker_conn, make, store, settings, user=make.user())
     make.metric(players_of(conn, match)["Blue One"][0], "boost.avg", 50.0)
     make.team_metric(match, 0)
+    old_view = f"views/{match}.json.gz"
+    store.objects[old_view] = b"drawn from the previous parse"
+    conn.execute("UPDATE matches SET view_key = %s WHERE id = %s", (old_view, match))
     events_before = count(conn, "SELECT count(*) FROM match_events WHERE match_id = %s", match)
     run_job(worker_conn, store, settings, match)
     assert count(conn, "SELECT count(*) FROM player_match_metrics") == 0
     assert count(conn, "SELECT count(*) FROM team_match_metrics") == 0
+    # The old view goes with them, until the analysis queued here draws it again.
+    assert old_view not in store.objects
+    assert conn.execute("SELECT view_key FROM matches WHERE id = %s", (match,)).fetchone() == (
+        None,
+    )
     assert count(conn, "SELECT count(*) FROM match_events WHERE match_id = %s", match) == (
         events_before
     )

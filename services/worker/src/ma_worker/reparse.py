@@ -56,11 +56,11 @@ def handle(connection: Connection, job: Job, store: ObjectStore, settings: Setti
     except KeyError, ValueError, TypeError, AttributeError:
         raise PermanentError("bad_payload") from None
     row = connection.execute(
-        "SELECT raw_key, raw_deleted_at FROM matches WHERE id = %s", (match_id,)
+        "SELECT raw_key, raw_deleted_at, view_key FROM matches WHERE id = %s", (match_id,)
     ).fetchone()
     if row is None:
         return
-    raw_key, raw_deleted_at = row
+    raw_key, raw_deleted_at, view_key = row
     if raw_key is None or raw_deleted_at is not None or store.size(raw_key) is None:
         # Purged after its retention period: the match stays as its last parser left it.
         log.warning("match %s: no raw file left to parse again", match_id)
@@ -73,6 +73,10 @@ def handle(connection: Connection, job: Job, store: ObjectStore, settings: Setti
         frames, error_code = parse.run_frames(store, settings, workdir, match_id)
 
     events = None if frames is None else frames.events
+    # Drawn from the previous parse: gone until the analysis draws it again, and for good if
+    # the new parser only reads the header. Files first, as for the erasure.
+    if view_key is not None:
+        store.delete(view_key)
     with connection.transaction():
         load.update_match(connection, match_id, header, frames, error_code)
         ids = load.replace_players(connection, match_id, load.merge_players(header, events))
@@ -84,6 +88,7 @@ def handle(connection: Connection, job: Job, store: ObjectStore, settings: Setti
             (match_id,),
         )
         connection.execute("DELETE FROM team_match_metrics WHERE match_id = %s", (match_id,))
+        connection.execute("UPDATE matches SET view_key = NULL WHERE id = %s", (match_id,))
         if frames is not None:
             connection.execute(
                 "INSERT INTO jobs (kind, payload) VALUES ('analyze', %s)",

@@ -16,13 +16,19 @@ pytestmark = pytest.mark.db
 
 
 def stored_match(conn: Connection, make: Factory, store: MemoryStore) -> uuid.UUID:
-    """A match with its three files in the store, a player, an event and a metric."""
+    """A match with its four files in the store, a player, an event and a metric."""
     match = make.match()
     player = make.player(match)
     make.metric(player)
-    keys = (f"raw/{match.hex}.replay", f"frames/{match}.parquet", f"events/{match}.json")
+    keys = (
+        f"raw/{match.hex}.replay",
+        f"frames/{match}.parquet",
+        f"events/{match}.json",
+        f"views/{match}.json.gz",
+    )
     conn.execute(
-        "UPDATE matches SET raw_key = %s, frames_key = %s, events_key = %s WHERE id = %s",
+        "UPDATE matches SET raw_key = %s, frames_key = %s, events_key = %s, view_key = %s "
+        "WHERE id = %s",
         (*keys, match),
     )
     conn.execute(
@@ -69,7 +75,7 @@ def test_a_match_someone_holds_stays(
         make.user_match(match, anonymous_session_id=make.anonymous_session())
     run_job(worker_conn, store, match)
     assert count(conn, "SELECT count(*) FROM matches WHERE id = %s", match) == 1
-    assert len(store.objects) == 3
+    assert len(store.objects) == 4
 
 
 def test_a_raw_file_already_purged_is_not_asked_for(
