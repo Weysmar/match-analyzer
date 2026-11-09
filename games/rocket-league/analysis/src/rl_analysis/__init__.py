@@ -8,4 +8,5 @@ __version__ = "0.0.0"
 # 3: touch metrics, from rl-parse 0.2.0's touches (T11.4 of docs/PLAN-V2.md).
 # 4: possession and turnovers, and the first team metric (T11.5 and T11.6).
 # 5: the 2D view's document gets its situations, turnovers first (T12.7).
-ANALYSIS_VERSION = "5"
+# 6: kickoff metrics, from rl-parse 0.2.0's kickoffs (T13.1 and T13.2).
+ANALYSIS_VERSION = "6"

@@ -10,13 +10,16 @@ import {
 } from "../../src/lib/matches/metrics";
 
 describe("the catalog of metrics", () => {
-  it("holds the 28 player metrics, each in a known group", () => {
-    expect(METRICS).toHaveLength(28);
+  it("holds the 31 player metrics, each in a known group", () => {
+    expect(METRICS).toHaveLength(31);
     for (const metric of METRICS) expect(GROUPS).toContain(metric.group);
   });
 
   it("keeps the team metrics apart", () => {
-    expect(TEAM_METRICS.map((metric) => metric.id)).toEqual(["poss.team_pct"]);
+    expect(TEAM_METRICS.map((metric) => metric.id)).toEqual([
+      "poss.team_pct",
+      "kick.goals_conceded",
+    ]);
     expect(METRICS.map((metric) => metric.id)).not.toContain("poss.team_pct");
   });
 
@@ -57,6 +60,10 @@ describe("a value as shown", () => {
 
   it("turns a distance into meters", () => {
     expect(show(2500, "uu")).toEqual({ value: 25, unit: "meters", digits: 1 });
+  });
+
+  it("keeps seconds to the hundredth", () => {
+    expect(show(2.0667, "s")).toEqual({ value: 2.0667, unit: "seconds", digits: 2 });
   });
 
   it("keeps a count whole", () => {

@@ -5,9 +5,9 @@
  */
 import catalog from "../../../metrics.json";
 
-export type Unit = "%" | "%/min" | "/min" | "count" | "uu/s" | "uu";
-export type Group = "boost" | "move" | "pos" | "touch" | "poss" | "event";
-export const GROUPS: readonly Group[] = ["boost", "move", "pos", "touch", "poss", "event"];
+export type Unit = "%" | "%/min" | "/min" | "count" | "uu/s" | "uu" | "s";
+export type Group = "boost" | "move" | "pos" | "touch" | "poss" | "kick" | "event";
+export const GROUPS: readonly Group[] = ["boost", "move", "pos", "touch", "poss", "kick", "event"];
 
 export interface MetricDefinition {
   id: string;
@@ -48,8 +48,18 @@ export function possessionSplit(
   return { blue, orange, loose: Math.max(0, 100 - blue - orange) };
 }
 
+/** Goals each team conceded within 12 s of a kickoff, or null without kickoffs (T13.2). */
+export function kickoffGoals(
+  teamMetrics: Record<string, Record<string, number | null>>,
+): { blue: number; orange: number } | null {
+  const blue = teamMetrics["0"]?.["kick.goals_conceded"];
+  const orange = teamMetrics["1"]?.["kick.goals_conceded"];
+  if (typeof blue !== "number" || typeof orange !== "number") return null;
+  return { blue, orange };
+}
+
 /** How a value reads on the page: game units turned into ones a player knows. */
-export type DisplayUnit = "percent" | "perMinute" | "rate" | "count" | "kmh" | "meters";
+export type DisplayUnit = "percent" | "perMinute" | "rate" | "count" | "kmh" | "meters" | "seconds";
 
 export interface Shown {
   value: number;
@@ -77,5 +87,7 @@ export function show(value: number | null | undefined, unit: Unit): Shown | null
       return { value: value * KMH_PER_UU_S, unit: "kmh", digits: 0 };
     case "uu":
       return { value: value * METERS_PER_UU, unit: "meters", digits: 1 };
+    case "s":
+      return { value, unit: "seconds", digits: 2 };
   }
 }

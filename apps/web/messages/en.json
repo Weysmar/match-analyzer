@@ -260,6 +260,7 @@
         "pos": "Positioning",
         "touch": "Ball touches",
         "poss": "Possession",
+        "kick": "Kickoffs",
         "event": "Events"
       }
     },
@@ -268,6 +269,7 @@
       "blue": "Blue {value}",
       "orange": "Orange {value}",
       "loose": "Loose ball {value}",
+      "kickoffGoals": "Goals conceded within 12 s of a kickoff: Blue {blue} · Orange {orange}",
       "how": "A team has the ball when it touches it again within 3 seconds. The rest of the play time, the ball is loose."
     },
     "labels": {
@@ -363,6 +365,12 @@
       "turnovers_lost": "Balls lost",
       "turnovers_won": "Balls won"
     },
+    "kick": {
+      "taken": "Kickoffs taken",
+      "won_pct": "Kickoffs won",
+      "time_to_ball": "Time to the ball",
+      "goals_conceded": "Goals conceded after a kickoff"
+    },
     "event": {
       "demos_inflicted": "Demolitions inflicted",
       "demos_taken": "Demolitions taken"
@@ -372,6 +380,7 @@
     "percent": "{value}%",
     "perMinute": "{value} %/min",
     "rate": "{value}/min",
+    "seconds": "{value} s",
     "count": "{value}",
     "kmh": "{value} km/h",
     "meters": "{value} m",

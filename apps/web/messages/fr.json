@@ -260,6 +260,7 @@
         "pos": "Positionnement",
         "touch": "Touches de balle",
         "poss": "Possession",
+        "kick": "Kickoffs",
         "event": "Événements"
       }
     },
@@ -268,6 +269,7 @@
       "blue": "Bleus {value}",
       "orange": "Orange {value}",
       "loose": "Balle libre {value}",
+      "kickoffGoals": "Buts encaissés dans les 12 s après un kickoff : Bleus {blue} · Orange {orange}",
       "how": "Une équipe a la balle quand elle la touche à nouveau dans les 3 secondes. Le reste du temps de jeu, la balle est libre."
     },
     "labels": {
@@ -363,6 +365,12 @@
       "turnovers_lost": "Ballons perdus",
       "turnovers_won": "Ballons récupérés"
     },
+    "kick": {
+      "taken": "Kickoffs pris",
+      "won_pct": "Kickoffs gagnés",
+      "time_to_ball": "Temps jusqu'à la balle",
+      "goals_conceded": "Buts encaissés après un kickoff"
+    },
     "event": {
       "demos_inflicted": "Démolitions infligées",
       "demos_taken": "Démolitions subies"
@@ -372,6 +380,7 @@
     "percent": "{value} %",
     "perMinute": "{value} %/min",
     "rate": "{value} /min",
+    "seconds": "{value} s",
     "count": "{value}",
     "kmh": "{value} km/h",
     "meters": "{value} m",

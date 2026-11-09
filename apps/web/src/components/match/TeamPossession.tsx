@@ -1,6 +1,6 @@
 import { getFormatter, getTranslations } from "next-intl/server";
 import type { Schemas } from "@/lib/api/client";
-import { possessionSplit } from "@/lib/matches/metrics";
+import { kickoffGoals, possessionSplit } from "@/lib/matches/metrics";
 
 /**
  * Who had the ball (T11.5): each team's share of live play, and the loose ball. Nothing before the
@@ -12,6 +12,7 @@ export async function TeamPossession({
   teamMetrics: Schemas["MatchSheet"]["team_metrics"];
 }) {
   const split = possessionSplit(teamMetrics);
+  const kickoffs = kickoffGoals(teamMetrics);
   if (!split) return null;
   const t = await getTranslations("match.possession");
   const format = await getFormatter();
@@ -34,6 +35,11 @@ export async function TeamPossession({
         </span>
       </p>
       <p className="text-xs text-slate-600 dark:text-slate-400">{t("how")}</p>
+      {kickoffs ? (
+        <p className="text-sm">
+          {t("kickoffGoals", { blue: kickoffs.blue, orange: kickoffs.orange })}
+        </p>
+      ) : null}
     </section>
   );
 }

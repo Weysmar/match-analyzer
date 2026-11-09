@@ -6,7 +6,7 @@ metric for the team ones."""
 from collections.abc import Callable
 from dataclasses import dataclass
 
-from rl_analysis import boost, movement, positioning, possession, touches
+from rl_analysis import boost, kickoffs, movement, positioning, possession, touches
 from rl_analysis.frames import PerPlayer
 from rl_analysis.match import Match
 from rl_analysis.possession import TEAMS, PerTeam
@@ -53,6 +53,9 @@ METRICS: tuple[Metric, ...] = (
     Metric("poss.player_pct", "%", possession.player_share),
     Metric("poss.turnovers_lost", "count", possession.turnovers_lost),
     Metric("poss.turnovers_won", "count", possession.turnovers_won),
+    Metric("kick.taken", "count", kickoffs.taken),
+    Metric("kick.won_pct", "%", kickoffs.won_share),
+    Metric("kick.time_to_ball", "s", kickoffs.time_to_ball),
 )
 
 
@@ -69,7 +72,10 @@ class TeamMetric:
         return (self.compute.__doc__ or "").strip()
 
 
-TEAM_METRICS: tuple[TeamMetric, ...] = (TeamMetric("poss.team_pct", "%", possession.team_share),)
+TEAM_METRICS: tuple[TeamMetric, ...] = (
+    TeamMetric("poss.team_pct", "%", possession.team_share),
+    TeamMetric("kick.goals_conceded", "count", kickoffs.goals_conceded),
+)
 
 
 def compute(match: Match) -> dict[int, dict[str, float | None]]:
