@@ -16,7 +16,15 @@ use rl_parse::frames;
 use serde_json::{Map, Value, json};
 use subtr_actor::{ReplayDataCollector, StatsCollector};
 
-const MODULES: [&str; 5] = ["boost", "movement", "positioning", "demo", "touch"];
+const MODULES: [&str; 7] = [
+    "boost",
+    "movement",
+    "positioning",
+    "demo",
+    "touch",
+    "kickoff",
+    "fifty_fifty",
+];
 
 /// The numeric fields of one player's row in a stats module, and nothing else.
 fn numbers(stats: &Value) -> Value {
