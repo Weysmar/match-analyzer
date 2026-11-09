@@ -270,6 +270,25 @@
       "loose": "Loose ball {value}",
       "how": "A team has the ball when it touches it again within 3 seconds. The rest of the play time, the ball is loose."
     },
+    "view": {
+      "title": "Replay the match",
+      "loading": "Loading the 2D view…",
+      "unavailable": "The 2D view is not available for this match.",
+      "error": "The 2D view could not be loaded. Reload the page to try again.",
+      "canvas": "The field seen from above, with the cars and the ball",
+      "play": "Play",
+      "pause": "Pause",
+      "back": "−5 s",
+      "forward": "+5 s",
+      "speed": "Playback speed",
+      "speedValue": "×{speed}",
+      "cursor": "Moment of the match",
+      "remaining": "{clock} left",
+      "intoOvertime": "+{clock} in overtime",
+      "keys": "Keyboard: Space to play or pause, arrows to move 5 s forward or back.",
+      "you": "you",
+      "unknownPlayer": "Unknown player"
+    },
     "timeline": {
       "title": "Goals",
       "empty": "No goal in this match.",

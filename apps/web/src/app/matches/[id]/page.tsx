@@ -9,6 +9,7 @@ import { IdentityPicker } from "@/components/match/IdentityPicker";
 import { MetricsTable } from "@/components/match/MetricsTable";
 import { PlayersTable } from "@/components/match/PlayersTable";
 import { TeamPossession } from "@/components/match/TeamPossession";
+import { MatchView } from "@/components/view2d/MatchView";
 import { ApiError, type Schemas } from "@/lib/api/client";
 import { serverGet } from "@/lib/api/server";
 import { claimable, duration, inProgress, playlistKind, teamSize } from "@/lib/matches/describe";
@@ -121,6 +122,19 @@ export default async function MatchPage({ params }: { params: Promise<{ id: stri
 
       <PlayersTable players={data.players} />
       <GoalTimeline goals={data.goals} match={match} />
+      {match.status === "ready" ? (
+        <MatchView
+          matchId={match.match_id}
+          players={data.players.map((player) => ({
+            id: player.match_player_id,
+            name: player.name,
+            team: player.team,
+            isMe: player.is_me,
+          }))}
+          gameLengthS={match.game_length_s}
+          overtimeFromS={match.overtime_from_s}
+        />
+      ) : null}
       <TeamPossession teamMetrics={data.team_metrics} />
       <MetricsTable players={data.players} metrics={data.metrics} />
     </div>
