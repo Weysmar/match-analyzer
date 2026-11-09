@@ -1,102 +1,147 @@
 [
   {
     "id": "boost.used_per_min",
-    "unit": "%/min"
+    "unit": "%/min",
+    "scope": "player"
   },
   {
     "id": "boost.avg",
-    "unit": "%"
+    "unit": "%",
+    "scope": "player"
   },
   {
     "id": "boost.pct_zero",
-    "unit": "%"
+    "unit": "%",
+    "scope": "player"
   },
   {
     "id": "boost.pct_full",
-    "unit": "%"
+    "unit": "%",
+    "scope": "player"
   },
   {
     "id": "boost.pads_big",
-    "unit": "count"
+    "unit": "count",
+    "scope": "player"
   },
   {
     "id": "boost.pads_small",
-    "unit": "count"
+    "unit": "count",
+    "scope": "player"
   },
   {
     "id": "boost.pads_enemy_half",
-    "unit": "count"
+    "unit": "count",
+    "scope": "player"
   },
   {
     "id": "move.speed_avg",
-    "unit": "uu/s"
+    "unit": "uu/s",
+    "scope": "player"
   },
   {
     "id": "move.pct_supersonic",
-    "unit": "%"
+    "unit": "%",
+    "scope": "player"
   },
   {
     "id": "move.pct_ground",
-    "unit": "%"
+    "unit": "%",
+    "scope": "player"
   },
   {
     "id": "move.pct_low_air",
-    "unit": "%"
+    "unit": "%",
+    "scope": "player"
   },
   {
     "id": "move.pct_high_air",
-    "unit": "%"
+    "unit": "%",
+    "scope": "player"
   },
   {
     "id": "pos.pct_def_third",
-    "unit": "%"
+    "unit": "%",
+    "scope": "player"
   },
   {
     "id": "pos.pct_mid_third",
-    "unit": "%"
+    "unit": "%",
+    "scope": "player"
   },
   {
     "id": "pos.pct_att_third",
-    "unit": "%"
+    "unit": "%",
+    "scope": "player"
   },
   {
     "id": "pos.pct_ahead_ball",
-    "unit": "%"
+    "unit": "%",
+    "scope": "player"
   },
   {
     "id": "pos.pct_behind_ball",
-    "unit": "%"
+    "unit": "%",
+    "scope": "player"
   },
   {
     "id": "pos.dist_ball_avg",
-    "unit": "uu"
+    "unit": "uu",
+    "scope": "player"
   },
   {
     "id": "pos.pct_last_back",
-    "unit": "%"
+    "unit": "%",
+    "scope": "player"
   },
   {
     "id": "event.demos_inflicted",
-    "unit": "count"
+    "unit": "count",
+    "scope": "player"
   },
   {
     "id": "event.demos_taken",
-    "unit": "count"
+    "unit": "count",
+    "scope": "player"
   },
   {
     "id": "touch.count",
-    "unit": "count"
+    "unit": "count",
+    "scope": "player"
   },
   {
     "id": "touch.per_min",
-    "unit": "/min"
+    "unit": "/min",
+    "scope": "player"
   },
   {
     "id": "touch.pct_aerial",
-    "unit": "%"
+    "unit": "%",
+    "scope": "player"
   },
   {
     "id": "touch.pct_hard",
-    "unit": "%"
+    "unit": "%",
+    "scope": "player"
+  },
+  {
+    "id": "poss.player_pct",
+    "unit": "%",
+    "scope": "player"
+  },
+  {
+    "id": "poss.turnovers_lost",
+    "unit": "count",
+    "scope": "player"
+  },
+  {
+    "id": "poss.turnovers_won",
+    "unit": "count",
+    "scope": "player"
+  },
+  {
+    "id": "poss.team_pct",
+    "unit": "%",
+    "scope": "team"
   }
 ]

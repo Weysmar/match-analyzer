@@ -488,6 +488,12 @@ export interface components {
             needs_identity: boolean;
             /** Players */
             players: components["schemas"]["Player"][];
+            /** Team Metrics */
+            team_metrics: {
+                [key: string]: {
+                    [key: string]: number | null;
+                };
+            };
         };
         /** @enum {string} */
         MatchStatus: "pending" | "parsing" | "header_only" | "parsed" | "analyzing" | "ready" | "failed";

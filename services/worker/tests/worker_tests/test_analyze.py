@@ -16,7 +16,7 @@ from ma_worker.queue import Job
 from ma_worker.runner import PermanentError
 from ma_worker.settings import Settings
 from rl_analysis import ANALYSIS_VERSION
-from rl_analysis.registry import METRICS
+from rl_analysis.registry import METRICS, TEAM_METRICS
 
 from .helpers import MemoryStore, events, member
 
@@ -127,6 +127,38 @@ def test_a_parsed_match_becomes_ready(
     assert blue_metrics["boost.avg"] == (pytest.approx(40.0), ANALYSIS_VERSION)
     assert metrics_of(conn, orange)["boost.avg"][0] == pytest.approx(80.0)
     assert metrics_of(conn, orange)["move.speed_avg"][0] == pytest.approx(1000.0)
+
+
+def team_metrics_of(conn: Connection, match: uuid.UUID) -> dict[tuple[int, str], Any]:
+    rows = conn.execute(
+        "SELECT team, metric_id, value, analysis_version FROM team_match_metrics "
+        "WHERE match_id = %s",
+        (match,),
+    ).fetchall()
+    return {(team, metric_id): (value, version) for team, metric_id, value, version in rows}
+
+
+def test_both_teams_get_every_team_metric(
+    conn: Connection, worker_conn: Connection, make: Factory, store: MemoryStore, tmp_path: Path
+) -> None:
+    """Without detected touches, possession is unknown: stored, as null."""
+    match, _, _ = parsed_match(conn, make, store, tmp_path)
+    run_job(worker_conn, store, match)
+    assert team_metrics_of(conn, match) == {
+        (team, metric.id): (None, ANALYSIS_VERSION) for team in (0, 1) for metric in TEAM_METRICS
+    }
+
+
+def test_a_new_run_adds_no_team_row_and_drops_a_retired_one(
+    conn: Connection, worker_conn: Connection, make: Factory, store: MemoryStore, tmp_path: Path
+) -> None:
+    match, _, _ = parsed_match(conn, make, store, tmp_path)
+    run_job(worker_conn, store, match)
+    make.team_metric(match, 0, "poss.retired")
+    run_job(worker_conn, store, match)
+    assert set(team_metrics_of(conn, match)) == {
+        (team, metric.id) for team in (0, 1) for metric in TEAM_METRICS
+    }
 
 
 def test_a_new_run_adds_no_row(

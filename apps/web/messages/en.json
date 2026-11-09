@@ -259,8 +259,16 @@
         "move": "Movement",
         "pos": "Positioning",
         "touch": "Ball touches",
+        "poss": "Possession",
         "event": "Events"
       }
+    },
+    "possession": {
+      "title": "Possession",
+      "blue": "Blue {value}",
+      "orange": "Orange {value}",
+      "loose": "Loose ball {value}",
+      "how": "A team has the ball when it touches it again within 3 seconds. The rest of the play time, the ball is loose."
     },
     "timeline": {
       "title": "Goals",
@@ -306,6 +314,12 @@
       "per_min": "Touches per minute",
       "pct_aerial": "Aerial touches",
       "pct_hard": "Hard hits"
+    },
+    "poss": {
+      "team_pct": "Team possession",
+      "player_pct": "Possession",
+      "turnovers_lost": "Balls lost",
+      "turnovers_won": "Balls won"
     },
     "event": {
       "demos_inflicted": "Demolitions inflicted",

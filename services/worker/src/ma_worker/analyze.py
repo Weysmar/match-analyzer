@@ -1,7 +1,8 @@
-"""The `analyze` job: the V1 metrics of a parsed match, written to the database.
+"""The `analyze` job: the metrics of a parsed match, per player and per team, written to the
+database.
 
-It can run again at any point, and as often as needed: each metric of each player is one row, which
-a new run overwrites. A match is `ready` once its metrics are all there.
+It can run again at any point, and as often as needed: each metric of each player or team is one
+row, which a new run overwrites. A match is `ready` once its metrics are all there.
 """
 
 import logging
@@ -17,7 +18,7 @@ from ma_worker.store import ObjectStore
 from rl_analysis import ANALYSIS_VERSION, clock
 from rl_analysis.frames import InvalidFramesError
 from rl_analysis.match import load
-from rl_analysis.registry import METRICS, compute
+from rl_analysis.registry import METRICS, TEAM_METRICS, compute, compute_teams
 
 log = logging.getLogger("ma_worker")
 
@@ -65,6 +66,33 @@ def _write(
     return len(rows)
 
 
+def _write_teams(
+    connection: Connection, match_id: uuid.UUID, results: dict[int, dict[str, float | None]]
+) -> int:
+    """One row per team and metric, written over the previous run's. Returns how many."""
+    rows = [
+        (match_id, team, metric_id, value, ANALYSIS_VERSION)
+        for team, values in results.items()
+        for metric_id, value in values.items()
+    ]
+    with connection.cursor() as cursor:
+        cursor.executemany(
+            """
+            INSERT INTO team_match_metrics (match_id, team, metric_id, value, analysis_version)
+            VALUES (%s, %s, %s, %s, %s)
+            ON CONFLICT (match_id, team, metric_id) DO UPDATE
+            SET value = excluded.value, analysis_version = excluded.analysis_version,
+                computed_at = now()
+            """,
+            rows,
+        )
+    connection.execute(
+        "DELETE FROM team_match_metrics WHERE match_id = %s AND NOT metric_id = ANY(%s)",
+        (match_id, [metric.id for metric in TEAM_METRICS]),
+    )
+    return len(rows)
+
+
 def _write_clock(
     connection: Connection, match_id: uuid.UUID, game_clock: clock.Clock, goal_frames: list[int]
 ) -> None:
@@ -106,9 +134,11 @@ def handle(connection: Connection, job: Job, store: ObjectStore, settings: Setti
             # Written by the parser: a mismatch means a bug or a schema change, not a bad file.
             raise PermanentError("invalid_parsed_files") from None
         results = compute(match)
+        team_results = compute_teams(match)
         game_clock = clock.compute(match)
     with connection.transaction():
         written = _write(connection, match_id, results)
+        written += _write_teams(connection, match_id, team_results)
         _write_clock(
             connection, match_id, game_clock, [goal["frame"] for goal in match.events["goals"]]
         )

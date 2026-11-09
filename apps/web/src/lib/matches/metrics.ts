@@ -6,8 +6,8 @@
 import catalog from "../../../metrics.json";
 
 export type Unit = "%" | "%/min" | "/min" | "count" | "uu/s" | "uu";
-export type Group = "boost" | "move" | "pos" | "event" | "touch";
-export const GROUPS: readonly Group[] = ["boost", "move", "pos", "touch", "event"];
+export type Group = "boost" | "move" | "pos" | "touch" | "poss" | "event";
+export const GROUPS: readonly Group[] = ["boost", "move", "pos", "touch", "poss", "event"];
 
 export interface MetricDefinition {
   id: string;
@@ -15,11 +15,38 @@ export interface MetricDefinition {
   group: Group;
 }
 
-export const METRICS: readonly MetricDefinition[] = catalog.map((metric) => ({
-  id: metric.id,
-  unit: metric.unit as Unit,
-  group: metric.id.split(".")[0] as Group,
-}));
+function definition(metric: (typeof catalog)[number]): MetricDefinition {
+  return { id: metric.id, unit: metric.unit as Unit, group: metric.id.split(".")[0] as Group };
+}
+
+/** A value per player: the rows of the metrics table, and of "my stats". */
+export const METRICS: readonly MetricDefinition[] = catalog
+  .filter((metric) => metric.scope === "player")
+  .map(definition);
+
+/** A value per team, like possession: shown on its own, a player row would mean nothing. */
+export const TEAM_METRICS: readonly MetricDefinition[] = catalog
+  .filter((metric) => metric.scope === "team")
+  .map(definition);
+
+export interface PossessionSplit {
+  blue: number;
+  orange: number;
+  loose: number;
+}
+
+/**
+ * Live play split between the teams and the loose ball, in %, or null without possession (a match
+ * parsed before touches were detected). The loose ball is what neither team holds.
+ */
+export function possessionSplit(
+  teamMetrics: Record<string, Record<string, number | null>>,
+): PossessionSplit | null {
+  const blue = teamMetrics["0"]?.["poss.team_pct"];
+  const orange = teamMetrics["1"]?.["poss.team_pct"];
+  if (typeof blue !== "number" || typeof orange !== "number") return null;
+  return { blue, orange, loose: Math.max(0, 100 - blue - orange) };
+}
 
 /** How a value reads on the page: game units turned into ones a player knows. */
 export type DisplayUnit = "percent" | "perMinute" | "rate" | "count" | "kmh" | "meters";

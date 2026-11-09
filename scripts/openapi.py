@@ -1,6 +1,6 @@
 """Writes what the site is built from: the API's OpenAPI description to `apps/web/openapi.json`, and
-the catalog of metrics (id and unit, in display order) to `apps/web/metrics.json`. `--check` fails
-when either file is out of date instead, as the CI runs it.
+the catalog of metrics (id, unit and scope, in display order) to `apps/web/metrics.json`. `--check`
+fails when either file is out of date instead, as the CI runs it.
 
 Usage: `python scripts/openapi.py [--check]`, through `just openapi`.
 """
@@ -11,7 +11,7 @@ from pathlib import Path
 
 from ma_api.app import create_app
 from ma_api.settings import Settings
-from rl_analysis.registry import METRICS
+from rl_analysis.registry import METRICS, TEAM_METRICS
 
 WEB = Path(__file__).parents[1] / "apps/web"
 
@@ -23,7 +23,9 @@ def openapi() -> str:
 
 
 def metrics() -> str:
-    catalog = [{"id": metric.id, "unit": metric.unit} for metric in METRICS]
+    catalog = [{"id": m.id, "unit": m.unit, "scope": "player"} for m in METRICS] + [
+        {"id": m.id, "unit": m.unit, "scope": "team"} for m in TEAM_METRICS
+    ]
     return json.dumps(catalog, indent=2) + "\n"
 
 

@@ -8,6 +8,7 @@ import { GoalTimeline } from "@/components/match/GoalTimeline";
 import { IdentityPicker } from "@/components/match/IdentityPicker";
 import { MetricsTable } from "@/components/match/MetricsTable";
 import { PlayersTable } from "@/components/match/PlayersTable";
+import { TeamPossession } from "@/components/match/TeamPossession";
 import { ApiError, type Schemas } from "@/lib/api/client";
 import { serverGet } from "@/lib/api/server";
 import { claimable, duration, inProgress, playlistKind, teamSize } from "@/lib/matches/describe";
@@ -120,6 +121,7 @@ export default async function MatchPage({ params }: { params: Promise<{ id: stri
 
       <PlayersTable players={data.players} />
       <GoalTimeline goals={data.goals} match={match} />
+      <TeamPossession teamMetrics={data.team_metrics} />
       <MetricsTable players={data.players} metrics={data.metrics} />
     </div>
   );

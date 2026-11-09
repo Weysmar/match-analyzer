@@ -571,6 +571,23 @@
             },
             "title": "Players",
             "type": "array"
+          },
+          "team_metrics": {
+            "additionalProperties": {
+              "additionalProperties": {
+                "anyOf": [
+                  {
+                    "type": "number"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
+              "type": "object"
+            },
+            "title": "Team Metrics",
+            "type": "object"
           }
         },
         "required": [
@@ -578,6 +595,7 @@
           "players",
           "goals",
           "metrics",
+          "team_metrics",
           "me",
           "needs_identity"
         ],

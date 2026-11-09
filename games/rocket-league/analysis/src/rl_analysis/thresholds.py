@@ -29,3 +29,12 @@ HARD_TOUCH_SPEED_CHANGE = Threshold(
     "uu/s",
     "subtr-actor 1.5.1, stats/calculators/touch.rs, HARD_TOUCH_BALL_SPEED_CHANGE_THRESHOLD",
 )
+
+# How far apart a team's touches may be and still make one possession: the follow-up that confirms
+# a loose ball taken, a possession kept, or a turnover. subtr-actor ties it to its loose-ball
+# timeout, so that a player's possession never outlasts the team's.
+POSSESSION_WINDOW = Threshold(
+    3.0,
+    "s",
+    "subtr-actor 1.5.1, stats/calculators/possession.rs, POSSESSION_RESOLUTION_WINDOW_SECONDS",
+)

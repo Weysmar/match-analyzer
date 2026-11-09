@@ -158,6 +158,20 @@ def _metrics(connection: Connection, match_id: uuid.UUID) -> dict[str, dict[str,
     return dict(metrics)
 
 
+def _team_metrics(
+    connection: Connection, match_id: uuid.UUID
+) -> dict[str, dict[str, float | None]]:
+    """By team number, as a string: `{"0": {...}, "1": {...}}` (annex G of docs/PLAN-V2.md)."""
+    rows = connection.execute(
+        "SELECT team, metric_id, value FROM team_match_metrics WHERE match_id = %s",
+        (match_id,),
+    ).fetchall()
+    metrics: dict[str, dict[str, float | None]] = defaultdict(dict)
+    for team, metric_id, value in rows:
+        metrics[str(team)][metric_id] = value
+    return dict(metrics)
+
+
 @router.get("/matches/{match_id}", response_model=models.MatchSheet)
 def get_match(
     match_id: uuid.UUID, connection: ConnectionDep, identity: IdentityDep
@@ -198,6 +212,7 @@ def get_match(
         ],
         "goals": _goals(connection, match_id),
         "metrics": _metrics(connection, match_id),
+        "team_metrics": _team_metrics(connection, match_id),
         "me": {
             "match_player_id": link["match_player_id"],
             "verified": link["verified"],

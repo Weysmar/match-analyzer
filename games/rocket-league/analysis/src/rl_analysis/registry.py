@@ -1,13 +1,15 @@
 """The metrics, each with its id and unit: the V1 ones (section 8.2 of CLAUDE.md, step 7 of
 docs/PLAN.md), then the V2 ones (docs/PLAN-V2.md, section 5). Adding one needs no migration:
-`player_match_metrics` holds a row per player and metric."""
+`player_match_metrics` holds a row per player and metric, `team_match_metrics` per team and
+metric for the team ones."""
 
 from collections.abc import Callable
 from dataclasses import dataclass
 
-from rl_analysis import boost, movement, positioning, touches
+from rl_analysis import boost, movement, positioning, possession, touches
 from rl_analysis.frames import PerPlayer
 from rl_analysis.match import Match
+from rl_analysis.possession import TEAMS, PerTeam
 
 
 @dataclass(frozen=True)
@@ -48,7 +50,26 @@ METRICS: tuple[Metric, ...] = (
     Metric("touch.per_min", "/min", touches.per_minute),
     Metric("touch.pct_aerial", "%", touches.share_aerial),
     Metric("touch.pct_hard", "%", touches.share_hard),
+    Metric("poss.player_pct", "%", possession.player_share),
+    Metric("poss.turnovers_lost", "count", possession.turnovers_lost),
+    Metric("poss.turnovers_won", "count", possession.turnovers_won),
 )
+
+
+@dataclass(frozen=True)
+class TeamMetric:
+    """A metric of a team rather than of a player (marked *(équipe)* in docs/PLAN-V2.md)."""
+
+    id: str
+    unit: str
+    compute: Callable[[Match], PerTeam]
+
+    @property
+    def definition(self) -> str:
+        return (self.compute.__doc__ or "").strip()
+
+
+TEAM_METRICS: tuple[TeamMetric, ...] = (TeamMetric("poss.team_pct", "%", possession.team_share),)
 
 
 def compute(match: Match) -> dict[int, dict[str, float | None]]:
@@ -59,4 +80,14 @@ def compute(match: Match) -> dict[int, dict[str, float | None]]:
         values = metric.compute(match)
         for player in match.players:
             results[player][metric.id] = values.get(player)
+    return results
+
+
+def compute_teams(match: Match) -> dict[int, dict[str, float | None]]:
+    """Every team metric for both teams, by team number."""
+    results: dict[int, dict[str, float | None]] = {team: {} for team in TEAMS}
+    for metric in TEAM_METRICS:
+        values = metric.compute(match)
+        for team in TEAMS:
+            results[team][metric.id] = values.get(team)
     return results
