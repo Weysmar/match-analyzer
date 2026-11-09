@@ -4,8 +4,8 @@ import fr from "../../messages/fr.json";
 import { GROUPS, METRICS, show } from "../../src/lib/matches/metrics";
 
 describe("the catalog of metrics", () => {
-  it("holds the 21 V1 metrics, each in a known group", () => {
-    expect(METRICS).toHaveLength(21);
+  it("holds the 25 metrics, each in a known group", () => {
+    expect(METRICS).toHaveLength(25);
     for (const metric of METRICS) expect(GROUPS).toContain(metric.group);
   });
 

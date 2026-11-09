@@ -18,7 +18,7 @@ from ma_api.sessions import IdentityDep
 
 _LAST_MAX = 200
 
-# The V1 metrics of docs/PLAN.md, step 7, which rl_analysis computes.
+# The metrics rl_analysis computes: V1 (docs/PLAN.md, step 7), then V2. A test keeps them equal.
 METRIC_IDS = frozenset(
     {
         "boost.used_per_min",
@@ -42,6 +42,11 @@ METRIC_IDS = frozenset(
         "pos.pct_last_back",
         "event.demos_inflicted",
         "event.demos_taken",
+        # V2 (docs/PLAN-V2.md, T11.4).
+        "touch.count",
+        "touch.per_min",
+        "touch.pct_aerial",
+        "touch.pct_hard",
     }
 )
 
