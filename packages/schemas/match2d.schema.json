@@ -17,7 +17,8 @@
     "players",
     "goals",
     "demolitions",
-    "touches"
+    "touches",
+    "situations"
   ],
   "$defs": {
     "series": {
@@ -126,6 +127,31 @@
         "properties": {
           "time_s": { "$ref": "#/$defs/time" },
           "player": { "type": "integer", "minimum": 1 }
+        }
+      }
+    },
+    "situations": {
+      "description": "What the detections found, in time order: the view marks them and its labeling mode asks about them. Null without detected touches.",
+      "type": ["array", "null"],
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["kind", "time_s", "team", "players"],
+        "properties": {
+          "kind": {
+            "enum": ["turnover"],
+            "description": "turnover: a possession lost on an opponent's touch, at the winner's first touch."
+          },
+          "time_s": { "$ref": "#/$defs/time" },
+          "team": {
+            "enum": [0, 1, null],
+            "description": "The team the situation is about: for a turnover, the one that won the ball."
+          },
+          "players": {
+            "description": "match_players.id, the one who acted first: for a turnover, who took the ball, then who lost it.",
+            "type": "array",
+            "items": { "type": "integer", "minimum": 1 }
+          }
         }
       }
     }

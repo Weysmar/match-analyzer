@@ -11,6 +11,10 @@ first value is absolute, then each one adds to the previous.
 
 No name and no platform id: players are named by `match_player_id`, which the caller maps from
 `player_idx`. The site takes names from the match sheet, with the same privacy rules.
+
+`situations` lists what the detections found, for the view and its labeling mode (T12.7): the
+turnovers of `possession` for now, then kickoffs, duels, double commits and overcommits
+(steps 13 and 14 of docs/PLAN-V2.md). Null without detected touches.
 """
 
 from collections.abc import Mapping
@@ -19,7 +23,7 @@ from typing import Any
 
 import polars as pl
 
-from rl_analysis import clock
+from rl_analysis import clock, possession
 from rl_analysis.match import Match
 
 VERSION = 1
@@ -175,6 +179,7 @@ def build(match: Match, ids: Mapping[int, int]) -> dict[str, Any]:
 
     goals_clock = clock.compute(match).goals_s
     touches = match.events["touches"]
+    resolved = possession.resolve(match)
     return {
         "version": VERSION,
         "rate_hz": RATE_HZ,
@@ -214,4 +219,24 @@ def build(match: Match, ids: Mapping[int, int]) -> dict[str, Any]:
             for touch in touches
             if touch["player_idx"] in ids
         ],
+        "situations": None if resolved is None else _situations(resolved, ids),
     }
+
+
+def _situations(resolved: possession.Possession, ids: Mapping[int, int]) -> list[dict[str, Any]]:
+    """The detected situations, in time order. A turnover is at the winner's first touch; its
+    players are the one who took the ball, then the one who lost it, those known."""
+    found = [
+        {
+            "kind": "turnover",
+            "time_s": round(turnover.time_s, 3),
+            "team": turnover.team,
+            "players": [
+                ids[player]
+                for player in (turnover.won_by, turnover.lost_by)
+                if player is not None and player in ids
+            ],
+        }
+        for turnover in resolved.turnovers
+    ]
+    return sorted(found, key=lambda situation: situation["time_s"])
