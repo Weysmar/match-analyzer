@@ -1,6 +1,6 @@
 # Plan d'implémentation V2 : différenciation, vue 2D et seuils
 
-> **Statut : validé par Vincent le 2026-11-08. Étape 10 close le 2026-11-08 (`spikes/s10-v2/RAPPORT.md`) ; DV1 à DV7 tranchées par Vincent le même jour, telles que recommandées (section 2). DV3 reste sous réserve du test du lecteur sur téléphone.**
+> **Statut : validé par Vincent le 2026-11-08. Étape 10 close le 2026-11-08 (`spikes/s10-v2/RAPPORT.md`) ; DV1 à DV7 tranchées par Vincent le même jour, telles que recommandées (section 2). DV3 reste sous réserve du test du lecteur sur téléphone. Étape 11 en cours : T11.1 et T11.2 sur la branche `feat/parser-touches`.**
 > Périmètre : section 9 de `CLAUDE.md` (« V2, différenciation »), sur la base de la V1 livrée (étapes 0 à 8, `docs/PLAN.md`). L'étape 9 (production) se termine en parallèle : la V2 n'en dépend pas, sauf pour sa mise en ligne.
 > Mêmes conventions que le plan V1 (section 5) : tâches d'une demi-journée au plus, une « fin » vérifiable par tâche, 👤 pour ce qui demande ton action ou ton accord.
 
@@ -343,6 +343,19 @@ Chaque fiche garde aussi des faits non étiquetés : temps entre la perte de bal
 | T17.5 | Gel : sources à jour dans `thresholds.py`, version d'analyse montée, retraitement. | `just reprocess --analysis-outdated` passé, statuts relus |
 
 **Risques** : un corpus trop homogène (surtout du 2v2 classé, section 15 de `CLAUDE.md`) règle les seuils pour un seul mode et un seul niveau. Il faudra des replays de 1v1, de 3v3 et d'autres niveaux avant de généraliser. Une détection à 80 % de précision affirme encore une erreur sur cinq : le libellé doit rester prudent (« probable double commit »).
+
+---
+
+## Amendements en cours de route
+
+Comme pour la V1 (section 2 bis de `docs/PLAN.md`) : ce que l'implémentation a appris, numéroté B1, B2…
+
+| #  | Constat | Traitement |
+| -- | ------- | ---------- |
+| B1 | Le parser 0.2.0 ajoute quatre listes à `events.json` (T11.1). Les `events.json` déjà stockés ne seront jamais réécrits. | `events.json` passe en version de schéma **2** ; l'en-tête et les frames restent en 1, chacun avec sa propre constante. `parse_events` lit un document v1 comme un v2 dont les quatre listes valent `null` (« pas détecté »), sans modifier le document de l'appelant. Un v1 qui contiendrait déjà une de ces listes est refusé : il est cassé, pas ancien. |
+| B2 | Les détecteurs de `subtr-actor` pourraient échouer ou paniquer sur un replay que le reste du parser lit bien. | Les quatre listes valent alors `null`, et le match garde ses frames et ses métriques V1. La panique est rattrapée et reste silencieuse : le crochet de `main.rs` aurait écrit que le parser s'arrêtait, alors qu'il réussit. Aucun cas sur le corpus. |
+| B3 | Mesure de T11.1, sur les 98 replays analysables du corpus : `rl-parse --frames` avec les détecteurs prend 0,94 s en médiane et 5,1 s au maximum, pour une mémoire de pointe de 54 Mo en médiane et 294 Mo au maximum. | Sous les limites du bac à sable (30 s, 512 Mo d'espace d'adresses), contrôlées par le test `test_sandbox_on_real_replays` sur tout le corpus. |
+| B4 | Contenu des listes, plus compact que les événements de `subtr-actor` | Joueurs traduits en `player_idx`, jamais d'identifiant de plateforme. Touches : frame, temps, joueur, équipe, Δv de la balle, `kind`, `height_band`, `surface`, `contested`. Kickoffs : bornes, type, première touche, équipe gagnante, issue, but, preneurs (temps jusqu'à la balle, boost). Duels : bornes, kickoff ou non, joueurs, gagnant, possession à la sortie. « Devancé sur la balle » : joueur, vainqueur, distance, marge, vitesse d'approche. Le schéma JSON fait foi. |
 
 ---
 

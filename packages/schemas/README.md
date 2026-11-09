@@ -14,4 +14,6 @@ The `ma_schemas` package loads them, validates documents and gives the worker ty
 
 An incompatible change bumps `schema_version` and the parser's version. Unknown fields stay accepted on reading, since a game patch can add some.
 
+Each document has its own version: `header.json` and `frames.parquet` are at 1, `events.json` at 2 since parser 0.2.0 added subtr-actor's detections. Documents already stored are never rewritten: `parse_events` reads a version 1 `events.json` as version 2 with its four detections at `null`, which the analysis treats as "not detected".
+
 `just test-schemas` checks the schemas against counter-examples and against the parser's real output. The parser's own tests check `frames.schema.json` against its Parquet writer.
