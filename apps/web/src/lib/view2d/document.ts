@@ -28,6 +28,14 @@ export interface TimedEvent {
   t: number;
 }
 
+/** What a detection found (`situations` of match2d): turnovers for now. */
+export interface Situation extends TimedEvent {
+  kind: "turnover";
+  team: 0 | 1 | null;
+  /** `match_player_id`, the one who acted first. */
+  players: number[];
+}
+
 export interface Match2d {
   rateHz: number;
   /** The replay's time of the first sample, in seconds. */
@@ -41,6 +49,8 @@ export interface Match2d {
   goals: (TimedEvent & { team: 0 | 1 | null; player: number | null })[];
   demolitions: (TimedEvent & { attacker: number | null; victim: number | null })[];
   touches: (TimedEvent & { player: number })[] | null;
+  /** Null without detected touches. */
+  situations: Situation[] | null;
 }
 
 export class ViewFormatError extends Error {}
@@ -96,6 +106,10 @@ export function decode(raw: unknown): Match2d {
   if (!isObject(raw.ball)) throw new ViewFormatError("bad ball");
   const ball = raw.ball;
   const touches = raw.touches === null ? null : list(raw.touches, "touches");
+  const situations =
+    raw.situations === null || raw.situations === undefined
+      ? null
+      : list(raw.situations, "situations");
 
   return {
     rateHz,
@@ -128,6 +142,19 @@ export function decode(raw: unknown): Match2d {
       touches === null
         ? null
         : touches.map((touch) => ({ t: since(touch.time_s), player: number(touch.player) })),
+    situations:
+      situations === null
+        ? null
+        : situations
+            .filter((situation) => situation.kind === "turnover")
+            .map((situation) => ({
+              kind: "turnover" as const,
+              t: since(situation.time_s),
+              team: team(situation.team),
+              players: Array.isArray(situation.players)
+                ? situation.players.filter((id): id is number => typeof id === "number")
+                : [],
+            })),
   };
 }
 

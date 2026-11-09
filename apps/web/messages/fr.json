@@ -270,6 +270,27 @@
       "loose": "Balle libre {value}",
       "how": "Une équipe a la balle quand elle la touche à nouveau dans les 3 secondes. Le reste du temps de jeu, la balle est libre."
     },
+    "labels": {
+      "open": "Étiqueter les situations (développement)",
+      "back": "Retour au match",
+      "title": "Étiquetage",
+      "devOnly": "Réservé au développement. Les verdicts vont dans tests/fixtures/labels/, jamais versionné, et just v2-report les relit.",
+      "loading": "Chargement des situations…",
+      "none": "Pas de vue 2D pour ce match.",
+      "empty": "Aucune situation détectée dans ce match.",
+      "progress": "Situation {current} sur {total} · {done} jugées",
+      "kind": { "turnover": "Perte de balle à {clock} de jeu" },
+      "turnoverPlayers": "{won} prend la balle à {lost}",
+      "turnoverWinner": "{won} prend la balle",
+      "unknownPlayer": "joueur inconnu",
+      "verdict": { "true": "Vrai", "false": "Faux", "uncertain": "Incertain" },
+      "previous": "Précédente",
+      "next": "Suivante",
+      "export": "Exporter",
+      "exported": "Enregistré dans tests/fixtures/labels/ : {files}",
+      "nothing": "Aucun verdict à exporter.",
+      "exportError": "L'export a échoué : le site tourne-t-il avec next dev ?"
+    },
     "view": {
       "title": "Revoir le match",
       "loading": "Chargement de la vue 2D…",

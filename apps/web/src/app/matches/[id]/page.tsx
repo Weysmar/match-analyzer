@@ -1,6 +1,5 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { notFound } from "next/navigation";
 import { getFormatter, getTranslations } from "next-intl/server";
 import { SignInPrompt } from "@/components/account/SignInPrompt";
 import { AutoRefresh } from "@/components/match/AutoRefresh";
@@ -10,22 +9,9 @@ import { MetricsTable } from "@/components/match/MetricsTable";
 import { PlayersTable } from "@/components/match/PlayersTable";
 import { TeamPossession } from "@/components/match/TeamPossession";
 import { MatchView } from "@/components/view2d/MatchView";
-import { ApiError, type Schemas } from "@/lib/api/client";
 import { serverGet } from "@/lib/api/server";
 import { claimable, duration, inProgress, playlistKind, teamSize } from "@/lib/matches/describe";
-
-const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
-
-async function sheet(id: string): Promise<Schemas["MatchSheet"]> {
-  if (!UUID.test(id)) notFound();
-  try {
-    return await serverGet("/api/v1/matches/{match_id}", { parameters: { match_id: id } });
-  } catch (error) {
-    // Someone else's match looks like one that does not exist, as the API answers.
-    if (error instanceof ApiError && [400, 401, 404, 422].includes(error.status)) notFound();
-    throw error;
-  }
-}
+import { sheet } from "@/lib/matches/sheet";
 
 export async function generateMetadata(): Promise<Metadata> {
   const t = await getTranslations("match");
@@ -134,6 +120,11 @@ export default async function MatchPage({ params }: { params: Promise<{ id: stri
           gameLengthS={match.game_length_s}
           overtimeFromS={match.overtime_from_s}
         />
+      ) : null}
+      {process.env.NODE_ENV === "development" && match.status === "ready" ? (
+        <Link href={`/matches/${match.match_id}/labels`} className="text-sm underline">
+          {t("labels.open")}
+        </Link>
       ) : null}
       <TeamPossession teamMetrics={data.team_metrics} />
       <MetricsTable players={data.players} metrics={data.metrics} />

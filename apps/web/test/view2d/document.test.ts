@@ -24,6 +24,16 @@ describe("decoding the document", () => {
     expect(decode({ ...rawView(), touches: null }).touches).toBeNull();
   });
 
+  it("reads the situations on the player's time", () => {
+    expect(decode(rawView()).situations?.[0]).toEqual({
+      kind: "turnover",
+      t: 2.5,
+      team: 1,
+      players: [42, 41],
+    });
+    expect(decode({ ...rawView(), situations: null }).situations).toBeNull();
+  });
+
   it.each([
     ["another version", { version: 2 }],
     ["a series of the wrong length", { phase: [1, 2] }],

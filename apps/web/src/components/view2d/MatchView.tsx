@@ -3,15 +3,14 @@
 import { useSearchParams } from "next/navigation";
 import { useFormatter, useTranslations } from "next-intl";
 import { type KeyboardEvent, useCallback, useEffect, useReducer, useRef, useState } from "react";
-import { ApiError, getJson } from "@/lib/api/client";
 import { formatClock, readClock, regulationOf } from "@/lib/matches/timeline";
-import { loadView, type Match2d } from "@/lib/view2d/document";
 import { drawScene } from "@/lib/view2d/draw";
 import { type Layout, layoutFor } from "@/lib/view2d/field";
 import { parseT, VIEW_ANCHOR } from "@/lib/view2d/links";
 import { type Action, actionForKey, reduce, SPEEDS, START } from "@/lib/view2d/playback";
 import { sceneAt } from "@/lib/view2d/scene";
 import { clockAt, durationS, goalMarkers, timeAtClock } from "@/lib/view2d/time";
+import { useView } from "./useView";
 
 export interface ViewPlayer {
   id: number;
@@ -19,8 +18,6 @@ export interface ViewPlayer {
   team: number;
   isMe: boolean;
 }
-
-type Status = "loading" | "ready" | "unavailable" | "error";
 
 // The field never takes more than this share of the window's height.
 const MAX_HEIGHT_SHARE = 0.7;
@@ -43,8 +40,7 @@ export function MatchView({
 }) {
   const t = useTranslations("match.view");
   const format = useFormatter();
-  const [status, setStatus] = useState<Status>("loading");
-  const [view, setView] = useState<Match2d | null>(null);
+  const { status, view } = useView(matchId);
   const [layout, setLayout] = useState<Layout | null>(null);
   const box = useRef<HTMLDivElement>(null);
   const section = useRef<HTMLElement>(null);
@@ -56,28 +52,6 @@ export function MatchView({
     START,
   );
   const meId = players.find((player) => player.isMe)?.id ?? null;
-
-  useEffect(() => {
-    let cancelled = false;
-    (async () => {
-      try {
-        const { url } = await getJson("/api/v1/matches/{match_id}/view", {
-          parameters: { match_id: matchId },
-        });
-        const loaded = await loadView(url);
-        if (!cancelled) {
-          setView(loaded);
-          setStatus("ready");
-        }
-      } catch (error) {
-        if (cancelled) return;
-        setStatus(error instanceof ApiError && error.status === 404 ? "unavailable" : "error");
-      }
-    })();
-    return () => {
-      cancelled = true;
-    };
-  }, [matchId]);
 
   // The field fits the player's width, on its side when there is room.
   useEffect(() => {
