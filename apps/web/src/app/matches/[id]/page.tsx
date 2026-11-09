@@ -121,7 +121,7 @@ export default async function MatchPage({ params }: { params: Promise<{ id: stri
       ) : null}
 
       <PlayersTable players={data.players} />
-      <GoalTimeline goals={data.goals} match={match} />
+      <GoalTimeline goals={data.goals} match={match} viewable={match.status === "ready"} />
       {match.status === "ready" ? (
         <MatchView
           matchId={match.match_id}

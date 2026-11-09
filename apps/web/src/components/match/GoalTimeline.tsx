@@ -1,14 +1,21 @@
+import Link from "next/link";
 import { getTranslations } from "next-intl/server";
 import type { Schemas } from "@/lib/api/client";
 import { formatClock, placeGoals } from "@/lib/matches/timeline";
+import { goalLink } from "@/lib/view2d/links";
 
-/** The goals along the match (T8.10), then the same goals as a list for reading and screen readers. */
+/**
+ * The goals along the match (T8.10), then the same goals as a list for reading and screen readers.
+ * When the match has its 2D view, each goal links to it, a few seconds before (T12.5).
+ */
 export async function GoalTimeline({
   goals,
   match,
+  viewable = false,
 }: {
   goals: Schemas["Goal"][];
   match: Schemas["MatchInfo"];
+  viewable?: boolean;
 }) {
   const t = await getTranslations("match.timeline");
   const timeline = placeGoals(goals, match);
@@ -77,6 +84,18 @@ export async function GoalTimeline({
                       ? t("intoOvertime", { clock: formatClock(goal.clockS) })
                       : t("remaining", { clock: formatClock(goal.clockS) })}
                   </span>
+                ) : null}
+                {viewable && goal.playS !== null ? (
+                  <Link
+                    href={goalLink(goal.playS)}
+                    className="text-xs font-medium text-sky-700 underline dark:text-sky-300"
+                  >
+                    {t("replay")}
+                    <span className="sr-only">
+                      {" "}
+                      {t("replayGoal", { blue: goal.blue, orange: goal.orange })}
+                    </span>
+                  </Link>
                 ) : null}
               </li>
             ))}

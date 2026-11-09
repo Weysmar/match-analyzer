@@ -1,5 +1,6 @@
 "use client";
 
+import { useSearchParams } from "next/navigation";
 import { useFormatter, useTranslations } from "next-intl";
 import { type KeyboardEvent, useCallback, useEffect, useReducer, useRef, useState } from "react";
 import { ApiError, getJson } from "@/lib/api/client";
@@ -7,9 +8,10 @@ import { formatClock, readClock, regulationOf } from "@/lib/matches/timeline";
 import { loadView, type Match2d } from "@/lib/view2d/document";
 import { drawScene } from "@/lib/view2d/draw";
 import { type Layout, layoutFor } from "@/lib/view2d/field";
+import { parseT, VIEW_ANCHOR } from "@/lib/view2d/links";
 import { type Action, actionForKey, reduce, SPEEDS, START } from "@/lib/view2d/playback";
 import { sceneAt } from "@/lib/view2d/scene";
-import { clockAt, durationS, timeAtClock } from "@/lib/view2d/time";
+import { clockAt, durationS, goalMarkers, timeAtClock } from "@/lib/view2d/time";
 
 export interface ViewPlayer {
   id: number;
@@ -24,8 +26,9 @@ type Status = "loading" | "ready" | "unavailable" | "error";
 const MAX_HEIGHT_SHARE = 0.7;
 
 /**
- * The 2D view of a match (T12.3, T12.4): the field from above, the cars and the ball, played back
- * from the analysis's document. Nothing moves until the visitor presses play.
+ * The 2D view of a match (T12.3 to T12.6): the field from above, the cars and the ball, played back
+ * from the analysis's document. Nothing moves until the visitor presses play. `?t=` in the
+ * address, such as a goal's link, sets it at that many seconds of play, paused.
  */
 export function MatchView({
   matchId,
@@ -44,6 +47,8 @@ export function MatchView({
   const [view, setView] = useState<Match2d | null>(null);
   const [layout, setLayout] = useState<Layout | null>(null);
   const box = useRef<HTMLDivElement>(null);
+  const section = useRef<HTMLElement>(null);
+  const asked = parseT(useSearchParams().get("t"));
   const canvas = useRef<HTMLCanvasElement>(null);
   const duration = view ? durationS(view) : 0;
   const [playback, dispatch] = useReducer(
@@ -86,6 +91,16 @@ export function MatchView({
     return () => observer.disconnect();
   }, [status]);
 
+  // A link into the view: there, paused, in sight. Without a sweeping scroll for whoever asked
+  // their system for less motion.
+  useEffect(() => {
+    if (!view || asked === null) return;
+    dispatch({ type: "pause" });
+    dispatch({ type: "seek", t: timeAtClock(view, asked) });
+    const still = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    section.current?.scrollIntoView({ behavior: still ? "auto" : "smooth", block: "start" });
+  }, [view, asked]);
+
   // One frame per screen refresh while playing, nothing otherwise.
   useEffect(() => {
     if (!playback.playing) return;
@@ -126,7 +141,7 @@ export function MatchView({
   if (status !== "ready" || !view) {
     const message = { loading: t("loading"), unavailable: t("unavailable"), error: t("error") };
     return (
-      <section aria-labelledby="view-title" className="flex flex-col gap-3">
+      <section id={VIEW_ANCHOR} aria-labelledby="view-title" className="flex flex-col gap-3">
         <h2 id="view-title" className="text-lg font-semibold">
           {t("title")}
         </h2>
@@ -149,8 +164,10 @@ export function MatchView({
 
   return (
     <section
+      ref={section}
+      id={VIEW_ANCHOR}
       aria-labelledby="view-title"
-      className="flex flex-col gap-3"
+      className="flex scroll-mt-4 flex-col gap-3 rounded-lg focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-sky-600"
       // biome-ignore lint/a11y/noNoninteractiveTabindex: the player takes Space and the arrows.
       tabIndex={0}
       onKeyDown={onKeyDown}
@@ -163,6 +180,7 @@ export function MatchView({
           ref={canvas}
           role="img"
           aria-label={t("canvas")}
+          aria-describedby="view-keys"
           className="mx-auto block rounded-lg"
         />
       </div>
@@ -205,6 +223,26 @@ export function MatchView({
       </div>
       <label className="flex flex-col gap-1 text-sm">
         <span className="sr-only">{t("cursor")}</span>
+        {/* SVG attributes, not inline styles: the security policy refuses those (A59). */}
+        {/* The goals' list above is their text: here, they only show where they are. */}
+        <svg aria-hidden="true" className="h-3 w-full overflow-visible">
+          {goalMarkers(view).map((marker, index) => (
+            <circle
+              // biome-ignore lint/suspicious/noArrayIndexKey: goals keep their order.
+              key={index}
+              cx={`${marker.left}%`}
+              cy="6"
+              r="4"
+              className={
+                marker.team === 0
+                  ? "fill-sky-600"
+                  : marker.team === 1
+                    ? "fill-orange-500"
+                    : "fill-slate-400"
+              }
+            />
+          ))}
+        </svg>
         <input
           type="range"
           min={0}
@@ -218,7 +256,9 @@ export function MatchView({
           className="w-full accent-sky-600"
         />
       </label>
-      <p className="text-xs text-slate-600 dark:text-slate-400">{t("keys")}</p>
+      <p id="view-keys" className="text-xs text-slate-600 dark:text-slate-400">
+        {t("keys")}
+      </p>
       <ul className="flex flex-wrap gap-x-4 gap-y-1 text-sm">
         {view.cars.map((car) => {
           const player = players.find((candidate) => candidate.id === car.id);

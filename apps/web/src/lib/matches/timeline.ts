@@ -16,6 +16,8 @@ export interface PlacedGoal {
   overtime: boolean;
   /** Seconds left in regulation, or seconds into overtime; null without the game clock. */
   clockS: number | null;
+  /** Seconds of play when it was scored, as the 2D view counts them; null without the clock. */
+  playS: number | null;
   /** The score once this goal counts. */
   blue: number;
   orange: number;
@@ -63,6 +65,7 @@ export function placeGoals(goals: readonly Schemas["Goal"][], match: MatchClock)
       left: axis > 0 ? clamp((100 * at) / axis) : 0,
       overtime,
       clockS,
+      playS: onClock ? at : null,
       blue,
       orange,
     };

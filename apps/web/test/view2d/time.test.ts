@@ -5,6 +5,7 @@ import {
   clockAt,
   durationS,
   fromReplayTime,
+  goalMarkers,
   lerp,
   lerpAngle,
   positionAt,
@@ -60,6 +61,13 @@ describe("the game clock", () => {
     // Between two tenths, the time between their two samples.
     expect(timeAtClock(view, 1.05)).toBeCloseTo(30.5 / 15);
     expect(timeAtClock(view, 999)).toBe(4);
+  });
+
+  it("places goals along the cursor by their clock", () => {
+    // The goal at 3.5 s, 2.5 s of play into a clock that ends at 3 s.
+    const [marker] = goalMarkers(view);
+    expect(marker?.team).toBe(0);
+    expect(marker?.left).toBeCloseTo((100 * 2.5) / 3);
   });
 
   it("puts a replay time on the player's time", () => {

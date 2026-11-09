@@ -299,7 +299,9 @@
       "approximate": "Horloge reconstituée à partir du replay : à quelques secondes près.",
       "noClock": "Les buts sont dans l'ordre du replay ; l'horloge du match n'est pas connue.",
       "unknownScorer": "Buteur inconnu",
-      "score": "{blue} – {orange}"
+      "score": "{blue} – {orange}",
+      "replay": "Revoir",
+      "replayGoal": "le but du {blue} – {orange}"
     }
   },
   "metrics": {
