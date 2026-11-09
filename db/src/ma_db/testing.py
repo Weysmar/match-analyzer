@@ -163,6 +163,15 @@ class Factory:
             (match_player_id, metric_id, value),
         )
 
+    def team_metric(
+        self, match_id: object, team: int, metric_id: str = "poss.team_pct", value: float = 1.0
+    ) -> None:
+        self.connection.execute(
+            "INSERT INTO team_match_metrics (match_id, team, metric_id, value, analysis_version) "
+            "VALUES (%s, %s, %s, %s, '1')",
+            (match_id, team, metric_id, value),
+        )
+
 
 def count(connection: Connection, query: str, *parameters: object) -> int:
     row = connection.execute(query.encode(), parameters).fetchone()

@@ -87,6 +87,13 @@ def test_metrics_of_a_deleted_match_go_with_it(conn: Connection, make: Factory) 
     assert rows(conn, "player_match_metrics", "match_player_id", player) == 0
 
 
+def test_team_metrics_of_a_deleted_match_go_with_it(conn: Connection, make: Factory) -> None:
+    match = make.match()
+    make.team_metric(match, 0)
+    conn.execute("DELETE FROM matches WHERE id = %s", (match,))
+    assert rows(conn, "team_match_metrics", "match_id", match) == 0
+
+
 def test_an_upload_outlives_its_deleted_match(conn: Connection, make: Factory) -> None:
     match = make.match()
     upload = make.upload(user_id=make.user(), match_id=match)
