@@ -1,10 +1,11 @@
-"""The V1 metrics (section 8.2 of CLAUDE.md, step 7 of docs/PLAN.md), each with its id and unit.
-Adding one needs no migration: `player_match_metrics` holds a row per player and metric."""
+"""The metrics, each with its id and unit: the V1 ones (section 8.2 of CLAUDE.md, step 7 of
+docs/PLAN.md), then the V2 ones (docs/PLAN-V2.md, section 5). Adding one needs no migration:
+`player_match_metrics` holds a row per player and metric."""
 
 from collections.abc import Callable
 from dataclasses import dataclass
 
-from rl_analysis import boost, movement, positioning
+from rl_analysis import boost, movement, positioning, touches
 from rl_analysis.frames import PerPlayer
 from rl_analysis.match import Match
 
@@ -43,6 +44,10 @@ METRICS: tuple[Metric, ...] = (
     Metric("pos.pct_last_back", "%", positioning.last_back),
     Metric("event.demos_inflicted", "count", positioning.demolitions_inflicted),
     Metric("event.demos_taken", "count", positioning.demolitions_taken),
+    Metric("touch.count", "count", touches.count),
+    Metric("touch.per_min", "/min", touches.per_minute),
+    Metric("touch.pct_aerial", "%", touches.share_aerial),
+    Metric("touch.pct_hard", "%", touches.share_hard),
 )
 
 

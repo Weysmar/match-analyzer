@@ -82,5 +82,21 @@
   {
     "id": "event.demos_taken",
     "unit": "count"
+  },
+  {
+    "id": "touch.count",
+    "unit": "count"
+  },
+  {
+    "id": "touch.per_min",
+    "unit": "/min"
+  },
+  {
+    "id": "touch.pct_aerial",
+    "unit": "%"
+  },
+  {
+    "id": "touch.pct_hard",
+    "unit": "%"
   }
 ]

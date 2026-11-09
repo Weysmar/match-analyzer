@@ -258,6 +258,7 @@
         "boost": "Boost",
         "move": "Movement",
         "pos": "Positioning",
+        "touch": "Ball touches",
         "event": "Events"
       }
     },
@@ -300,6 +301,12 @@
       "dist_ball_avg": "Average distance to the ball",
       "pct_last_back": "Last back"
     },
+    "touch": {
+      "count": "Ball touches",
+      "per_min": "Touches per minute",
+      "pct_aerial": "Aerial touches",
+      "pct_hard": "Hard hits"
+    },
     "event": {
       "demos_inflicted": "Demolitions inflicted",
       "demos_taken": "Demolitions taken"
@@ -308,6 +315,7 @@
   "units": {
     "percent": "{value}%",
     "perMinute": "{value} %/min",
+    "rate": "{value}/min",
     "count": "{value}",
     "kmh": "{value} km/h",
     "meters": "{value} m",

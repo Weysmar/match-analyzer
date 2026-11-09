@@ -1,13 +1,13 @@
 /**
- * The V1 metrics as the site shows them. The catalog comes from `rl_analysis` itself
- * (`metrics.json`, written by `just openapi`), so a metric cannot be computed and go unshown. The
- * labels live in the messages, under `metrics.<id>`.
+ * The metrics as the site shows them. The catalog comes from `rl_analysis` itself (`metrics.json`,
+ * written by `just openapi`), so a metric cannot be computed and go unshown. The labels live in the
+ * messages, under `metrics.<id>`.
  */
 import catalog from "../../../metrics.json";
 
-export type Unit = "%" | "%/min" | "count" | "uu/s" | "uu";
-export type Group = "boost" | "move" | "pos" | "event";
-export const GROUPS: readonly Group[] = ["boost", "move", "pos", "event"];
+export type Unit = "%" | "%/min" | "/min" | "count" | "uu/s" | "uu";
+export type Group = "boost" | "move" | "pos" | "event" | "touch";
+export const GROUPS: readonly Group[] = ["boost", "move", "pos", "touch", "event"];
 
 export interface MetricDefinition {
   id: string;
@@ -22,7 +22,7 @@ export const METRICS: readonly MetricDefinition[] = catalog.map((metric) => ({
 }));
 
 /** How a value reads on the page: game units turned into ones a player knows. */
-export type DisplayUnit = "percent" | "perMinute" | "count" | "kmh" | "meters";
+export type DisplayUnit = "percent" | "perMinute" | "rate" | "count" | "kmh" | "meters";
 
 export interface Shown {
   value: number;
@@ -42,6 +42,8 @@ export function show(value: number | null | undefined, unit: Unit): Shown | null
       return { value, unit: "percent", digits: 0 };
     case "%/min":
       return { value, unit: "perMinute", digits: 1 };
+    case "/min":
+      return { value, unit: "rate", digits: 1 };
     case "count":
       return { value, unit: "count", digits: 0 };
     case "uu/s":
