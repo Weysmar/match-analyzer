@@ -16,3 +16,4 @@ packages = ["src/ma_schemas"]
 "header.schema.json" = "ma_schemas/header.schema.json"
 "events.schema.json" = "ma_schemas/events.schema.json"
 "frames.schema.json" = "ma_schemas/frames.schema.json"
+"match2d.schema.json" = "ma_schemas/match2d.schema.json"
