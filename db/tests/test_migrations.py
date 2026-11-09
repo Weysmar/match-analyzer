@@ -21,6 +21,7 @@ TABLES = {
     "player_claims",
     "player_match_metrics",
     "rate_limit_buckets",
+    "team_match_metrics",
     "uploads",
     "user_matches",
     "users",
