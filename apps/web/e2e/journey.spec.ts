@@ -20,6 +20,7 @@ const WORDS = {
     question: "Lequel de ces joueurs es-tu ?",
     you: "(toi)",
     metrics: "Statistiques détaillées",
+    replay: /^Revoir le but/,
     steam: "Se connecter avec Steam",
     signedIn: "Connecté : Player",
     counted: /Moyennes sur 1 match/,
@@ -35,6 +36,7 @@ const WORDS = {
     question: "Which of these players are you?",
     you: "(you)",
     metrics: "Detailed stats",
+    replay: /^Replay the goal/,
     steam: "Sign in through Steam",
     signedIn: "Signed in: Player",
     counted: /Averages over 1 match/,
@@ -77,6 +79,21 @@ test("from a replay to my stats, then the account erased", async ({ page }, info
   await page.locator("section[aria-labelledby=identity-question] li button").first().click();
   await expect(page.getByText(w.you, { exact: true }).first()).toBeVisible();
   await expect(page.getByRole("heading", { name: w.metrics })).toBeVisible();
+
+  // A goal of the timeline opens the 2D view 5 s before it, paused (T12.5).
+  const goal = page.getByRole("link", { name: w.replay }).first();
+  const asked = Number(
+    new URLSearchParams((await goal.getAttribute("href"))?.split("#")[0]).get("t"),
+  );
+  await goal.click();
+  await expect(page).toHaveURL(/\?t=[0-9.]+#view$/);
+  const cursor = page.locator("#view input[type=range]");
+  await expect(cursor).toBeVisible({ timeout: 30_000 });
+  await expect
+    .poll(async () => Math.abs(Number(await cursor.inputValue()) - asked))
+    .toBeLessThan(0.2);
+  await expect(page.locator("#view button[aria-pressed=false]").first()).toBeVisible();
+  await fitsTheScreen(page);
 
   // The prompt under the sheet, through the stand-in for Steam (A70).
   await page.locator("aside").getByRole("link", { name: w.steam }).click();

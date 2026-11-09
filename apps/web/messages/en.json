@@ -299,7 +299,9 @@
       "approximate": "Clock rebuilt from the replay: within a few seconds.",
       "noClock": "Goals are in the replay's order; the match clock is unknown.",
       "unknownScorer": "Unknown scorer",
-      "score": "{blue} – {orange}"
+      "score": "{blue} – {orange}",
+      "replay": "Replay",
+      "replayGoal": "the goal making it {blue} – {orange}"
     }
   },
   "metrics": {

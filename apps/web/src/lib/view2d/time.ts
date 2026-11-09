@@ -68,6 +68,16 @@ export function timeAtClock(view: Match2d, clockS: number): number {
   return timeOfSample(view, low - 1 + fraction);
 }
 
+/** Where each goal sits along the cursor, from 0 to 100, with its team (T12.5). */
+export function goalMarkers(view: Match2d): { left: number; team: 0 | 1 | null }[] {
+  const last = view.clockS[view.clockS.length - 1] ?? 0;
+  if (last <= 0) return [];
+  return view.goals.map((goal) => ({
+    left: Math.min(100, Math.max(0, (100 * clockAt(view, goal.t)) / last)),
+    team: goal.team,
+  }));
+}
+
 /** A replay time, such as a goal's on the match sheet, as the player's time. */
 export function fromReplayTime(view: Pick<Match2d, "startS">, replayS: number): number {
   return replayS - view.startS;
