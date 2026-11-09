@@ -173,7 +173,38 @@ def test_events_name_players_by_id() -> None:
 
 
 def test_touches_not_detected_stay_null() -> None:
-    assert built(*two_cars(), touches=None)["touches"] is None
+    document = built(*two_cars(), touches=None)
+    assert document["touches"] is None
+    assert document["situations"] is None
+
+
+def touched(frame: int, player: int) -> dict[str, Any]:
+    return {
+        "frame": frame,
+        "time_s": float(frame),
+        "player_idx": player,
+        "team": player,
+        "ball_speed_change": 500.0,
+        "kind": None,
+        "height_band": None,
+        "surface": None,
+        "contested": False,
+    }
+
+
+def test_a_turnover_is_a_situation_at_the_winners_first_touch() -> None:
+    """Blue holds the ball with two touches, orange takes it with two: one turnover."""
+    touches = [touched(0, 0), touched(1, 0), touched(2, 1), touched(3, 1)]
+    document = built(*two_cars(), touches=touches)
+    assert problems("match2d", document) == []
+    assert document["situations"] == [
+        {"kind": "turnover", "time_s": 2.0, "team": 1, "players": [42, 41]}
+    ]
+
+
+def test_no_turnover_is_no_situation() -> None:
+    document = built(*two_cars(), touches=[touched(0, 0), touched(1, 0)])
+    assert document["situations"] == []
 
 
 @pytest.mark.parametrize("missing", ["ball_x", "x"])
