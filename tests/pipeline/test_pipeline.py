@@ -29,6 +29,7 @@ from ma_api import sessions
 from ma_api.app import create_app
 from ma_api.settings import PREFIX
 from ma_api.settings import Settings as ApiSettings
+from ma_api.stats import METRIC_IDS
 from ma_db.testing import Connection, role_url, temporary_database
 from ma_schemas import frames_problems, parse_events
 from ma_worker import analyze, parse, queue, reparse, reprocess
@@ -430,8 +431,10 @@ def test_a_signed_in_player_sees_the_metrics_of_their_match(
         history = client.get(f"{PREFIX}/stats/me/history", params={"metric_id": "boost.avg"})
     assert sheet["match"]["status"] == "ready"
     me = str(sheet["me"]["match_player_id"])
-    assert len(sheet["metrics"][me]) == 21
+    # Every metric the API knows, the touches included: the parser finds them on a real replay.
+    assert set(sheet["metrics"][me]) == METRIC_IDS
     assert 0 <= sheet["metrics"][me]["boost.avg"] <= 100
+    assert sheet["metrics"][me]["touch.count"] > 0
     assert stats["matches_count"] == 1
     assert stats["verified_count"] == 1
     assert stats["averages"]["boost.avg"] == pytest.approx(sheet["metrics"][me]["boost.avg"])
