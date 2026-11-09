@@ -280,6 +280,8 @@ def test_the_match_sheet(browser: TestClient, conn: Connection, make: Factory) -
     goal(conn, match, 30.5, 0, None)
     make.metric(me, "boost.avg", 42.5)
     make.metric(them, "boost.avg", 12.5)
+    make.team_metric(match, 0, value=31.5)
+    make.team_metric(match, 1, value=22.0)
     make.user_match(match, user_id=user, match_player_id=me, identity_source="claimed")
 
     body = browser.get(f"{MATCHES}/{match}").json()
@@ -329,6 +331,7 @@ def test_the_match_sheet(browser: TestClient, conn: Connection, make: Factory) -
         {"time_s": 30.5, "team": 0, "player_name": None, "game_time_s": None},
     ]
     assert body["metrics"] == {str(me): {"boost.avg": 42.5}, str(them): {"boost.avg": 12.5}}
+    assert body["team_metrics"] == {"0": {"poss.team_pct": 31.5}, "1": {"poss.team_pct": 22.0}}
     assert body["me"] == {
         "match_player_id": me,
         "verified": False,

@@ -1,7 +1,7 @@
 """The API's list of metrics is the one rl_analysis computes (A40). No database needed."""
 
-from ma_api.stats import METRIC_IDS
-from rl_analysis.registry import METRICS
+from ma_api.stats import METRIC_IDS, TEAM_METRIC_IDS
+from rl_analysis.registry import METRICS, TEAM_METRICS
 
 
 def test_the_api_knows_exactly_the_computed_metrics() -> None:
@@ -23,3 +23,7 @@ def test_every_route_of_the_site_declares_what_it_answers() -> None:
                 continue
             content = answers[ok].get("content", {}).get("application/json", {})
             assert content.get("schema", {}).get("$ref"), f"{method.upper()} {path}"
+
+
+def test_the_api_knows_every_team_metric() -> None:
+    assert {metric.id for metric in TEAM_METRICS} == TEAM_METRIC_IDS

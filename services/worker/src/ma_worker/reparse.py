@@ -83,6 +83,7 @@ def handle(connection: Connection, job: Job, store: ObjectStore, settings: Setti
             "WHERE player.id = metric.match_player_id AND player.match_id = %s",
             (match_id,),
         )
+        connection.execute("DELETE FROM team_match_metrics WHERE match_id = %s", (match_id,))
         if frames is not None:
             connection.execute(
                 "INSERT INTO jobs (kind, payload) VALUES ('analyze', %s)",

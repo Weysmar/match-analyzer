@@ -47,8 +47,15 @@ METRIC_IDS = frozenset(
         "touch.per_min",
         "touch.pct_aerial",
         "touch.pct_hard",
+        # T11.6.
+        "poss.player_pct",
+        "poss.turnovers_lost",
+        "poss.turnovers_won",
     }
 )
+
+# The team metrics, shown on the match sheet only (T11.5).
+TEAM_METRIC_IDS = frozenset({"poss.team_pct"})
 
 Last = Annotated[int, Query(ge=1, le=_LAST_MAX)]
 Scope = Literal["all", "verified"]

@@ -259,8 +259,16 @@
         "move": "Mouvement",
         "pos": "Positionnement",
         "touch": "Touches de balle",
+        "poss": "Possession",
         "event": "Événements"
       }
+    },
+    "possession": {
+      "title": "Possession",
+      "blue": "Bleus {value}",
+      "orange": "Orange {value}",
+      "loose": "Balle libre {value}",
+      "how": "Une équipe a la balle quand elle la touche à nouveau dans les 3 secondes. Le reste du temps de jeu, la balle est libre."
     },
     "timeline": {
       "title": "Buts",
@@ -306,6 +314,12 @@
       "per_min": "Touches par minute",
       "pct_aerial": "Touches aériennes",
       "pct_hard": "Frappes fortes"
+    },
+    "poss": {
+      "team_pct": "Possession de l'équipe",
+      "player_pct": "Possession",
+      "turnovers_lost": "Ballons perdus",
+      "turnovers_won": "Ballons récupérés"
     },
     "event": {
       "demos_inflicted": "Démolitions infligées",

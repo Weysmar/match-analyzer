@@ -152,6 +152,8 @@ class MatchSheet(BaseModel):
     players: list[Player]
     goals: list[Goal]
     metrics: dict[str, dict[str, float | None]]
+    # By team number ("0", "1"): possession, where a player row would mean nothing.
+    team_metrics: dict[str, dict[str, float | None]]
     me: MyIdentity
     needs_identity: bool
 

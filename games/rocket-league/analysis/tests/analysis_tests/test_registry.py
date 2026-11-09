@@ -5,19 +5,31 @@ from pathlib import Path
 import pytest
 
 from rl_analysis.match import load
-from rl_analysis.registry import METRICS, Metric, compute
+from rl_analysis.registry import METRICS, TEAM_METRICS, Metric, TeamMetric, compute, compute_teams
 
 from .synthetic import frames, match_of, pickup, row
 
 
 def test_ids_are_unique() -> None:
-    ids = [metric.id for metric in METRICS]
+    ids = [metric.id for metric in METRICS] + [metric.id for metric in TEAM_METRICS]
     assert len(ids) == len(set(ids))
 
 
 @pytest.mark.parametrize("metric", METRICS, ids=lambda metric: metric.id)
 def test_every_metric_has_a_written_definition(metric: Metric) -> None:
     assert metric.definition.startswith(f"`{metric.id}`")
+
+
+@pytest.mark.parametrize("metric", TEAM_METRICS, ids=lambda metric: metric.id)
+def test_every_team_metric_has_a_written_definition(metric: TeamMetric) -> None:
+    assert metric.definition.startswith(f"`{metric.id}`")
+
+
+def test_compute_teams_gives_every_team_metric_to_both_teams() -> None:
+    results = compute_teams(match_of(frames(row(player_idx=0), row(player_idx=1, team=1))))
+    assert set(results) == {0, 1}
+    for values in results.values():
+        assert set(values) == {metric.id for metric in TEAM_METRICS}
 
 
 def test_compute_gives_every_metric_to_every_player() -> None:

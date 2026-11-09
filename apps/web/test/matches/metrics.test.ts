@@ -1,22 +1,47 @@
 import { describe, expect, it } from "vitest";
 import en from "../../messages/en.json";
 import fr from "../../messages/fr.json";
-import { GROUPS, METRICS, show } from "../../src/lib/matches/metrics";
+import {
+  GROUPS,
+  METRICS,
+  possessionSplit,
+  show,
+  TEAM_METRICS,
+} from "../../src/lib/matches/metrics";
 
 describe("the catalog of metrics", () => {
-  it("holds the 25 metrics, each in a known group", () => {
-    expect(METRICS).toHaveLength(25);
+  it("holds the 28 player metrics, each in a known group", () => {
+    expect(METRICS).toHaveLength(28);
     for (const metric of METRICS) expect(GROUPS).toContain(metric.group);
+  });
+
+  it("keeps the team metrics apart", () => {
+    expect(TEAM_METRICS.map((metric) => metric.id)).toEqual(["poss.team_pct"]);
+    expect(METRICS.map((metric) => metric.id)).not.toContain("poss.team_pct");
   });
 
   it("names every metric in French and in English", () => {
     for (const messages of [fr, en]) {
-      for (const metric of METRICS) {
+      for (const metric of [...METRICS, ...TEAM_METRICS]) {
         const [group = "", name = ""] = metric.id.split(".");
         const labels = messages.metrics as Record<string, Record<string, string>>;
         expect(labels[group]?.[name], `${metric.id}`).toBeTruthy();
       }
     }
+  });
+});
+
+describe("the possession split", () => {
+  it("gives each team its share, and the rest to the loose ball", () => {
+    const split = possessionSplit({ "0": { "poss.team_pct": 31.5 }, "1": { "poss.team_pct": 22 } });
+    expect(split).toEqual({ blue: 31.5, orange: 22, loose: 46.5 });
+  });
+
+  it("is nothing without possession for both teams", () => {
+    expect(possessionSplit({})).toBeNull();
+    expect(
+      possessionSplit({ "0": { "poss.team_pct": null }, "1": { "poss.team_pct": 10 } }),
+    ).toBeNull();
   });
 });
 

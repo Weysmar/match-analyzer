@@ -435,6 +435,10 @@ def test_a_signed_in_player_sees_the_metrics_of_their_match(
     assert set(sheet["metrics"][me]) == METRIC_IDS
     assert 0 <= sheet["metrics"][me]["boost.avg"] <= 100
     assert sheet["metrics"][me]["touch.count"] > 0
+    assert set(sheet["team_metrics"]) == {"0", "1"}
+    shares = [sheet["team_metrics"][team]["poss.team_pct"] for team in ("0", "1")]
+    assert all(share is not None for share in shares)
+    assert 0 < sum(shares) <= 100
     assert stats["matches_count"] == 1
     assert stats["verified_count"] == 1
     assert stats["averages"]["boost.avg"] == pytest.approx(sheet["metrics"][me]["boost.avg"])
