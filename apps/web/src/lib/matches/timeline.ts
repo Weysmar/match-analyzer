@@ -56,12 +56,7 @@ export function placeGoals(goals: readonly Schemas["Goal"][], match: MatchClock)
     if (goal.team === 1) orange += 1;
     const at = onClock ? (goal.game_time_s ?? 0) : goal.time_s;
     const overtime = overtimeFrom !== null && at > overtimeFrom;
-    let clockS: number | null = null;
-    if (onClock) {
-      clockS = overtime
-        ? at - (overtimeFrom ?? 0)
-        : Math.max(0, REGULATION_S - (at * REGULATION_S) / regulation);
-    }
+    const clockS = onClock ? readClock(at, overtimeFrom, regulation).clockS : null;
     return {
       team: goal.team,
       playerName: goal.player_name,
@@ -77,6 +72,27 @@ export function placeGoals(goals: readonly Schemas["Goal"][], match: MatchClock)
     onClock,
     overtimeLeft: overtimeFrom !== null && axis > 0 ? clamp((100 * overtimeFrom) / axis) : null,
   };
+}
+
+/**
+ * How the game would show `atS` seconds of play: seconds left in regulation, or seconds into
+ * overtime. `regulation` is the measured length of regulation, a few seconds over 300 (A63),
+ * scaled back to 300.
+ */
+export function readClock(
+  atS: number,
+  overtimeFromS: number | null,
+  regulation: number,
+): { overtime: boolean; clockS: number } {
+  if (overtimeFromS !== null && atS > overtimeFromS) {
+    return { overtime: true, clockS: atS - overtimeFromS };
+  }
+  return { overtime: false, clockS: Math.max(0, REGULATION_S - (atS * REGULATION_S) / regulation) };
+}
+
+/** The measured length of regulation, from the match's clock. */
+export function regulationOf(gameLengthS: number | null, overtimeFromS: number | null): number {
+  return overtimeFromS ?? Math.max(gameLengthS ?? 0, REGULATION_S);
 }
 
 /** "m:ss", rounded to the second. */

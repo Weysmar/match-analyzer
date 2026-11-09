@@ -270,6 +270,25 @@
       "loose": "Balle libre {value}",
       "how": "Une équipe a la balle quand elle la touche à nouveau dans les 3 secondes. Le reste du temps de jeu, la balle est libre."
     },
+    "view": {
+      "title": "Revoir le match",
+      "loading": "Chargement de la vue 2D…",
+      "unavailable": "La vue 2D n'est pas disponible pour ce match.",
+      "error": "La vue 2D n'a pas pu être chargée. Recharge la page pour réessayer.",
+      "canvas": "Le terrain vu de dessus, avec les voitures et la balle",
+      "play": "Lecture",
+      "pause": "Pause",
+      "back": "−5 s",
+      "forward": "+5 s",
+      "speed": "Vitesse de lecture",
+      "speedValue": "×{speed}",
+      "cursor": "Moment du match",
+      "remaining": "{clock} restantes",
+      "intoOvertime": "+{clock} en prolongation",
+      "keys": "Clavier : Espace pour lecture ou pause, flèches pour avancer ou reculer de 5 s.",
+      "you": "toi",
+      "unknownPlayer": "Joueur inconnu"
+    },
     "timeline": {
       "title": "Buts",
       "empty": "Aucun but dans ce match.",
