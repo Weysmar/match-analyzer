@@ -51,5 +51,9 @@ export function rawView(): Record<string, unknown> {
     goals: [{ time_s: 13.5, clock_s: 2.5, team: 0, player: 41 }],
     demolitions: [{ time_s: 12, attacker: 41, victim: 42 }],
     touches: [{ time_s: 11.5, player: 41 }],
+    situations: [
+      { kind: "turnover", time_s: 12.5, team: 1, players: [42, 41] },
+      { kind: "turnover", time_s: 13.2, team: 0, players: [41] },
+    ],
   };
 }

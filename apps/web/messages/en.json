@@ -270,6 +270,27 @@
       "loose": "Loose ball {value}",
       "how": "A team has the ball when it touches it again within 3 seconds. The rest of the play time, the ball is loose."
     },
+    "labels": {
+      "open": "Label the situations (development)",
+      "back": "Back to the match",
+      "title": "Labeling",
+      "devOnly": "Development only. The verdicts go to tests/fixtures/labels/, never versioned, and just v2-report reads them.",
+      "loading": "Loading the situations…",
+      "none": "No 2D view for this match.",
+      "empty": "No situation detected in this match.",
+      "progress": "Situation {current} of {total} · {done} judged",
+      "kind": { "turnover": "Turnover at {clock} of play" },
+      "turnoverPlayers": "{won} takes the ball from {lost}",
+      "turnoverWinner": "{won} takes the ball",
+      "unknownPlayer": "unknown player",
+      "verdict": { "true": "True", "false": "False", "uncertain": "Uncertain" },
+      "previous": "Previous",
+      "next": "Next",
+      "export": "Export",
+      "exported": "Saved in tests/fixtures/labels/: {files}",
+      "nothing": "No verdict to export.",
+      "exportError": "The export failed: is the site running with next dev?"
+    },
     "view": {
       "title": "Replay the match",
       "loading": "Loading the 2D view…",
