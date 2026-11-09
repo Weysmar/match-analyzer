@@ -620,3 +620,49 @@ def test_the_sheet_gives_the_game_clock(
     assert body["match"]["overtime_from_s"] == 302.0
     assert body["goals"][0]["game_time_s"] == 342.0
     assert body["goals"][0]["time_s"] == 400.0
+
+
+def view_of(client: TestClient, match: uuid.UUID) -> Any:
+    return client.get(f"{MATCHES}/{match}/view")
+
+
+def test_the_owner_gets_a_short_url_to_the_view(
+    settings: Settings, providers: FakeProviders, conn: Connection, make: Factory
+) -> None:
+    match = make.match()
+    set_match(conn, match, view_key=f"views/{match}.json.gz")
+    with browser_for(settings, providers, FakeStore()) as client:
+        user = signed_in(client, conn, make)
+        make.user_match(match, user_id=user)
+        before = datetime.now(UTC)
+        body = view_of(client, match).json()
+    assert body["url"] == f"https://store.test/views/{match}.json.gz?ttl={settings.view_url_ttl_s}"
+    expires_at = datetime.fromisoformat(body["expires_at"])
+    assert timedelta(seconds=590) < expires_at - before <= timedelta(seconds=610)
+
+
+def test_no_view_yet_is_not_available(
+    settings: Settings, providers: FakeProviders, conn: Connection, make: Factory
+) -> None:
+    """Before the analysis, for a match read from its header, or while a new parse waits."""
+    match = make.match("header_only")
+    with browser_for(settings, providers, FakeStore()) as client:
+        make.user_match(match, user_id=signed_in(client, conn, make))
+        response = view_of(client, match)
+    assert response.status_code == 404
+    assert response.json()["error"]["code"] == "not_available"
+
+
+def test_someone_elses_view_does_not_exist_for_me(
+    settings: Settings, providers: FakeProviders, conn: Connection, make: Factory
+) -> None:
+    match = make.match()
+    set_match(conn, match, view_key=f"views/{match}.json.gz")
+    make.user_match(match, user_id=make.user())
+    with browser_for(settings, providers, FakeStore()) as client:
+        signed_in(client, conn, make)
+        response = view_of(client, match)
+        nobody = client.get(f"{MATCHES}/{match}/view", cookies={"session": ""})
+    assert response.status_code == 404
+    assert response.json()["error"]["code"] == "not_found"
+    assert nobody.status_code in (401, 404)

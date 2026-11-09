@@ -23,7 +23,7 @@ def handle(connection: Connection, job: Job, store: ObjectStore) -> None:
         # Locked until the end: an upload linking the match now waits, then finds it gone and
         # starts afresh, instead of pointing at deleted files.
         row = connection.execute(
-            "SELECT raw_key, raw_deleted_at IS NULL, frames_key, events_key FROM matches "
+            "SELECT raw_key, raw_deleted_at IS NULL, frames_key, events_key, view_key FROM matches "
             "WHERE id = %s FOR UPDATE",
             (match_id,),
         ).fetchone()
@@ -34,10 +34,10 @@ def handle(connection: Connection, job: Job, store: ObjectStore) -> None:
         ).fetchone()
         if held is not None and held[0]:
             return
-        raw_key, raw_kept, frames_key, events_key = row
+        raw_key, raw_kept, frames_key, events_key, view_key = row
         # Files first: a store that fails rolls everything back, and the job tries again later.
         # The other way round, a failure would leave files that nothing points to.
-        for key in (raw_key if raw_kept else None, frames_key, events_key):
+        for key in (raw_key if raw_kept else None, frames_key, events_key, view_key):
             if key is not None:
                 store.delete(key)
         connection.execute("DELETE FROM matches WHERE id = %s", (match_id,))

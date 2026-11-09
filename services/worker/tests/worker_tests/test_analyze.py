@@ -1,5 +1,6 @@
 """The `analyze` job, against PostgreSQL with the worker's own role, on frames made by hand."""
 
+import gzip
 import json
 import logging
 import uuid
@@ -10,7 +11,7 @@ import polars as pl
 import pytest
 
 from ma_db.testing import Connection, Factory, count
-from ma_schemas import frames_columns
+from ma_schemas import frames_columns, problems
 from ma_worker import analyze
 from ma_worker.queue import Job
 from ma_worker.runner import PermanentError
@@ -315,3 +316,28 @@ def test_the_game_clock_is_written(
     assert conn.execute(
         "SELECT game_time_s FROM match_events WHERE match_id = %s", (match,)
     ).fetchone() == (pytest.approx(5.0),)
+
+
+def test_the_view_is_stored_and_its_key_recorded(
+    conn: Connection, worker_conn: Connection, make: Factory, store: MemoryStore, tmp_path: Path
+) -> None:
+    match, blue, orange = parsed_match(conn, make, store, tmp_path)
+    run_job(worker_conn, store, match)
+    key = analyze.view_key(match)
+    assert conn.execute("SELECT view_key FROM matches WHERE id = %s", (match,)).fetchone() == (key,)
+    document = json.loads(gzip.decompress(store.objects[key]))
+    assert problems("match2d", document) == []
+    assert sorted(player["id"] for player in document["players"]) == sorted([blue, orange])
+    # No name reaches the store: the players are their match_player_id.
+    assert b"Blue" not in gzip.decompress(store.objects[key])
+
+
+def test_a_new_run_writes_the_view_over_the_old_one(
+    conn: Connection, worker_conn: Connection, make: Factory, store: MemoryStore, tmp_path: Path
+) -> None:
+    match, _, _ = parsed_match(conn, make, store, tmp_path)
+    run_job(worker_conn, store, match)
+    store.objects[analyze.view_key(match)] = b"old"
+    run_job(worker_conn, store, match)
+    assert gzip.decompress(store.objects[analyze.view_key(match)]).startswith(b"{")
+    assert sum(key.startswith("views/") for key in store.objects) == 1

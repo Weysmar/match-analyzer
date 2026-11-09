@@ -20,6 +20,8 @@ class ObjectStore(Protocol):
 
     def object_size(self, key: str) -> int | None: ...
 
+    def presign_get(self, key: str, ttl_s: int) -> str: ...
+
 
 def _unavailable() -> ApiError:
     return ApiError(503, "unavailable")
@@ -72,6 +74,15 @@ class S3Storage:
                 "ContentLength": size,
             },
             ExpiresIn=self._settings.upload_url_ttl_s,
+        )
+        return url
+
+    def presign_get(self, key: str, ttl_s: int) -> str:
+        """A short-lived URL to read this one object, such as a match's 2D view."""
+        url: str = self._signer.generate_presigned_url(
+            "get_object",
+            Params={"Bucket": self._settings.s3_bucket, "Key": key},
+            ExpiresIn=ttl_s,
         )
         return url
 

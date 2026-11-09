@@ -64,6 +64,9 @@ class FakeStore:
     def presign_put(self, key: str, size: int) -> str:
         return f"https://store.test/{key}?size={size}"
 
+    def presign_get(self, key: str, ttl_s: int) -> str:
+        return f"https://store.test/{key}?ttl={ttl_s}"
+
     def object_size(self, key: str) -> int | None:
         if self.down:
             raise ApiError(503, "unavailable")
