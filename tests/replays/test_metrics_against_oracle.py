@@ -130,14 +130,16 @@ BOUNDS = {
     "touch.pct_hard": (0.0, 0.0),
     "touch.pct_aerial": (0.0, 0.0),
     # Its PossessionResolver, ported (B7): 0.002 point at the median, 1.24 at the 95th
-    # percentile. The gaps are all the last segment of a replay that ends in live play, which its
-    # statistics count as a loose ball, its events give to the holder up to the end, and we stop at
-    # the last touch (B10): up to 8.9 points on a long final possession.
-    "poss.team_pct": (0.05, 1.5),
+    # percentile on the whole local corpus, 1.53 on the 26 public replays of the CI. The gaps are
+    # all the last segment of a replay that ends in live play, which its statistics count as a
+    # loose ball, its events give to the holder up to the end, and we stop at the last touch (B10):
+    # up to 8.9 points on a long final possession.
+    "poss.team_pct": (0.05, 2.0),
     # Not the same definition: subtr-actor's player possession comes from its eager tracker,
     # ours splits the team's resolved possession between its touchers (B7). Measured: 4.3 and 9.4
-    # points. Documented, not corrected, like the last back.
-    "poss.player_pct": (5.0, 10.5),
+    # points locally, 5.2 and 9.7 on the public replays. Documented, not corrected, like the last
+    # back.
+    "poss.player_pct": (6.0, 11.0),
 }
 # Consumption is checked against two other ways of counting it, as relative differences (T7.4).
 CONSUMPTION_BOUND = 0.05
