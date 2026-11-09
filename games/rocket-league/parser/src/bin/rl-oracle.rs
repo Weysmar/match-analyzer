@@ -4,6 +4,10 @@
 //! CLAUDE.md).
 //!
 //! Only numbers come out. Player ids are used to match rows, then dropped.
+//!
+//! Output: `players` (one row per roster player: its team, then the numeric fields of each
+//! module in `MODULES`, and the total of its `player_possession` spans), and `possession`, the
+//! team possession times of the match.
 
 use std::panic::{AssertUnwindSafe, catch_unwind};
 use std::process::ExitCode;
@@ -12,7 +16,7 @@ use rl_parse::frames;
 use serde_json::{Map, Value, json};
 use subtr_actor::{ReplayDataCollector, StatsCollector};
 
-const MODULES: [&str; 4] = ["boost", "movement", "positioning", "demo"];
+const MODULES: [&str; 5] = ["boost", "movement", "positioning", "demo", "touch"];
 
 /// The numeric fields of one player's row in a stats module, and nothing else.
 fn numbers(stats: &Value) -> Value {
@@ -27,6 +31,21 @@ fn numbers(stats: &Value) -> Value {
         })
         .unwrap_or_default();
     Value::Object(kept)
+}
+
+/// The player's possession spans, summed: their count and total duration in seconds.
+fn player_possession(modules: &Value, id: &Value) -> Value {
+    let spans: Vec<f64> = modules["player_possession"]["events"]
+        .as_array()
+        .map(|events| {
+            events
+                .iter()
+                .filter(|event| event["player_id"] == *id)
+                .filter_map(|event| event["duration"].as_f64())
+                .collect()
+        })
+        .unwrap_or_default();
+    json!({ "spans": spans.len(), "time": spans.iter().sum::<f64>() })
 }
 
 fn oracle(bytes: &[u8]) -> Option<Value> {
@@ -53,10 +72,12 @@ fn oracle(bytes: &[u8]) -> Option<Value> {
                     .unwrap_or(Value::Null);
                 row.insert(module.into(), found);
             }
+            row.insert("player_possession".into(), player_possession(modules, &id));
             Value::Object(row)
         })
         .collect::<Vec<_>>();
-    Some(json!({ "players": players }))
+    let possession = numbers(&modules["possession"]["stats"]);
+    Some(json!({ "players": players, "possession": possession }))
 }
 
 fn main() -> ExitCode {

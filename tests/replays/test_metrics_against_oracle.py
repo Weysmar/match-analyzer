@@ -22,7 +22,7 @@ from rl_analysis.constants import BOOST_RAW_MAX
 from rl_analysis.frames import in_motion
 from rl_analysis.match import Match, load
 from rl_analysis.positioning import ahead_and_behind, thirds
-from rl_analysis.registry import compute
+from rl_analysis.registry import compute, compute_teams
 
 pytestmark = pytest.mark.replays
 
@@ -32,7 +32,7 @@ REPLAYS = ROOT / "tests/fixtures/replays"
 UNSUPPORTED_MODE = 14
 RAW_TO_PERCENT = 100.0 / BOOST_RAW_MAX
 # Written by `just oracle-cache` (tests/fixtures/oracle.py), keyed by the replay's hash.
-ORACLE_CACHE = ROOT / "tests/fixtures/oracle/subtr-actor-1.5.1"
+ORACLE_CACHE = ROOT / "tests/fixtures/oracle/subtr-actor-1.5.1-format-2"
 # What a car burns per second with boost held, as the spike measured it: 80 raw units per 0.93 s.
 # Only used to check consumption, which never relies on it.
 USE_RATE_PER_S = 80 / 0.93 * RAW_TO_PERCENT
@@ -60,6 +60,14 @@ def share(oracle: dict[str, Any], module: str, name: str, scale: float) -> float
     return scale * value / tracked
 
 
+def of_touches(oracle: dict[str, Any], name: str) -> float | None:
+    """`name` as a share of the player's touches, in %. None without a touch."""
+    value, touches = stat(oracle, "touch", name), stat(oracle, "touch", "touch_count")
+    if value is None or not touches:
+        return None
+    return 100.0 * value / touches
+
+
 # What subtr-actor says for each metric, in our units. Its boost is raw, from 0 to 255.
 THEIRS: dict[str, Callable[[dict[str, Any]], float | None]] = {
     "boost.avg": lambda o: share(o, "boost", "boost_integral", RAW_TO_PERCENT),
@@ -76,6 +84,9 @@ THEIRS: dict[str, Callable[[dict[str, Any]], float | None]] = {
     "pos.pct_last_back": lambda o: share(o, "positioning", "time_most_back", 100.0),
     "event.demos_inflicted": lambda o: stat(o, "demo", "demos_inflicted"),
     "event.demos_taken": lambda o: stat(o, "demo", "demos_taken"),
+    "touch.count": lambda o: stat(o, "touch", "touch_count"),
+    "touch.pct_hard": lambda o: of_touches(o, "hard_hit_count"),
+    "touch.pct_aerial": lambda o: of_touches(o, "high_aerial_touch_count"),
 }
 
 # The plan's thirds and its ahead / behind differ from subtr-actor's on purpose (D4, no margin).
@@ -114,6 +125,19 @@ BOUNDS = {
     # ahead and behind.
     "pos.thirds_at_2300": (0.1, 1.0),
     "pos.ahead_behind_with_margin": (0.1, 0.6),
+    # The touches are subtr-actor's own (DV1), through rl-parse: equal for every player.
+    "touch.count": (0.0, 0.0),
+    "touch.pct_hard": (0.0, 0.0),
+    "touch.pct_aerial": (0.0, 0.0),
+    # Its PossessionResolver, ported (B7): 0.002 point at the median, 1.24 at the 95th
+    # percentile. The gaps are all the last segment of a replay that ends in live play, which its
+    # statistics count as a loose ball, its events give to the holder up to the end, and we stop at
+    # the last touch (B10): up to 8.9 points on a long final possession.
+    "poss.team_pct": (0.05, 1.5),
+    # Not the same definition: subtr-actor's player possession comes from its eager tracker,
+    # ours splits the team's resolved possession between its touchers (B7). Measured: 4.3 and 9.4
+    # points. Documented, not corrected, like the last back.
+    "poss.player_pct": (5.0, 10.5),
 }
 # Consumption is checked against two other ways of counting it, as relative differences (T7.4).
 CONSUMPTION_BOUND = 0.05
@@ -188,6 +212,26 @@ def check_with_subtr_settings(
                 corpus.differences["pos.ahead_behind_with_margin"].append(abs(mine - expected))
 
 
+def check_possession(
+    corpus: Corpus, match: Match, oracle: dict[str, Any], theirs: dict[int, dict[str, Any]]
+) -> None:
+    """The team share against subtr-actor's possession stats; the player share against its
+    player possession spans, over the same tracked time."""
+    tracked = stat(oracle, "possession", "tracked_time")
+    if not tracked:
+        return
+    names = {0: "team_zero_time", 1: "team_one_time"}
+    for team, values in compute_teams(match).items():
+        mine, held = values["poss.team_pct"], stat(oracle, "possession", names[team])
+        if mine is not None and held is not None:
+            corpus.differences["poss.team_pct"].append(abs(mine - 100.0 * held / tracked))
+    for player, values in compute(match).items():
+        mine, spans = values["poss.player_pct"], theirs[player].get("player_possession")
+        if mine is not None and isinstance(spans, dict):
+            expected = 100.0 * float(spans["time"]) / tracked
+            corpus.differences["poss.player_pct"].append(abs(mine - expected))
+
+
 @pytest.fixture(scope="module")
 def corpus(tmp_path_factory: pytest.TempPathFactory) -> Corpus:
     found = Corpus()
@@ -223,6 +267,7 @@ def corpus(tmp_path_factory: pytest.TempPathFactory) -> Corpus:
         )
         check_consumption(found, match, theirs)
         check_with_subtr_settings(found, match, theirs)
+        check_possession(found, match, oracle, theirs)
         for player, values in compute(match).items():
             bands = [values[band] for band in ("move.pct_ground", "move.pct_low_air")]
             bands.append(values["move.pct_high_air"])
@@ -289,9 +334,10 @@ def test_the_altitude_bands_add_up_to_the_whole_time(corpus: Corpus) -> None:
 
 def test_the_cache_names_the_subtr_actor_in_use() -> None:
     """The cache's folder, and the CI's cache key through tests/fixtures/oracle.py, name
-    subtr-actor's version: a new one has to start afresh."""
+    subtr-actor's version and rl-oracle's output format: a new one has to start afresh."""
     cargo = (ROOT / "games/rocket-league/parser/Cargo.toml").read_text(encoding="utf-8")
     oracle = (ROOT / "tests/fixtures/oracle.py").read_text(encoding="utf-8")
-    version = ORACLE_CACHE.name.removeprefix("subtr-actor-")
+    version, output_format = ORACLE_CACHE.name.removeprefix("subtr-actor-").split("-format-")
     assert f'subtr-actor = "={version}"' in cargo
     assert f'SUBTR_ACTOR = "{version}"' in oracle
+    assert f"OUTPUT_FORMAT = {output_format}" in oracle

@@ -3,7 +3,7 @@ the whole corpus, and up to two on a long replay, for an output that never chang
 
 Usage: `python tests/fixtures/oracle.py build`, through `just oracle-cache`. The cache sits next to
 the replays, never versioned either: it is derived from them. Its folder names the subtr-actor
-version, so that a new version starts afresh.
+version and rl-oracle's output format, so that a new version of either starts afresh.
 """
 
 import hashlib
@@ -17,7 +17,10 @@ ROOT = Path(__file__).parents[2]
 REPLAYS = ROOT / "tests/fixtures/replays"
 BINARY = ROOT / "games/rocket-league/parser/target/release/rl-oracle"
 SUBTR_ACTOR = "1.5.1"
-CACHE = ROOT / f"tests/fixtures/oracle/subtr-actor-{SUBTR_ACTOR}"
+# What rl-oracle writes: a new field means a new cache, as a new subtr-actor does.
+# 2: touches, team and player possession (T11.7 of docs/PLAN-V2.md).
+OUTPUT_FORMAT = 2
+CACHE = ROOT / f"tests/fixtures/oracle/subtr-actor-{SUBTR_ACTOR}-format-{OUTPUT_FORMAT}"
 TIMEOUT_S = 600
 UNREADABLE = b"null\n"
 
