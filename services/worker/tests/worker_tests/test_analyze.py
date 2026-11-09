@@ -161,6 +161,27 @@ def test_a_new_run_adds_no_team_row_and_drops_a_retired_one(
     }
 
 
+def test_files_of_an_older_parser_give_null_v2_metrics(
+    conn: Connection, worker_conn: Connection, make: Factory, store: MemoryStore, tmp_path: Path
+) -> None:
+    """A purged match keeps the events.json of its parser (version 1, T11.8): its V1 metrics
+    come back, what that parser did not detect stays unknown."""
+    match, blue, _ = parsed_match(conn, make, store, tmp_path)
+    events_key = f"events/{match}.json"
+    document = json.loads(store.objects[events_key])
+    for name in ("touches", "kickoffs", "fifty_fifties", "beaten_to_ball"):
+        del document[name]
+    document |= {"schema_version": 1, "parser_version": "0.1.2"}
+    store.objects[events_key] = json.dumps(document).encode()
+    run_job(worker_conn, store, match)
+    values = {metric_id: value for metric_id, (value, _) in metrics_of(conn, blue).items()}
+    assert values["boost.avg"] == pytest.approx(40.0)
+    v2 = [metric_id for metric_id in values if metric_id.startswith(("touch.", "poss."))]
+    assert v2
+    assert all(values[metric_id] is None for metric_id in v2)
+    assert all(value is None for value, _ in team_metrics_of(conn, match).values())
+
+
 def test_a_new_run_adds_no_row(
     conn: Connection, worker_conn: Connection, make: Factory, store: MemoryStore, tmp_path: Path
 ) -> None:

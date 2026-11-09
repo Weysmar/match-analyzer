@@ -3,6 +3,11 @@ of CLAUDE.md), optionally on a range of the game's `BuildID` only.
 
 A match whose raw file was purged cannot be parsed again: it is reported, never queued. A match that
 already waits for the same job is not queued twice.
+
+After a new parser, run `--parser-outdated` first, then `--analysis-outdated` (T11.8 of
+docs/PLAN-V2.md). A reparse queues the analysis of its match itself: a match still waiting for one
+is left to it, rather than analyzed twice, the first time from the old files. A purged match keeps
+its old files, and gets the new analysis from them: what its parser did not detect stays null.
 """
 
 import subprocess
@@ -22,6 +27,8 @@ class Summary:
     purged: list[uuid.UUID] = field(default_factory=list)
     queued: int = 0
     already_waiting: int = 0
+    # Outdated analyses left to the reparse they wait for.
+    left_to_reparse: int = 0
 
 
 def parser_version(settings: Settings) -> str:
@@ -102,7 +109,19 @@ def analysis_outdated(
     condition = sql.SQL(
         "status IN ('parsed', 'ready') AND analysis_version IS DISTINCT FROM {} AND {}"
     ).format(sql.Literal(ANALYSIS_VERSION), _build_range(build_from, build_to))
-    summary = Summary(selected=[match_id for match_id, _ in _select(connection, condition)])
+    waiting = {
+        row[0]
+        for row in connection.execute(
+            "SELECT DISTINCT payload->>'match_id' FROM jobs "
+            "WHERE kind = 'reparse' AND status IN ('queued', 'running')"
+        ).fetchall()
+    }
+    summary = Summary()
+    for match_id, _ in _select(connection, condition):
+        if str(match_id) in waiting:
+            summary.left_to_reparse += 1
+        else:
+            summary.selected.append(match_id)
     if not dry_run:
         _queue(connection, "analyze", summary.selected, summary)
     return summary
@@ -114,6 +133,8 @@ def report(summary: Summary, *, dry_run: bool) -> str:
         lines.append("dry run: nothing queued")
     else:
         lines.append(f"queued: {summary.queued}, already waiting: {summary.already_waiting}")
+    if summary.left_to_reparse:
+        lines.append(f"waiting for a reparse, analyzed after it: {summary.left_to_reparse}")
     if summary.purged:
         lines.append(f"raw file purged, cannot be parsed again: {len(summary.purged)}")
         lines += [f"  {match_id}" for match_id in summary.purged]
