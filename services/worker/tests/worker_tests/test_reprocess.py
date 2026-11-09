@@ -123,3 +123,30 @@ def test_the_analysis_takes_a_range_of_builds_too(
     inside = match_with(conn, make, analysis_version="0", build_id=200)
     match_with(conn, make, analysis_version="0", build_id=300)
     assert reprocess.analysis_outdated(worker_conn, build_to=250, dry_run=True).selected == [inside]
+
+
+def test_a_match_waiting_for_a_reparse_is_left_to_it(
+    conn: Connection, worker_conn: Connection, make: Factory
+) -> None:
+    """The reparse queues the analysis itself, from the new files."""
+    both = match_with(conn, make, parser_version="0.1.1", analysis_version="0")
+    only_analysis = match_with(conn, make, analysis_version="0")
+    reprocess.parser_outdated(worker_conn, CURRENT)
+    summary = reprocess.analysis_outdated(worker_conn)
+    assert summary.selected == [only_analysis]
+    assert summary.left_to_reparse == 1
+    assert queued(conn, "analyze") == [str(only_analysis)]
+    assert "waiting for a reparse, analyzed after it: 1" in reprocess.report(summary, dry_run=False)
+    # Once the reparse is done, nothing holds the analysis back any more.
+    conn.execute("UPDATE jobs SET status = 'done' WHERE kind = 'reparse'")
+    conn.execute("DELETE FROM jobs WHERE kind = 'analyze'")
+    assert set(reprocess.analysis_outdated(worker_conn).selected) == {both, only_analysis}
+
+
+def test_a_purged_match_is_still_analyzed_again(
+    conn: Connection, worker_conn: Connection, make: Factory
+) -> None:
+    """It cannot be parsed again, but the analysis runs from its files as they are."""
+    purged = match_with(conn, make, parser_version="0.1.1", analysis_version="0", raw_key=None)
+    assert reprocess.parser_outdated(worker_conn, CURRENT).purged == [purged]
+    assert reprocess.analysis_outdated(worker_conn).selected == [purged]
