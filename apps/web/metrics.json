@@ -140,8 +140,28 @@
     "scope": "player"
   },
   {
+    "id": "kick.taken",
+    "unit": "count",
+    "scope": "player"
+  },
+  {
+    "id": "kick.won_pct",
+    "unit": "%",
+    "scope": "player"
+  },
+  {
+    "id": "kick.time_to_ball",
+    "unit": "s",
+    "scope": "player"
+  },
+  {
     "id": "poss.team_pct",
     "unit": "%",
+    "scope": "team"
+  },
+  {
+    "id": "kick.goals_conceded",
+    "unit": "count",
     "scope": "team"
   }
 ]
