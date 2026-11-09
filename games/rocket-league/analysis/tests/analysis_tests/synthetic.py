@@ -90,8 +90,8 @@ def match_of(frame: pl.DataFrame, **events: Any) -> Match:
         for player, team in frame.select("player_idx", "team").unique().sort("player_idx").rows()
     ]
     document: dict[str, Any] = {
-        "schema_version": 1,
-        "parser_version": "0.1.1",
+        "schema_version": 2,
+        "parser_version": "0.2.0",
         "fps": None,
         "playlist_id": 13,
         "duration_s": 300.0,
@@ -102,6 +102,11 @@ def match_of(frame: pl.DataFrame, **events: Any) -> Match:
         "pad_pickups": [],
         "unresolved_pad_pickups": 0,
         "stat_events": [],
+        # Not detected unless a test gives them (T11.1).
+        "touches": None,
+        "kickoffs": None,
+        "fifty_fifties": None,
+        "beaten_to_ball": None,
     } | events
     assert problems("events", document) == []
     return Match(frame, cast(EventsDocument, document))

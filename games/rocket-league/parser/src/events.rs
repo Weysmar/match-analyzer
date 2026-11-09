@@ -6,9 +6,14 @@ use boxcars::{RemoteId, Replay};
 use serde::Serialize;
 use subtr_actor::{BoostPadEventKind, BoostPadSize, PlayerStatEventKind, ResolvedBoostPad};
 
+use crate::detections::{self, BeatenToBall, FiftyFifty, Kickoff, Touch};
 use crate::frames::{Collected, phase_code};
-use crate::header::{PARSER_VERSION, SCHEMA_VERSION};
+use crate::header::PARSER_VERSION;
 use crate::identity;
+
+/// Version 2 adds subtr-actor's detections (`docs/PLAN-V2.md`, T11.1). The header and the frames
+/// keep version 1.
+pub const EVENTS_SCHEMA_VERSION: u32 = 2;
 
 #[derive(Debug, Serialize)]
 pub struct Events {
@@ -27,6 +32,11 @@ pub struct Events {
     /// Pickups of a pad the layout does not resolve. Under 0.5 % on real replays.
     pub unresolved_pad_pickups: u32,
     pub stat_events: Vec<StatEvent>,
+    /// subtr-actor's detections; all four are null when its detectors failed on this replay.
+    pub touches: Option<Vec<Touch>>,
+    pub kickoffs: Option<Vec<Kickoff>>,
+    pub fifty_fifties: Option<Vec<FiftyFifty>>,
+    pub beaten_to_ball: Option<Vec<BeatenToBall>>,
 }
 
 #[derive(Debug, Serialize)]
@@ -260,8 +270,18 @@ pub fn extract(replay: &Replay, collected: &Collected, fps: Option<f32>) -> Even
         .collect();
 
     let (pad_pickups, unresolved_pad_pickups) = pad_pickups(collected, &ids);
+    let detected = detections::detect(replay, &ids);
+    let (touches, kickoffs, fifty_fifties, beaten_to_ball) = match detected {
+        Some(found) => (
+            Some(found.touches),
+            Some(found.kickoffs),
+            Some(found.fifty_fifties),
+            Some(found.beaten_to_ball),
+        ),
+        None => (None, None, None, None),
+    };
     Events {
-        schema_version: SCHEMA_VERSION,
+        schema_version: EVENTS_SCHEMA_VERSION,
         parser_version: PARSER_VERSION,
         fps,
         playlist_id: data.meta.game_type.playlist_id,
@@ -273,6 +293,10 @@ pub fn extract(replay: &Replay, collected: &Collected, fps: Option<f32>) -> Even
         pad_pickups,
         unresolved_pad_pickups,
         stat_events,
+        touches,
+        kickoffs,
+        fifty_fifties,
+        beaten_to_ball,
     }
 }
 

@@ -107,8 +107,67 @@ class StatEvent(TypedDict):
     kind: Literal["shot", "save", "assist"]
 
 
+class Touch(TypedDict):
+    frame: int
+    time_s: float
+    player_idx: int
+    team: Team
+    ball_speed_change: float
+    kind: str | None
+    height_band: str | None
+    surface: str | None
+    contested: bool
+
+
+class KickoffTaker(TypedDict):
+    player_idx: int
+    team: Team
+    time_to_ball_s: float | None
+    start_boost: float | None
+    boost_used: float
+
+
+class Kickoff(TypedDict):
+    start_frame: int
+    start_time_s: float
+    end_frame: int
+    end_time_s: float
+    kickoff_type: Literal["center", "center_offset", "diagonal", "unknown"]
+    first_touch_frame: int | None
+    first_touch_time_s: float | None
+    first_touch_player_idx: int | None
+    winner_team: Team | None
+    outcome: Literal["win", "neutral", "unknown"]
+    goal: bool
+    time_to_goal_s: float | None
+    takers: list[KickoffTaker]
+
+
+class FiftyFifty(TypedDict):
+    start_frame: int
+    start_time_s: float
+    resolve_frame: int
+    resolve_time_s: float
+    is_kickoff: bool
+    blue_player_idx: int | None
+    orange_player_idx: int | None
+    winner_team: Team | None
+    possession_team: Team | None
+
+
+class BeatenToBall(TypedDict):
+    frame: int
+    time_s: float
+    player_idx: int
+    winner_idx: int | None
+    team: Team
+    distance_at_touch: float
+    margin_s: float
+    approach_speed: float
+
+
 class EventsDocument(TypedDict):
-    schema_version: Literal[1]
+    schema_version: Literal[2]
     parser_version: str
     fps: float | None
     playlist_id: int | None
@@ -120,3 +179,9 @@ class EventsDocument(TypedDict):
     pad_pickups: list[PadPickup]
     unresolved_pad_pickups: int
     stat_events: list[StatEvent]
+    # subtr-actor's detections (docs/PLAN-V2.md, T11.1): None when they failed, or when the
+    # document came from a parser older than 0.2.0.
+    touches: list[Touch] | None
+    kickoffs: list[Kickoff] | None
+    fifty_fifties: list[FiftyFifty] | None
+    beaten_to_ball: list[BeatenToBall] | None

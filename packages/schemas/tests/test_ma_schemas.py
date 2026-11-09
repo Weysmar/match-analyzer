@@ -47,6 +47,77 @@ def valid_header() -> dict[str, Any]:
 
 
 def valid_events() -> dict[str, Any]:
+    return events_v1() | {
+        "schema_version": 2,
+        "parser_version": "0.2.0",
+        "touches": [
+            {
+                "frame": 1,
+                "time_s": 2.0,
+                "player_idx": 0,
+                "team": 1,
+                "ball_speed_change": 900.5,
+                "kind": "hard_hit",
+                "height_band": "ground",
+                "surface": "ground",
+                "contested": False,
+            }
+        ],
+        "kickoffs": [
+            {
+                "start_frame": 0,
+                "start_time_s": 0.0,
+                "end_frame": 40,
+                "end_time_s": 4.5,
+                "kickoff_type": "diagonal",
+                "first_touch_frame": 30,
+                "first_touch_time_s": 3.1,
+                "first_touch_player_idx": 0,
+                "winner_team": 1,
+                "outcome": "win",
+                "goal": False,
+                "time_to_goal_s": None,
+                "takers": [
+                    {
+                        "player_idx": 0,
+                        "team": 1,
+                        "time_to_ball_s": 2.4,
+                        "start_boost": 33.3,
+                        "boost_used": 20.0,
+                    }
+                ],
+            }
+        ],
+        "fifty_fifties": [
+            {
+                "start_frame": 30,
+                "start_time_s": 3.1,
+                "resolve_frame": 40,
+                "resolve_time_s": 3.5,
+                "is_kickoff": True,
+                "blue_player_idx": None,
+                "orange_player_idx": 0,
+                "winner_team": None,
+                "possession_team": 1,
+            }
+        ],
+        "beaten_to_ball": [
+            {
+                "frame": 50,
+                "time_s": 6.0,
+                "player_idx": 0,
+                "winner_idx": None,
+                "team": 1,
+                "distance_at_touch": 420.0,
+                "margin_s": 0.3,
+                "approach_speed": 1200.0,
+            }
+        ],
+    }
+
+
+def events_v1() -> dict[str, Any]:
+    """As parsers before 0.2.0 wrote it: no detections."""
     return {
         "schema_version": 1,
         "parser_version": "0.1.0",
@@ -162,6 +233,23 @@ def test_header_counter_examples(change: Any, where: str) -> None:
         (lambda d: d["pad_pickups"][0].update(size="medium"), "pad_pickups/0/size: enum"),
         (lambda d: d["pad_pickups"][0].update(phase=5), "pad_pickups/0/phase: enum"),
         (lambda d: d["stat_events"][0].update(kind="goal"), "stat_events/0/kind: enum"),
+        (lambda d: d.update(schema_version=3), "schema_version: const"),
+        (lambda d: d["touches"][0].update(team=None), "touches/0/team: enum"),
+        (lambda d: d["touches"][0].update(contested="no"), "touches/0/contested: type"),
+        (
+            lambda d: d["kickoffs"][0].update(kickoff_type="wavedash"),
+            "kickoffs/0/kickoff_type: enum",
+        ),
+        (lambda d: d["kickoffs"][0].update(outcome="loss"), "kickoffs/0/outcome: enum"),
+        (
+            lambda d: d["kickoffs"][0]["takers"][0].update(player_idx=None),
+            "kickoffs/0/takers/0/player_idx: type",
+        ),
+        (
+            lambda d: d["fifty_fifties"][0].update(winner_team=2),
+            "fifty_fifties/0/winner_team: enum",
+        ),
+        (lambda d: d["beaten_to_ball"][0].update(margin_s=None), "beaten_to_ball/0/margin_s: type"),
     ],
 )
 def test_events_counter_examples(change: Any, where: str) -> None:
@@ -192,6 +280,30 @@ def test_parse_returns_the_document() -> None:
     assert ma_schemas.parse_header(copy.deepcopy(header)) == header
     events = valid_events()
     assert ma_schemas.parse_events(copy.deepcopy(events)) == events
+
+
+def test_failed_detections_are_null() -> None:
+    events = valid_events() | dict.fromkeys(ma_schemas.DETECTIONS)
+    assert ma_schemas.problems("events", events) == []
+
+
+def test_a_version_1_document_reads_as_version_2_without_detections() -> None:
+    """Matches parsed before parser 0.2.0 keep working, as not detected (T11.2)."""
+    old = events_v1()
+    parsed = ma_schemas.parse_events(old)
+    assert parsed["schema_version"] == 2
+    assert [parsed[key] for key in ma_schemas.DETECTIONS] == [None] * 4  # type: ignore[literal-required]
+    assert parsed["roster"] == old["roster"]
+    # The caller's document is left alone.
+    assert old["schema_version"] == 1
+    assert "touches" not in old
+
+
+def test_a_version_1_document_with_detections_is_not_upgraded() -> None:
+    """Version 1 never had them: such a document is broken, not old."""
+    odd = events_v1() | {"touches": []}
+    with pytest.raises(ma_schemas.InvalidDocumentError):
+        ma_schemas.parse_events(odd)
 
 
 def test_frames_problems_detect_every_difference() -> None:
@@ -240,6 +352,11 @@ def _object_at(schema: dict[str, Any], *path: str) -> dict[str, Any]:
         (types.Demolition, "events", ("demolitions", "[]")),
         (types.PadPickup, "events", ("pad_pickups", "[]")),
         (types.StatEvent, "events", ("stat_events", "[]")),
+        (types.Touch, "events", ("touches", "[]")),
+        (types.Kickoff, "events", ("kickoffs", "[]")),
+        (types.KickoffTaker, "events", ("kickoffs", "[]", "takers", "[]")),
+        (types.FiftyFifty, "events", ("fifty_fifties", "[]")),
+        (types.BeatenToBall, "events", ("beaten_to_ball", "[]")),
     ],
 )
 def test_typed_dicts_follow_the_schemas(typed: Any, kind: str, path: tuple[str, ...]) -> None:
