@@ -486,6 +486,90 @@
       "demos_taken": "Demolitions taken"
     }
   },
+  "definitions": {
+    "metrics": {
+      "boost": {
+        "used_per_min": "Boost spent, as a share of the tank, per minute of play; the refill to 33 at a kickoff does not count.",
+        "avg": "The average boost level over play time.",
+        "pct_zero": "The share of play time spent with an empty tank.",
+        "pct_full": "The share of play time spent with a full tank.",
+        "pads_big": "Big pads (100 boost) picked up during play.",
+        "pads_small": "Small pads (12 boost) picked up during play.",
+        "pads_enemy_half": "Pads of either size picked up in the opponents' half."
+      },
+      "move": {
+        "speed_avg": "The car's average speed over play time.",
+        "pct_supersonic": "The share of play time at 79 km/h or more, the supersonic threshold set by convention.",
+        "pct_ground": "The share of play time 20 cm off the ground or lower; driving on a wall counts as air.",
+        "pct_low_air": "The share of play time in the air, but below the height of a ball resting on the ground.",
+        "pct_high_air": "The share of play time above 7.4 m, high enough to clear a ball resting on the ground."
+      },
+      "pos": {
+        "pct_def_third": "The share of live play spent in the third of the field the team defends.",
+        "pct_mid_third": "The share of live play spent in the middle third of the field.",
+        "pct_att_third": "The share of live play spent in the third of the field the team attacks.",
+        "pct_ahead_ball": "The share of live play spent nearer the opponents' goal than the ball.",
+        "pct_behind_ball": "The share of live play spent nearer their own goal than the ball.",
+        "dist_ball_avg": "The average distance between the car and the ball during live play.",
+        "pct_last_back": "The share of live play where the player is the closest to their goal among teammates on the field."
+      },
+      "touch": {
+        "count": "The player's touches of the ball during live play.",
+        "per_min": "Touches of the ball per minute of live play spent on the field.",
+        "pct_aerial": "The share of touches made above 7.4 m.",
+        "pct_hard": "The share of touches that change the ball's speed by at least 32 km/h, carries and dribbles aside."
+      },
+      "poss": {
+        "player_pct": "The share of live play the team has the ball through the player: from each of their touches to the team's next one.",
+        "turnovers_lost": "Possessions lost on an opponent's touch while the player was the last of the team to touch the ball.",
+        "turnovers_won": "Possessions taken from the opponents by a touch of the player.",
+        "team_pct": "The share of live play the team has the ball: it touches it again within 3 seconds; the rest of the time, the ball is loose."
+      },
+      "kick": {
+        "taken": "Kickoffs where the player is the first of their team to touch the ball, within 6 seconds.",
+        "won_pct": "The share of those kickoffs won: the ball is in the opponents' half half a second after the first touch.",
+        "time_to_ball": "The average time from the end of the countdown to the player's first touch, over their kickoffs.",
+        "goals_conceded": "Goals the team conceded within 12 seconds of a kickoff."
+      },
+      "duel": {
+        "count": "50/50s the player contested, kickoffs included.",
+        "won_pct": "The share of those duels after which their team has the ball; one that leaves it loose is not won.",
+        "beaten": "Times the player, going for the ball, was beaten to it by an opponent."
+      },
+      "rot": {
+        "pct_first": "The share of time with a role spent as first man: the closest to the ball, more than 2.5 m ahead of the next.",
+        "pct_second": "The share of time with a role spent as second man: the next closest to the ball.",
+        "pct_third": "The share of time with a role spent as third man, the furthest from the ball, in 3v3.",
+        "double_commits": "Double commits the player took part in.",
+        "overcommits": "Times the whole team was ahead of the ball, by more than 1.5 m, for at least 1 second, while the opponents had it."
+      },
+      "event": {
+        "demos_inflicted": "Opponents' cars the player demolished.",
+        "demos_taken": "Times the player's car was demolished."
+      }
+    },
+    "situations": {
+      "turnover": "A team loses the ball: the opponents touch it, then touch it again within 3 seconds.",
+      "kickoff": "The restart at the center; won by the team that sends the ball into the other half.",
+      "fifty_fifty": "Two opponents touch the ball at nearly the same time; won by the team that has the ball afterwards.",
+      "double_commit": "Two teammates go for the ball together for at least 0.25 seconds, and a touch ends it within 1.5 seconds; the 2 seconds after a kickoff aside.",
+      "overcommit": "The whole team is ahead of the ball, by more than 1.5 m, for at least 1 second, while the opponents have it.",
+      "goal_context": "The last 10 seconds of play before a goal, never further back than the kickoff that started the play."
+    },
+    "tags": {
+      "double_commit": "A double commit of the team happened in those 10 seconds.",
+      "overcommit": "An overcommit of the team happened in those 10 seconds.",
+      "turnover_own_half": "The team's last lost ball in those 10 seconds was in its own half.",
+      "beaten_to_ball": "A defender, going for the ball, was beaten to it within 3 seconds before the shot.",
+      "last_back_far": "At the shot, the last defender was more than 20 m from their goal.",
+      "last_back_low_boost": "At the shot, the last defender had less than 20 boost.",
+      "defender_demolished": "A defender was demolished within 3 seconds before the goal.",
+      "kickoff_goal": "The goal came within 12 seconds of a kickoff.",
+      "own_touch_last": "The last touch before the goal came from the conceding team."
+    },
+    "show": "How it is detected",
+    "showMetrics": "How it is computed"
+  },
   "units": {
     "percent": "{value}%",
     "perMinute": "{value} %/min",

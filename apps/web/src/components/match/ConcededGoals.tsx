@@ -1,7 +1,8 @@
 import Link from "next/link";
 import { getFormatter, getTranslations } from "next-intl/server";
+import { HowItWorks } from "@/components/match/HowItWorks";
 import type { Schemas } from "@/lib/api/client";
-import { type GoalCard, goalCards } from "@/lib/matches/conceded";
+import { GOAL_TAGS, type GoalCard, goalCards } from "@/lib/matches/conceded";
 import { formatClock } from "@/lib/matches/timeline";
 import { viewLink } from "@/lib/view2d/links";
 
@@ -28,6 +29,7 @@ export async function ConcededGoals({
   const t = await getTranslations("match.conceded");
   const tt = await getTranslations("match.timeline");
   const ta = await getTranslations("match.analysis");
+  const td = await getTranslations("definitions");
   const format = await getFormatter();
   const myTeam = sheet.players.find((player) => player.is_me)?.team ?? null;
   const teamName = (team: number | null) =>
@@ -63,6 +65,13 @@ export async function ConcededGoals({
         {t("title")}
       </h2>
       <p className="text-xs text-slate-600 dark:text-slate-400">{t("how")}</p>
+      <HowItWorks
+        summary={td("show")}
+        items={GOAL_TAGS.map((tag) => ({
+          term: t(`tags.${tag}`),
+          definition: td(`tags.${tag}`),
+        }))}
+      />
       <ol className="flex flex-col gap-2">
         {cards.map((card) => {
           const clock = clockOf(card);

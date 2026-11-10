@@ -27,3 +27,15 @@ def test_every_route_of_the_site_declares_what_it_answers() -> None:
 
 def test_the_api_knows_every_team_metric() -> None:
     assert {metric.id for metric in TEAM_METRICS} == TEAM_METRIC_IDS
+
+
+def test_the_api_sends_exactly_the_kinds_of_situations_the_analysis_detects() -> None:
+    """The site defines each kind it can receive (T16.3): the list must not drift."""
+    from typing import get_args
+
+    from ma_api.matches import _DETAILS
+    from ma_api.models import SituationKind
+    from rl_analysis.situations import KINDS
+
+    assert get_args(SituationKind.__value__) == KINDS
+    assert set(_DETAILS) == set(KINDS)
