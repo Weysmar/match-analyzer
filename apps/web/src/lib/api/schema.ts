@@ -358,6 +358,21 @@ export interface components {
             files: components["schemas"]["FileIn"][];
         };
         /**
+         * Conceded
+         * @description The goals the player's team conceded over the same matches, and how many of them carry
+         *     each tag of their context (T16.4): a goal may carry several, or none.
+         */
+        Conceded: {
+            /** Goals */
+            goals: number;
+            /** Tags */
+            tags: {
+                [key: string]: number;
+            };
+            /** Untagged */
+            untagged: number;
+        };
+        /**
          * Error
          * @description Every error of the API, whatever the route.
          */
@@ -607,6 +622,7 @@ export interface components {
             averages: {
                 [key: string]: number | null;
             };
+            conceded: components["schemas"]["Conceded"];
             /** Matches Count */
             matches_count: number;
             /** Verified Count */

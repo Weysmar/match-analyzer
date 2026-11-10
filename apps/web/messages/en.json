@@ -178,6 +178,13 @@
       "empty": "No value for this stat over these matches.",
       "table": "Show the values",
       "date": "Date"
+    },
+    "conceded": {
+      "title": "Causes of the goals you conceded",
+      "counted": "{count, plural, =0 {No goal conceded} one {# goal conceded} other {# goals conceded}} by your team over these matches.",
+      "share": "{share} · {count, plural, one {# goal} other {# goals}}",
+      "none": "No goal conceded with its context over these matches. A match analyzed before this version has none.",
+      "overlap": "A goal may have several causes, or none: the shares do not add up to 100%."
     }
   },
   "notFound": {

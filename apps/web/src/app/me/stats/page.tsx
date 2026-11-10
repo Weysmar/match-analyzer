@@ -2,10 +2,13 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { getFormatter, getTranslations } from "next-intl/server";
 import { SignInPrompt } from "@/components/account/SignInPrompt";
+import { HowItWorks } from "@/components/match/HowItWorks";
 import { HistoryChart } from "@/components/stats/HistoryChart";
 import { ApiError, type Me, type Schemas } from "@/lib/api/client";
 import { serverGet } from "@/lib/api/server";
+import { GOAL_TAGS } from "@/lib/matches/conceded";
 import { GROUPS, METRICS, show } from "@/lib/matches/metrics";
+import { causes, untaggedShare } from "@/lib/stats/conceded";
 import { LAST_CHOICES, readQuery, type StatsQuery, statsHref } from "@/lib/stats/query";
 
 export async function generateMetadata(): Promise<Metadata> {
@@ -13,7 +16,12 @@ export async function generateMetadata(): Promise<Metadata> {
   return { title: t("title") };
 }
 
-const NOTHING: Schemas["Stats"] = { matches_count: 0, verified_count: 0, averages: {} };
+const NOTHING: Schemas["Stats"] = {
+  matches_count: 0,
+  verified_count: 0,
+  averages: {},
+  conceded: { goals: 0, untagged: 0, tags: {} },
+};
 
 async function load(query: StatsQuery) {
   try {
@@ -143,6 +151,80 @@ export default async function StatsPage({
                 </div>
               ))}
             </div>
+          </section>
+
+          <section aria-labelledby="conceded-title" className="flex flex-col gap-3">
+            <div className="flex flex-col gap-1">
+              <h2 id="conceded-title" className="text-lg font-semibold">
+                {t("stats.conceded.title")}
+              </h2>
+              <p className="text-sm text-slate-600 dark:text-slate-400">
+                {t("stats.conceded.counted", { count: stats.conceded.goals })}
+              </p>
+            </div>
+            {stats.conceded.goals === 0 ? (
+              <p className="text-sm text-slate-600 dark:text-slate-400">
+                {t("stats.conceded.none")}
+              </p>
+            ) : (
+              <>
+                <ul className="flex flex-col gap-2 text-sm">
+                  {[
+                    ...causes(stats.conceded).map((cause) => ({
+                      key: cause.tag,
+                      label: t(`match.conceded.tags.${cause.tag}`),
+                      share: cause.share,
+                      goals: cause.goals,
+                    })),
+                    ...(stats.conceded.untagged > 0
+                      ? [
+                          {
+                            key: "untagged",
+                            label: t("match.conceded.noTag"),
+                            share: untaggedShare(stats.conceded),
+                            goals: stats.conceded.untagged,
+                          },
+                        ]
+                      : []),
+                  ].map((row) => (
+                    <li key={row.key} className="flex flex-col gap-1">
+                      <span className="flex items-baseline justify-between gap-4">
+                        <span>{row.label}</span>
+                        <span className="whitespace-nowrap font-medium tabular-nums">
+                          {t("stats.conceded.share", {
+                            share: format.number(row.share / 100, { style: "percent" }),
+                            count: row.goals,
+                          })}
+                        </span>
+                      </span>
+                      {/* SVG attributes, not inline styles: the security policy refuses those. */}
+                      <svg aria-hidden="true" className="h-1.5 w-full overflow-hidden rounded-full">
+                        <rect
+                          width="100%"
+                          height="100%"
+                          className="fill-slate-200 dark:fill-slate-800"
+                        />
+                        <rect
+                          width={`${row.share}%`}
+                          height="100%"
+                          className={row.key === "untagged" ? "fill-slate-400" : "fill-rose-500"}
+                        />
+                      </svg>
+                    </li>
+                  ))}
+                </ul>
+                <p className="text-xs text-slate-600 dark:text-slate-400">
+                  {t("stats.conceded.overlap")}
+                </p>
+              </>
+            )}
+            <HowItWorks
+              summary={t("definitions.show")}
+              items={GOAL_TAGS.map((tag) => ({
+                term: t(`match.conceded.tags.${tag}`),
+                definition: t(`definitions.tags.${tag}`),
+              }))}
+            />
           </section>
         </>
       )}

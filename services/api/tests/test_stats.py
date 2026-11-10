@@ -59,9 +59,50 @@ def test_nobody_has_no_stats(browser: TestClient) -> None:
         assert response.json()["error"]["code"] == "not_signed_in"
 
 
+def test_the_goals_conceded_are_my_teams_with_the_count_of_each_tag(
+    browser: TestClient, conn: Connection, make: Factory
+) -> None:
+    """Worked out by hand: over my two matches, my team (blue, then orange) conceded 3 goals; 2
+    carry a double commit, 1 an overcommit, 1 nothing. The goals of the other side, and those of a
+    match outside the last N, do not count."""
+    user = signed_in(browser, conn, make)
+    first = played(conn, make, user, 1, 50.0)
+    second = played(conn, make, user, 2, 50.0)
+    conn.execute(
+        "UPDATE match_players SET team = 1 WHERE id = "
+        "(SELECT match_player_id FROM user_matches WHERE match_id = %s)",
+        (second,),
+    )
+    make.situation(first, "goal_context", 10.0, team=0, tags=["double_commit", "overcommit"])
+    make.situation(first, "goal_context", 20.0, team=1, tags=["double_commit"])
+    make.situation(first, "turnover", 25.0, team=0)
+    make.situation(second, "goal_context", 30.0, team=1, tags=["double_commit"])
+    make.situation(second, "goal_context", 40.0, team=1, tags=[])
+    older = played(conn, make, user, 0, 50.0)
+    make.situation(older, "goal_context", 5.0, team=0, tags=["overcommit"])
+
+    body = browser.get(STATS, params={"last": 2}).json()
+    assert body["conceded"] == {
+        "goals": 3,
+        "untagged": 1,
+        "tags": {"double_commit": 2, "overcommit": 1},
+    }
+
+
+def test_no_goal_conceded_yet(browser: TestClient, conn: Connection, make: Factory) -> None:
+    user = signed_in(browser, conn, make)
+    played(conn, make, user, 1, 50.0)
+    assert browser.get(STATS).json()["conceded"] == {"goals": 0, "untagged": 0, "tags": {}}
+
+
 def test_no_match_yet(browser: TestClient, conn: Connection, make: Factory) -> None:
     signed_in(browser, conn, make)
-    assert browser.get(STATS).json() == {"matches_count": 0, "verified_count": 0, "averages": {}}
+    assert browser.get(STATS).json() == {
+        "matches_count": 0,
+        "verified_count": 0,
+        "averages": {},
+        "conceded": {"goals": 0, "untagged": 0, "tags": {}},
+    }
     assert browser.get(HISTORY, params={"metric_id": METRIC}).json() == {
         "metric_id": METRIC,
         "points": [],
@@ -78,6 +119,7 @@ def test_the_average_gives_each_match_the_same_weight(
         "matches_count": 3,
         "verified_count": 1,
         "averages": {METRIC: 30.0},
+        "conceded": {"goals": 0, "untagged": 0, "tags": {}},
     }
 
 
@@ -109,7 +151,12 @@ def test_the_scope_keeps_verified_matches(
     played(conn, make, user, 0, 10.0, verified=True)
     played(conn, make, user, 1, 90.0)
     body = browser.get(STATS, params={"scope": "verified"}).json()
-    assert body == {"matches_count": 1, "verified_count": 1, "averages": {METRIC: 10.0}}
+    assert body == {
+        "matches_count": 1,
+        "verified_count": 1,
+        "averages": {METRIC: 10.0},
+        "conceded": {"goals": 0, "untagged": 0, "tags": {}},
+    }
 
 
 def test_last_applies_after_the_scope(browser: TestClient, conn: Connection, make: Factory) -> None:

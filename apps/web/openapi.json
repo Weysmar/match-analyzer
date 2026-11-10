@@ -18,6 +18,33 @@
         "title": "BatchIn",
         "type": "object"
       },
+      "Conceded": {
+        "description": "The goals the player's team conceded over the same matches, and how many of them carry\neach tag of their context (T16.4): a goal may carry several, or none.",
+        "properties": {
+          "goals": {
+            "title": "Goals",
+            "type": "integer"
+          },
+          "tags": {
+            "additionalProperties": {
+              "type": "integer"
+            },
+            "title": "Tags",
+            "type": "object"
+          },
+          "untagged": {
+            "title": "Untagged",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "goals",
+          "untagged",
+          "tags"
+        ],
+        "title": "Conceded",
+        "type": "object"
+      },
       "Error": {
         "description": "Every error of the API, whatever the route.",
         "properties": {
@@ -914,6 +941,9 @@
             "title": "Averages",
             "type": "object"
           },
+          "conceded": {
+            "$ref": "#/components/schemas/Conceded"
+          },
           "matches_count": {
             "title": "Matches Count",
             "type": "integer"
@@ -926,7 +956,8 @@
         "required": [
           "matches_count",
           "verified_count",
-          "averages"
+          "averages",
+          "conceded"
         ],
         "title": "Stats",
         "type": "object"
