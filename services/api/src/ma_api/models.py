@@ -5,7 +5,7 @@ platform id has nowhere to go (section 11 of CLAUDE.md). The site's client is ge
 Times stay ISO 8601 strings, as the routes write them.
 """
 
-from typing import Literal
+from typing import Any, Literal
 
 from pydantic import BaseModel
 
@@ -141,6 +141,26 @@ class Goal(BaseModel):
     player_name: str | None
 
 
+type SituationKind = Literal[
+    "turnover", "kickoff", "fifty_fifty", "double_commit", "overcommit", "goal_context"
+]
+
+
+class Situation(BaseModel):
+    """What a detection found (annex G of docs/PLAN-V2.md). Players are `match_player_id`, in
+    `players` and wherever `details` names one (`player`); `details` keeps only the facts its kind
+    has, never a platform id."""
+
+    id: int
+    kind: SituationKind
+    time_s: float
+    game_time_s: float | None
+    team: int | None
+    players: list[int]
+    tags: list[str]
+    details: dict[str, Any]
+
+
 class MyIdentity(BaseModel):
     match_player_id: int | None
     verified: bool
@@ -154,6 +174,8 @@ class MatchSheet(BaseModel):
     metrics: dict[str, dict[str, float | None]]
     # By team number ("0", "1"): possession, where a player row would mean nothing.
     team_metrics: dict[str, dict[str, float | None]]
+    # In time order; empty before the analysis and without detected touches.
+    situations: list[Situation]
     me: MyIdentity
     needs_identity: bool
 

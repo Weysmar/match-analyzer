@@ -510,6 +510,8 @@ export interface components {
             needs_identity: boolean;
             /** Players */
             players: components["schemas"]["Player"][];
+            /** Situations */
+            situations: components["schemas"]["Situation"][];
             /** Team Metrics */
             team_metrics: {
                 [key: string]: {
@@ -572,6 +574,33 @@ export interface components {
             /** Orange */
             orange: number | null;
         };
+        /**
+         * Situation
+         * @description What a detection found (annex G of docs/PLAN-V2.md). Players are `match_player_id`, in
+         *     `players` and wherever `details` names one (`player`); `details` keeps only the facts its kind
+         *     has, never a platform id.
+         */
+        Situation: {
+            /** Details */
+            details: {
+                [key: string]: unknown;
+            };
+            /** Game Time S */
+            game_time_s: number | null;
+            /** Id */
+            id: number;
+            kind: components["schemas"]["SituationKind"];
+            /** Players */
+            players: number[];
+            /** Tags */
+            tags: string[];
+            /** Team */
+            team: number | null;
+            /** Time S */
+            time_s: number;
+        };
+        /** @enum {string} */
+        SituationKind: "turnover" | "kickoff" | "fifty_fifty" | "double_commit" | "overcommit" | "goal_context";
         /** Stats */
         Stats: {
             /** Averages */

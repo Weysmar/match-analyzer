@@ -14,4 +14,5 @@ __version__ = "0.0.0"
 # 9: rotation roles, first, second and third man (T14.1).
 # 10: engaged players and double commits, a metric and a situation (T14.2, T14.3).
 # 11: overcommits, a team metric and a situation (T14.4).
-ANALYSIS_VERSION = "11"
+# 12: the context of each goal conceded, a situation (T15.3).
+ANALYSIS_VERSION = "12"

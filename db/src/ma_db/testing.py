@@ -9,6 +9,7 @@ from typing import Any, cast
 
 import psycopg
 from psycopg import sql
+from psycopg.types.json import Jsonb
 
 from ma_db import migrate
 
@@ -172,12 +173,35 @@ class Factory:
             (match_id, team, metric_id, value),
         )
 
-    def situation(self, match_id: object, kind: str = "kickoff", time_s: float = 1.0) -> None:
-        self.connection.execute(
-            "INSERT INTO match_situations (match_id, kind, time_s, analysis_version) "
-            "VALUES (%s, %s, %s, '1')",
-            (match_id, kind, time_s),
-        )
+    def situation(
+        self,
+        match_id: object,
+        kind: str = "kickoff",
+        time_s: float = 1.0,
+        *,
+        game_time_s: float | None = None,
+        team: int | None = None,
+        player_ids: list[int] | None = None,
+        tags: list[str] | None = None,
+        details: dict[str, object] | None = None,
+    ) -> int:
+        row = self.connection.execute(
+            "INSERT INTO match_situations (match_id, kind, time_s, game_time_s, team, player_ids, "
+            "tags, details, analysis_version) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, '1') "
+            "RETURNING id",
+            (
+                match_id,
+                kind,
+                time_s,
+                game_time_s,
+                team,
+                player_ids or [],
+                tags or [],
+                Jsonb(details or {}),
+            ),
+        ).fetchone()
+        assert row is not None
+        return int(row[0])
 
 
 def count(connection: Connection, query: str, *parameters: object) -> int:
