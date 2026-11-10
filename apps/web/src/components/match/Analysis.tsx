@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { getFormatter, getTranslations } from "next-intl/server";
+import { HowItWorks } from "@/components/match/HowItWorks";
 import type { Schemas } from "@/lib/api/client";
 import {
   duelCounts,
@@ -8,7 +9,7 @@ import {
   listSituations,
   possessionBar,
 } from "@/lib/matches/analysis";
-import { kickoffGoals, overcommits, possessionSplit } from "@/lib/matches/metrics";
+import { kickoffGoals, overcommits, possessionSplit, TEAM_METRICS } from "@/lib/matches/metrics";
 import { formatClock } from "@/lib/matches/timeline";
 import { situationLink } from "@/lib/view2d/links";
 
@@ -46,6 +47,8 @@ export async function Analysis({
   const tp = await getTranslations("match.possession");
   const tt = await getTranslations("match.timeline");
   const tv = await getTranslations("match.view");
+  const td = await getTranslations("definitions");
+  const tm = await getTranslations("metrics");
   const format = await getFormatter();
   const percent = (value: number) => format.number(value / 100, { style: "percent" });
   const kickoffGoalCounts = kickoffGoals(sheet.team_metrics);
@@ -155,6 +158,16 @@ export async function Analysis({
         </ul>
       ) : null}
 
+      <HowItWorks
+        summary={td("showMetrics")}
+        items={TEAM_METRICS.filter(
+          (metric) => sheet.team_metrics["0"]?.[metric.id] !== undefined,
+        ).map((metric) => ({
+          term: tm(`${metric.id}`),
+          definition: td(`metrics.${metric.id}`),
+        }))}
+      />
+
       {groups.length > 0 ? (
         <div className="flex flex-col gap-2">
           <h3 className="font-medium">{t("situations")}</h3>
@@ -169,6 +182,9 @@ export async function Analysis({
               <summary className="cursor-pointer text-sm font-medium">
                 {tv(`situations.${group.kind}`, { count: group.items.length })}
               </summary>
+              <p className="mt-2 text-xs text-slate-600 dark:text-slate-400">
+                {td(`situations.${group.kind}`)}
+              </p>
               <ol className="mt-2 flex flex-col gap-1.5 text-sm">
                 {group.items.map((situation) => {
                   const clock = situation.clock

@@ -486,6 +486,90 @@
       "demos_taken": "Démolitions subies"
     }
   },
+  "definitions": {
+    "metrics": {
+      "boost": {
+        "used_per_min": "Le boost dépensé, en pourcentage du réservoir, par minute de jeu ; la recharge à 33 au kickoff ne compte pas.",
+        "avg": "Le niveau de boost moyen sur le temps de jeu.",
+        "pct_zero": "La part du temps de jeu passée réservoir vide.",
+        "pct_full": "La part du temps de jeu passée réservoir plein.",
+        "pads_big": "Les gros pads (100 de boost) ramassés pendant le jeu.",
+        "pads_small": "Les petits pads (12 de boost) ramassés pendant le jeu.",
+        "pads_enemy_half": "Les pads, gros ou petits, ramassés dans la moitié adverse."
+      },
+      "move": {
+        "speed_avg": "La vitesse moyenne de la voiture sur le temps de jeu.",
+        "pct_supersonic": "La part du temps de jeu à 79 km/h ou plus, le seuil supersonique retenu par convention.",
+        "pct_ground": "La part du temps de jeu à 20 cm du sol ou moins ; rouler sur un mur compte comme de l'air.",
+        "pct_low_air": "La part du temps de jeu en l'air, mais sous la hauteur d'une balle posée au sol.",
+        "pct_high_air": "La part du temps de jeu à plus de 7,4 m de haut, assez pour passer au-dessus d'une balle posée au sol."
+      },
+      "pos": {
+        "pct_def_third": "La part du jeu actif passée dans le tiers du terrain que l'équipe défend.",
+        "pct_mid_third": "La part du jeu actif passée dans le tiers central du terrain.",
+        "pct_att_third": "La part du jeu actif passée dans le tiers du terrain que l'équipe attaque.",
+        "pct_ahead_ball": "La part du jeu actif passée plus près du but adverse que la balle.",
+        "pct_behind_ball": "La part du jeu actif passée plus près de son propre but que la balle.",
+        "dist_ball_avg": "La distance moyenne entre la voiture et la balle pendant le jeu actif.",
+        "pct_last_back": "La part du jeu actif où le joueur est le plus proche de son but parmi ses coéquipiers sur le terrain."
+      },
+      "touch": {
+        "count": "Les touches de balle du joueur pendant le jeu actif.",
+        "per_min": "Les touches de balle par minute de jeu actif passée sur le terrain.",
+        "pct_aerial": "La part des touches faites à plus de 7,4 m de haut.",
+        "pct_hard": "La part des touches qui changent la vitesse de la balle d'au moins 32 km/h, hors balle portée ou dribble."
+      },
+      "poss": {
+        "player_pct": "La part du jeu actif où l'équipe a la balle grâce au joueur : de chacune de ses touches à la touche suivante de son équipe.",
+        "turnovers_lost": "Les possessions perdues sur une touche adverse alors que le joueur avait touché la balle en dernier pour son équipe.",
+        "turnovers_won": "Les possessions reprises à l'adversaire par une touche du joueur.",
+        "team_pct": "La part du jeu actif où l'équipe a la balle : elle la touche à nouveau dans les 3 secondes ; le reste du temps, la balle est libre."
+      },
+      "kick": {
+        "taken": "Les kickoffs où le joueur est le premier de son équipe à toucher la balle, dans les 6 secondes.",
+        "won_pct": "La part de ces kickoffs gagnés : la balle est dans le camp adverse une demi-seconde après la première touche.",
+        "time_to_ball": "Le temps moyen entre la fin du compte à rebours et la première touche du joueur, sur ses kickoffs.",
+        "goals_conceded": "Les buts encaissés par l'équipe dans les 12 secondes qui suivent un kickoff."
+      },
+      "duel": {
+        "count": "Les duels (50/50) disputés par le joueur, kickoffs compris.",
+        "won_pct": "La part de ces duels après lesquels son équipe a la balle ; un duel qui la laisse libre n'est pas gagné.",
+        "beaten": "Les fois où le joueur, lancé vers la balle, s'est fait devancer par un adversaire."
+      },
+      "rot": {
+        "pct_first": "La part du temps avec un rôle passée en 1er homme : le plus proche de la balle, avec plus de 2,5 m d'avance sur le suivant.",
+        "pct_second": "La part du temps avec un rôle passée en 2e homme : le suivant le plus proche de la balle.",
+        "pct_third": "La part du temps avec un rôle passée en 3e homme, le plus loin de la balle, en 3v3.",
+        "double_commits": "Les double commits auxquels le joueur a pris part.",
+        "overcommits": "Les fois où toute l'équipe était devant la balle, de plus de 1,5 m, pendant au moins 1 seconde, alors que l'adversaire avait la balle."
+      },
+      "event": {
+        "demos_inflicted": "Les voitures adverses démolies par le joueur.",
+        "demos_taken": "Les fois où la voiture du joueur a été démolie."
+      }
+    },
+    "situations": {
+      "turnover": "Une équipe perd la balle : l'adversaire la touche, puis la touche à nouveau dans les 3 secondes.",
+      "kickoff": "La remise en jeu au centre ; gagnée par l'équipe qui envoie la balle dans le camp adverse.",
+      "fifty_fifty": "Deux adversaires touchent la balle presque en même temps ; gagné par l'équipe qui a la balle ensuite.",
+      "double_commit": "Deux coéquipiers vont sur la balle en même temps pendant au moins 0,25 seconde, et une touche y met fin dans les 1,5 seconde ; hors des 2 secondes qui suivent un kickoff.",
+      "overcommit": "Toute l'équipe est devant la balle, de plus de 1,5 m, pendant au moins 1 seconde, alors que l'adversaire a la balle.",
+      "goal_context": "Les 10 dernières secondes de jeu avant un but, sans remonter avant le kickoff qui a lancé l'action."
+    },
+    "tags": {
+      "double_commit": "Un double commit de l'équipe a eu lieu pendant ces 10 secondes.",
+      "overcommit": "Un overcommit de l'équipe a eu lieu pendant ces 10 secondes.",
+      "turnover_own_half": "La dernière balle perdue par l'équipe dans ces 10 secondes l'a été dans son propre camp.",
+      "beaten_to_ball": "Un défenseur, lancé vers la balle, s'est fait devancer dans les 3 secondes avant le tir.",
+      "last_back_far": "Au moment du tir, le dernier défenseur était à plus de 20 m de son but.",
+      "last_back_low_boost": "Au moment du tir, le dernier défenseur avait moins de 20 de boost.",
+      "defender_demolished": "Un défenseur a été démoli dans les 3 secondes avant le but.",
+      "kickoff_goal": "Le but est venu dans les 12 secondes qui suivent un kickoff.",
+      "own_touch_last": "La dernière touche avant le but vient de l'équipe qui encaisse."
+    },
+    "show": "Comment c'est détecté",
+    "showMetrics": "Comment c'est calculé"
+  },
   "units": {
     "percent": "{value} %",
     "perMinute": "{value} %/min",

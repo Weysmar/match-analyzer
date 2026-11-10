@@ -1,4 +1,5 @@
 import { getFormatter, getTranslations } from "next-intl/server";
+import { HowItWorks } from "@/components/match/HowItWorks";
 import type { Schemas } from "@/lib/api/client";
 import { GROUPS, METRICS, show } from "@/lib/matches/metrics";
 
@@ -99,6 +100,13 @@ export async function MetricsTable({
           </table>
         </div>
       )}
+      <HowItWorks
+        summary={t("definitions.showMetrics")}
+        items={METRICS.map((metric) => ({
+          term: t(`metrics.${metric.id}`),
+          definition: t(`definitions.metrics.${metric.id}`),
+        }))}
+      />
     </section>
   );
 }
