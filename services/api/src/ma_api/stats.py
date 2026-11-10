@@ -11,7 +11,7 @@ from fastapi import APIRouter, Query
 from psycopg import sql
 
 from ma_api import models, sessions
-from ma_api.db import ConnectionDep
+from ma_api.db import Connection, ConnectionDep
 from ma_api.errors import ApiError
 from ma_api.owner import Owner
 from ma_api.sessions import IdentityDep
@@ -125,6 +125,40 @@ def my_stats(
         "verified_count": counts[1],
         # Null when undefined in every match, like the last back in 1v1.
         "averages": {row[0]: row[1] for row in averages},
+        "conceded": _conceded(connection, recent),
+    }
+
+
+def _conceded(connection: Connection, recent: sql.Composed) -> dict[str, Any]:
+    """The goals conceded by the player's team in those matches: the `goal_context` situations
+    of its side, and the count of each of their tags. A match analyzed before T15.3 has none."""
+    rows = connection.execute(
+        recent
+        + sql.SQL(
+            """
+            , goals AS (
+                SELECT situation.tags
+                FROM recent
+                JOIN match_players player ON player.id = recent.match_player_id
+                JOIN match_situations situation
+                  ON situation.match_id = recent.match_id
+                 AND situation.kind = 'goal_context'
+                 AND situation.team = player.team
+            )
+            SELECT NULL AS tag, count(*) FROM goals
+            UNION ALL
+            SELECT '', count(*) FROM goals WHERE cardinality(goals.tags) = 0
+            UNION ALL
+            SELECT tag, count(*) FROM goals, unnest(goals.tags) AS tag GROUP BY tag
+            """
+        )
+    ).fetchall()
+    goals = next(count for tag, count in rows if tag is None)
+    untagged = next(count for tag, count in rows if tag == "")
+    return {
+        "goals": goals,
+        "untagged": untagged,
+        "tags": {tag: count for tag, count in rows if tag},
     }
 
 

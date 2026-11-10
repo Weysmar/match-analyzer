@@ -178,6 +178,13 @@
       "empty": "Pas de valeur pour cette statistique sur ces matchs.",
       "table": "Voir les valeurs",
       "date": "Date"
+    },
+    "conceded": {
+      "title": "Causes de tes buts encaissés",
+      "counted": "{count, plural, =0 {Aucun but encaissé} one {# but encaissé} other {# buts encaissés}} par ton équipe sur ces matchs.",
+      "share": "{share} · {count, plural, one {# but} other {# buts}}",
+      "none": "Aucun but encaissé avec son contexte sur ces matchs. Un match analysé avant cette version n'en a pas.",
+      "overlap": "Un but peut avoir plusieurs causes, ou aucune : les parts ne font pas 100 %."
     }
   },
   "notFound": {

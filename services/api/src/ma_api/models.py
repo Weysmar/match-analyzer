@@ -192,10 +192,21 @@ class IdentityChosen(BaseModel):
     identity_source: IdentitySource
 
 
+class Conceded(BaseModel):
+    """The goals the player's team conceded over the same matches, and how many of them carry
+    each tag of their context (T16.4): a goal may carry several, or none."""
+
+    goals: int
+    # Goals with none of the tags.
+    untagged: int
+    tags: dict[str, int]
+
+
 class Stats(BaseModel):
     matches_count: int
     verified_count: int
     averages: dict[str, float | None]
+    conceded: Conceded
 
 
 class HistoryPoint(BaseModel):
