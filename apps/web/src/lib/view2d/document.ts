@@ -28,9 +28,12 @@ export interface TimedEvent {
   t: number;
 }
 
-/** What a detection found (`situations` of match2d): turnovers for now. */
+export const SITUATION_KINDS = ["turnover", "kickoff", "fifty_fifty"] as const;
+export type SituationKind = (typeof SITUATION_KINDS)[number];
+
+/** What a detection found (`situations` of match2d): turnovers, kickoffs and duels. */
 export interface Situation extends TimedEvent {
-  kind: "turnover";
+  kind: SituationKind;
   team: 0 | 1 | null;
   /** `match_player_id`, the one who acted first. */
   players: number[];
@@ -146,9 +149,9 @@ export function decode(raw: unknown): Match2d {
       situations === null
         ? null
         : situations
-            .filter((situation) => situation.kind === "turnover")
+            .filter((situation) => SITUATION_KINDS.includes(situation.kind as SituationKind))
             .map((situation) => ({
-              kind: "turnover" as const,
+              kind: situation.kind as SituationKind,
               t: since(situation.time_s),
               team: team(situation.team),
               players: Array.isArray(situation.players)

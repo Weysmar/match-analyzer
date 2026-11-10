@@ -54,6 +54,9 @@ export function rawView(): Record<string, unknown> {
     situations: [
       { kind: "turnover", time_s: 12.5, team: 1, players: [42, 41] },
       { kind: "turnover", time_s: 13.2, team: 0, players: [41] },
+      { kind: "kickoff", time_s: 11.0, team: 0, players: [41, 42] },
+      { kind: "fifty_fifty", time_s: 11.1, team: null, players: [41, 42] },
+      { kind: "a_future_kind", time_s: 11.2, team: null, players: [] },
     ],
   };
 }

@@ -18,7 +18,10 @@ const view = decode(rawView());
 describe("the queue of situations", () => {
   it("holds every situation, named by its replay time, with its clock", () => {
     const queue = labelQueue(view, MATCH);
-    expect(queue.map((item) => item.timeS).sort()).toEqual([12.5, 13.2]);
+    expect(queue.map((item) => item.timeS).sort()).toEqual([11, 11.1, 12.5, 13.2]);
+    expect(new Set(queue.map((item) => item.detector))).toEqual(
+      new Set(["turnover", "kickoff", "fifty_fifty"]),
+    );
     const first = queue.find((item) => item.timeS === 12.5);
     expect(first).toMatchObject({ detector: "turnover", team: 1, players: [42, 41], clockS: 1.5 });
   });
@@ -45,17 +48,27 @@ describe("the queue of situations", () => {
 
 describe("the label file", () => {
   const queue = labelQueue(view, MATCH);
-  const verdicts = new Map<number, Verdict>([[0, "true"]]);
+  const turnover = queue.findIndex((item) => item.detector === "turnover");
+  const kickoff = queue.findIndex((item) => item.detector === "kickoff");
+  const verdicts = new Map<number, Verdict>([
+    [turnover, "true"],
+    [kickoff, "false"],
+  ]);
 
-  it("keeps only what was judged, without any name", () => {
+  it("keeps only what was judged, one detector at a time, without any name", () => {
     const file = labelFile(MATCH, "turnover", queue, verdicts, new Date("2026-11-10T20:00:00Z"));
     expect(file).toEqual({
       version: 1,
       match_id: MATCH,
       detector: "turnover",
       labeled_at: "2026-11-10T20:00:00.000Z",
-      labels: [{ time_s: queue[0]?.timeS, clock_s: queue[0]?.clockS, verdict: "true" }],
+      labels: [
+        { time_s: queue[turnover]?.timeS, clock_s: queue[turnover]?.clockS, verdict: "true" },
+      ],
     });
+    expect(labelFile(MATCH, "kickoff", queue, verdicts, new Date()).labels).toEqual([
+      { time_s: queue[kickoff]?.timeS, clock_s: queue[kickoff]?.clockS, verdict: "false" },
+    ]);
     expect(parseLabelFile(file)).toEqual(file);
     expect(fileNameOf(file)).toBe(`${MATCH}-turnover.json`);
   });

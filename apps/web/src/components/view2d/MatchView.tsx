@@ -9,7 +9,7 @@ import { type Layout, layoutFor } from "@/lib/view2d/field";
 import { parseT, VIEW_ANCHOR } from "@/lib/view2d/links";
 import { type Action, actionForKey, reduce, SPEEDS, START } from "@/lib/view2d/playback";
 import { sceneAt } from "@/lib/view2d/scene";
-import { clockAt, durationS, goalMarkers, timeAtClock } from "@/lib/view2d/time";
+import { clockAt, durationS, goalMarkers, situationMarkers, timeAtClock } from "@/lib/view2d/time";
 import { useView } from "./useView";
 
 export interface ViewPlayer {
@@ -18,6 +18,18 @@ export interface ViewPlayer {
   team: number;
   isMe: boolean;
 }
+
+// Ticks of the situations under the cursor, and their legend.
+const SITUATION_COLORS = {
+  kickoff: "fill-slate-400",
+  fifty_fifty: "fill-violet-500",
+  turnover: "fill-emerald-500",
+} as const;
+const LEGEND_COLORS = {
+  kickoff: "bg-slate-400",
+  fifty_fifty: "bg-violet-500",
+  turnover: "bg-emerald-500",
+} as const;
 
 // The field never takes more than this share of the window's height.
 const MAX_HEIGHT_SHARE = 0.7;
@@ -217,6 +229,20 @@ export function MatchView({
             />
           ))}
         </svg>
+        {/* The situations, under the cursor: thin ticks, coloured by kind. */}
+        <svg aria-hidden="true" className="h-2 w-full overflow-visible">
+          {situationMarkers(view).map((marker, index) => (
+            <rect
+              // biome-ignore lint/suspicious/noArrayIndexKey: situations keep their order.
+              key={index}
+              x={`${marker.left}%`}
+              y="0"
+              width="2"
+              height="8"
+              className={SITUATION_COLORS[marker.kind]}
+            />
+          ))}
+        </svg>
         <input
           type="range"
           min={0}
@@ -230,6 +256,21 @@ export function MatchView({
           className="w-full accent-sky-600"
         />
       </label>
+      {view.situations && view.situations.length > 0 ? (
+        <ul className="flex flex-wrap gap-x-4 gap-y-1 text-xs text-slate-600 dark:text-slate-400">
+          {(Object.keys(LEGEND_COLORS) as (keyof typeof LEGEND_COLORS)[]).map((kind) => (
+            <li key={kind} className="flex items-center gap-1.5">
+              <span
+                aria-hidden="true"
+                className={`inline-block h-2.5 w-1 ${LEGEND_COLORS[kind]}`}
+              />
+              {t(`situations.${kind}`, {
+                count: view.situations?.filter((situation) => situation.kind === kind).length ?? 0,
+              })}
+            </li>
+          ))}
+        </ul>
+      ) : null}
       <p id="view-keys" className="text-xs text-slate-600 dark:text-slate-400">
         {t("keys")}
       </p>

@@ -42,6 +42,22 @@ export function LabelQueue({ matchId, players }: { matchId: string; players: Vie
   const name = (id: number | undefined) =>
     players.find((player) => player.id === id)?.name ?? t("unknownPlayer");
 
+  /** Who the situation is about, as its kind tells it. */
+  function who(situation: QueueItem): string {
+    const [first, second] = situation.players;
+    if (situation.detector === "turnover") {
+      return second === undefined
+        ? t("turnoverWinner", { won: name(first) })
+        : t("turnoverPlayers", { won: name(first), lost: name(second) });
+    }
+    if (situation.detector === "fifty_fifty") {
+      return t("duelPlayers", { blue: name(first), orange: name(second) });
+    }
+    return situation.players.length > 0
+      ? t("kickoffTakers", { takers: situation.players.map(name).join(", ") })
+      : t("kickoffNoTaker");
+  }
+
   function judge(verdict: Verdict) {
     setVerdicts((previous) => new Map(previous).set(current, verdict));
     setSaved(null);
@@ -88,11 +104,7 @@ export function LabelQueue({ matchId, players }: { matchId: string; players: Vie
           <p className="text-sm font-medium">
             {t(`kind.${item.detector}`, { clock: formatClock(item.clockS) })}
           </p>
-          <p className="text-sm">
-            {item.players.length === 2
-              ? t("turnoverPlayers", { won: name(item.players[0]), lost: name(item.players[1]) })
-              : t("turnoverWinner", { won: name(item.players[0]) })}
-          </p>
+          <p className="text-sm">{who(item)}</p>
           <div className="flex flex-wrap gap-2">
             {VERDICTS.map((verdict) => (
               <button
