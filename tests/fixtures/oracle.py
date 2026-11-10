@@ -20,7 +20,8 @@ SUBTR_ACTOR = "1.5.1"
 # What rl-oracle writes: a new field means a new cache, as a new subtr-actor does.
 # 2: touches, team and player possession (T11.7 of docs/PLAN-V2.md).
 # 3: kickoffs and duels per player (step 13).
-OUTPUT_FORMAT = 3
+# 4: rotation roles per player (T14.1).
+OUTPUT_FORMAT = 4
 CACHE = ROOT / f"tests/fixtures/oracle/subtr-actor-{SUBTR_ACTOR}-format-{OUTPUT_FORMAT}"
 TIMEOUT_S = 600
 UNREADABLE = b"null\n"

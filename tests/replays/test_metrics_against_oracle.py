@@ -32,7 +32,7 @@ REPLAYS = ROOT / "tests/fixtures/replays"
 UNSUPPORTED_MODE = 14
 RAW_TO_PERCENT = 100.0 / BOOST_RAW_MAX
 # Written by `just oracle-cache` (tests/fixtures/oracle.py), keyed by the replay's hash.
-ORACLE_CACHE = ROOT / "tests/fixtures/oracle/subtr-actor-1.5.1-format-3"
+ORACLE_CACHE = ROOT / "tests/fixtures/oracle/subtr-actor-1.5.1-format-4"
 # What a car burns per second with boost held, as the spike measured it: 80 raw units per 0.93 s.
 # Only used to check consumption, which never relies on it.
 USE_RATE_PER_S = 80 / 0.93 * RAW_TO_PERCENT
@@ -68,6 +68,15 @@ def share_of(oracle: dict[str, Any], module: str, name: str, total: str) -> floa
     return 100.0 * value / whole
 
 
+def of_roles(oracle: dict[str, Any], name: str) -> float | None:
+    """A role's share of the time with a role, ambiguous time left out, in %."""
+    roles = [stat(oracle, "rotation", f"time_{role}_man") for role in ("first", "second", "third")]
+    value = stat(oracle, "rotation", name)
+    if value is None or None in roles or not sum(r for r in roles if r is not None):
+        return None
+    return 100.0 * value / sum(r for r in roles if r is not None)
+
+
 def of_touches(oracle: dict[str, Any], name: str) -> float | None:
     """`name` as a share of the player's touches, in %. None without a touch."""
     value, touches = stat(oracle, "touch", name), stat(oracle, "touch", "touch_count")
@@ -100,6 +109,9 @@ THEIRS: dict[str, Callable[[dict[str, Any]], float | None]] = {
     "duel.count": lambda o: stat(o, "fifty_fifty", "count"),
     # The share with the ball afterwards, as the plan defines a duel won.
     "duel.won_pct": lambda o: share_of(o, "fifty_fifty", "possession_after_count", "count"),
+    "rot.pct_first": lambda o: of_roles(o, "time_first_man"),
+    "rot.pct_second": lambda o: of_roles(o, "time_second_man"),
+    "rot.pct_third": lambda o: of_roles(o, "time_third_man"),
 }
 
 # The plan's thirds and its ahead / behind differ from subtr-actor's on purpose (D4, no margin).
@@ -160,6 +172,12 @@ BOUNDS = {
     # subtr-actor's own detector, read as it is: equal for every player (B17).
     "duel.count": (0.0, 0.0),
     "duel.won_pct": (0.0, 0.0),
+    # Its RotationCalculator, ported (B19): 0.2 point at the median, 0.8 to 1.0 at the 95th
+    # percentile. The rest: our demolition window and team size, read from the frames, where it
+    # reads its own demolitions and the game's replicated team size.
+    "rot.pct_first": (0.5, 2.0),
+    "rot.pct_second": (0.5, 2.0),
+    "rot.pct_third": (0.5, 2.0),
 }
 # Consumption is checked against two other ways of counting it, as relative differences (T7.4).
 CONSUMPTION_BOUND = 0.05
