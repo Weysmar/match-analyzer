@@ -9,4 +9,5 @@ __version__ = "0.0.0"
 # 4: possession and turnovers, and the first team metric (T11.5 and T11.6).
 # 5: the 2D view's document gets its situations, turnovers first (T12.7).
 # 6: kickoff metrics, from rl-parse 0.2.0's kickoffs (T13.1 and T13.2).
-ANALYSIS_VERSION = "6"
+# 7: duel metrics, from its fifty_fifties and beaten_to_ball (T13.3).
+ANALYSIS_VERSION = "7"

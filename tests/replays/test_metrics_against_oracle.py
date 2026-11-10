@@ -60,6 +60,14 @@ def share(oracle: dict[str, Any], module: str, name: str, scale: float) -> float
     return scale * value / tracked
 
 
+def share_of(oracle: dict[str, Any], module: str, name: str, total: str) -> float | None:
+    """`name` over `total` in the same module, in %. None when the total is 0."""
+    value, whole = stat(oracle, module, name), stat(oracle, module, total)
+    if value is None or not whole:
+        return None
+    return 100.0 * value / whole
+
+
 def of_touches(oracle: dict[str, Any], name: str) -> float | None:
     """`name` as a share of the player's touches, in %. None without a touch."""
     value, touches = stat(oracle, "touch", name), stat(oracle, "touch", "touch_count")
@@ -89,6 +97,9 @@ THEIRS: dict[str, Callable[[dict[str, Any]], float | None]] = {
     "touch.pct_aerial": lambda o: of_touches(o, "high_aerial_touch_count"),
     # Kickoffs where the player made the team's kickoff touch.
     "kick.taken": lambda o: stat(o, "kickoff", "touches"),
+    "duel.count": lambda o: stat(o, "fifty_fifty", "count"),
+    # The share with the ball afterwards, as the plan defines a duel won.
+    "duel.won_pct": lambda o: share_of(o, "fifty_fifty", "possession_after_count", "count"),
 }
 
 # The plan's thirds and its ahead / behind differ from subtr-actor's on purpose (D4, no margin).
@@ -146,6 +157,9 @@ BOUNDS = {
     # taker they designate who touched: the same player in 97 % of the team kickoffs (B16).
     # Measured: 0 at the median, 2 at the 95th percentile, 3 at most.
     "kick.taken": (0.0, 3.0),
+    # subtr-actor's own detector, read as it is: equal for every player (B17).
+    "duel.count": (0.0, 0.0),
+    "duel.won_pct": (0.0, 0.0),
 }
 # Consumption is checked against two other ways of counting it, as relative differences (T7.4).
 CONSUMPTION_BOUND = 0.05
