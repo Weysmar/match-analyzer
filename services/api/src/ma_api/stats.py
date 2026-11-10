@@ -63,6 +63,8 @@ METRIC_IDS = frozenset(
         "rot.pct_first",
         "rot.pct_second",
         "rot.pct_third",
+        # T14.3.
+        "rot.double_commits",
     }
 )
 

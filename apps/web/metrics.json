@@ -185,6 +185,11 @@
     "scope": "player"
   },
   {
+    "id": "rot.double_commits",
+    "unit": "count",
+    "scope": "player"
+  },
+  {
     "id": "poss.team_pct",
     "unit": "%",
     "scope": "team"
