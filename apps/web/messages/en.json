@@ -271,6 +271,7 @@
       "blue": "Blue {value}",
       "orange": "Orange {value}",
       "loose": "Loose ball {value}",
+      "overcommits": "Overcommits (the whole team ahead of the ball while the opponents hold it): Blue {blue} · Orange {orange}",
       "kickoffGoals": "Goals conceded within 12 s of a kickoff: Blue {blue} · Orange {orange}",
       "how": "A team has the ball when it touches it again within 3 seconds. The rest of the play time, the ball is loose."
     },
@@ -287,10 +288,12 @@
         "turnover": "Turnover at {clock} of play",
         "kickoff": "Kickoff at {clock} of play",
         "fifty_fifty": "Duel at {clock} of play",
-        "double_commit": "Double commit at {clock} of play"
+        "double_commit": "Double commit at {clock} of play",
+        "overcommit": "Overcommit at {clock} of play"
       },
       "kickoffTakers": "Takers: {takers}",
       "kickoffNoTaker": "Nobody touched the ball within 6 s",
+      "overcommitPlayers": "All ahead of the ball: {players}",
       "doubleCommitPlayers": "Engaged together: {players}",
       "duelPlayers": "{blue} against {orange}",
       "turnoverPlayers": "{won} takes the ball from {lost}",
@@ -325,7 +328,8 @@
         "kickoff": "{count, plural, =0 {No kickoff} one {# kickoff} other {# kickoffs}}",
         "fifty_fifty": "{count, plural, =0 {No duel} one {# duel} other {# duels}}",
         "turnover": "{count, plural, =0 {No turnover} one {# turnover} other {# turnovers}}",
-        "double_commit": "{count, plural, =0 {No double commit} one {# double commit} other {# double commits}}"
+        "double_commit": "{count, plural, =0 {No double commit} one {# double commit} other {# double commits}}",
+        "overcommit": "{count, plural, =0 {No overcommit} one {# overcommit} other {# overcommits}}"
       },
       "unknownPlayer": "Unknown player"
     },
@@ -397,7 +401,8 @@
       "pct_first": "Time as first man",
       "pct_second": "Time as second man",
       "pct_third": "Time as third man",
-      "double_commits": "Double commits"
+      "double_commits": "Double commits",
+      "overcommits": "Team overcommits"
     },
     "event": {
       "demos_inflicted": "Demolitions inflicted",

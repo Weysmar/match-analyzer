@@ -271,6 +271,7 @@
       "blue": "Bleus {value}",
       "orange": "Orange {value}",
       "loose": "Balle libre {value}",
+      "overcommits": "Overcommits (toute l'équipe devant la balle pendant la possession adverse) : Bleus {blue} · Orange {orange}",
       "kickoffGoals": "Buts encaissés dans les 12 s après un kickoff : Bleus {blue} · Orange {orange}",
       "how": "Une équipe a la balle quand elle la touche à nouveau dans les 3 secondes. Le reste du temps de jeu, la balle est libre."
     },
@@ -287,10 +288,12 @@
         "turnover": "Perte de balle à {clock} de jeu",
         "kickoff": "Kickoff à {clock} de jeu",
         "fifty_fifty": "Duel à {clock} de jeu",
-        "double_commit": "Double commit à {clock} de jeu"
+        "double_commit": "Double commit à {clock} de jeu",
+        "overcommit": "Overcommit à {clock} de jeu"
       },
       "kickoffTakers": "Preneurs : {takers}",
       "kickoffNoTaker": "Personne n'a touché la balle dans les 6 s",
+      "overcommitPlayers": "Tous devant la balle : {players}",
       "doubleCommitPlayers": "Engagés ensemble : {players}",
       "duelPlayers": "{blue} contre {orange}",
       "turnoverPlayers": "{won} prend la balle à {lost}",
@@ -325,7 +328,8 @@
         "kickoff": "{count, plural, =0 {Aucun kickoff} one {# kickoff} other {# kickoffs}}",
         "fifty_fifty": "{count, plural, =0 {Aucun duel} one {# duel} other {# duels}}",
         "turnover": "{count, plural, =0 {Aucune perte de balle} one {# perte de balle} other {# pertes de balle}}",
-        "double_commit": "{count, plural, =0 {Aucun double commit} one {# double commit} other {# double commits}}"
+        "double_commit": "{count, plural, =0 {Aucun double commit} one {# double commit} other {# double commits}}",
+        "overcommit": "{count, plural, =0 {Aucun overcommit} one {# overcommit} other {# overcommits}}"
       },
       "unknownPlayer": "Joueur inconnu"
     },
@@ -397,7 +401,8 @@
       "pct_first": "Temps en 1er homme",
       "pct_second": "Temps en 2e homme",
       "pct_third": "Temps en 3e homme",
-      "double_commits": "Double commits"
+      "double_commits": "Double commits",
+      "overcommits": "Overcommits de l'équipe"
     },
     "event": {
       "demos_inflicted": "Démolitions infligées",

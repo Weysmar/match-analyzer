@@ -58,6 +58,16 @@ export function possessionSplit(
   return { blue, orange, loose: Math.max(0, 100 - blue - orange) };
 }
 
+/** Overcommits of each team, or null without them (T14.4). */
+export function overcommits(
+  teamMetrics: Record<string, Record<string, number | null>>,
+): { blue: number; orange: number } | null {
+  const blue = teamMetrics["0"]?.["rot.overcommits"];
+  const orange = teamMetrics["1"]?.["rot.overcommits"];
+  if (typeof blue !== "number" || typeof orange !== "number") return null;
+  return { blue, orange };
+}
+
 /** Goals each team conceded within 12 s of a kickoff, or null without kickoffs (T13.2). */
 export function kickoffGoals(
   teamMetrics: Record<string, Record<string, number | null>>,

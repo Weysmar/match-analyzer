@@ -77,6 +77,17 @@ KICKOFF_SCRAMBLE = Threshold(
     2.0, "s", "convention of the plan, section 5.4: going in two after a kickoff is a choice"
 )
 
+# Overcommits (T14.4): ahead of the ball means beyond it by this, towards the goal attacked...
+OVERCOMMIT_MARGIN = Threshold(
+    150.0,
+    "uu",
+    "subtr-actor 1.5.1, stats/calculators/positioning.rs, DEFAULT_LEVEL_BALL_DEPTH_MARGIN",
+)
+# ...and the whole team must stay so this long: the plan's starting value, to calibrate.
+OVERCOMMIT_MIN = Threshold(
+    1.0, "s", "convention of the plan, section 5.4: the whole team ahead of the ball this long"
+)
+
 # How far apart a team's touches may be and still make one possession: the follow-up that confirms
 # a loose ball taken, a possession kept, or a turnover. subtr-actor ties it to its loose-ball
 # timeout, so that a player's possession never outlasts the team's.

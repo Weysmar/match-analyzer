@@ -198,5 +198,10 @@
     "id": "kick.goals_conceded",
     "unit": "count",
     "scope": "team"
+  },
+  {
+    "id": "rot.overcommits",
+    "unit": "count",
+    "scope": "team"
   }
 ]

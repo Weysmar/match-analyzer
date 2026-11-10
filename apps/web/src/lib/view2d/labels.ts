@@ -7,7 +7,13 @@
 import type { Match2d } from "./document";
 import { clockAt } from "./time";
 
-export const DETECTORS = ["turnover", "kickoff", "fifty_fifty", "double_commit"] as const;
+export const DETECTORS = [
+  "turnover",
+  "kickoff",
+  "fifty_fifty",
+  "double_commit",
+  "overcommit",
+] as const;
 export type Detector = (typeof DETECTORS)[number];
 export const VERDICTS = ["true", "false", "uncertain"] as const;
 export type Verdict = (typeof VERDICTS)[number];

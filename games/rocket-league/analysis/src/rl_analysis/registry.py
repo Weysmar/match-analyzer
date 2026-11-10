@@ -12,6 +12,7 @@ from rl_analysis import (
     duels,
     kickoffs,
     movement,
+    overcommits,
     positioning,
     possession,
     rotation,
@@ -92,6 +93,7 @@ class TeamMetric:
 TEAM_METRICS: tuple[TeamMetric, ...] = (
     TeamMetric("poss.team_pct", "%", possession.team_share),
     TeamMetric("kick.goals_conceded", "count", kickoffs.goals_conceded),
+    TeamMetric("rot.overcommits", "count", overcommits.count),
 )
 
 
