@@ -174,6 +174,42 @@ def _team_metrics(
     return dict(metrics)
 
 
+# The facts each kind of situation may show, as the analysis writes them
+# (rl_analysis.situations): anything else stays in the database.
+_DETAILS: dict[str, tuple[str, ...]] = {
+    "turnover": (),
+    "kickoff": ("kickoff_type", "goal"),
+    "fifty_fifty": ("is_kickoff", "contact_winner"),
+    "double_commit": ("punished",),
+    "overcommit": ("duration_s",),
+    "goal_context": ("window_s", "shot_clock_s", "last_touch", "lost_ball", "defenders"),
+}
+
+
+def _situations(connection: Connection, match_id: uuid.UUID) -> list[dict[str, Any]]:
+    rows = connection.execute(
+        """
+        SELECT id, kind, time_s, game_time_s, team, player_ids, tags, details
+        FROM match_situations WHERE match_id = %s ORDER BY time_s, id
+        """,
+        (match_id,),
+    ).fetchall()
+    return [
+        {
+            "id": situation_id,
+            "kind": kind,
+            "time_s": time_s,
+            "game_time_s": game_time_s,
+            "team": team,
+            "players": list(player_ids),
+            "tags": list(tags),
+            "details": {key: details[key] for key in _DETAILS.get(kind, ()) if key in details},
+        }
+        for situation_id, kind, time_s, game_time_s, team, player_ids, tags, details in rows
+        if kind in _DETAILS
+    ]
+
+
 @router.get("/matches/{match_id}", response_model=models.MatchSheet)
 def get_match(
     match_id: uuid.UUID, connection: ConnectionDep, identity: IdentityDep
@@ -215,6 +251,7 @@ def get_match(
         "goals": _goals(connection, match_id),
         "metrics": _metrics(connection, match_id),
         "team_metrics": _team_metrics(connection, match_id),
+        "situations": _situations(connection, match_id),
         "me": {
             "match_player_id": link["match_player_id"],
             "verified": link["verified"],

@@ -132,3 +132,45 @@ def test_without_touches_there_is_no_situation_to_tell() -> None:
 def test_a_detection_the_parser_did_not_run_is_left_out() -> None:
     found = detected(touches=TOUCHES, kickoffs=None, fifty_fifties=None)
     assert {s.kind for s in found} == {"turnover"}
+
+
+GOAL = {"frame": 28, "time_s": 14.0, "team": 1, "player_idx": 1, "score_blue": 0, "score_orange": 1}
+
+
+def test_a_goal_conceded_is_a_situation_with_its_tags_and_facts() -> None:
+    [context] = [s for s in detected(touches=TOUCHES, goals=[GOAL]) if s.kind == "goal_context"]
+    # Blue conceded; its only player stood at the center, 5120 uu from its goal.
+    assert (context.time_s, context.team, context.players) == (14.0, 0, (0,))
+    assert context.tags == ("last_back_far",)
+    # Live play from 5 s: 9.5 s of play at the goal, the kickoff wait from 3 s in the window.
+    assert context.clock_s == 9.5
+    assert context.details == {
+        "window_s": 9.5,
+        "shot_clock_s": 8.5,
+        "last_touch": {"player": 1, "team": 1},
+        "lost_ball": {
+            "player": 0,
+            "clock_s": 7.5,
+            "before_goal_s": 2.0,
+            "ball_y": 0.0,
+            "roles": [],
+        },
+        "defenders": [
+            {
+                "player": 0,
+                "goal_distance": 5120.0,
+                "boost": 50.0,
+                "demolished": False,
+                "last_back": True,
+            }
+        ],
+    }
+
+
+def test_players_in_details_become_match_player_ids() -> None:
+    details = {"player": 0, "roles": [{"player": 1, "role": "first"}, {"player": 9}], "team": 1}
+    assert situations.with_ids(details, {0: 40, 1: 41}) == {
+        "player": 40,
+        "roles": [{"player": 41, "role": "first"}, {"player": None}],
+        "team": 1,
+    }

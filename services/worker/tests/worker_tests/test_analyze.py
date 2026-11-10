@@ -389,3 +389,55 @@ def test_a_situation_names_its_players_by_match_player_id(
             ANALYSIS_VERSION,
         )
     ]
+
+
+def test_a_goal_context_names_its_players_by_match_player_id_in_its_details_too(
+    conn: Connection, worker_conn: Connection, make: Factory, store: MemoryStore, tmp_path: Path
+) -> None:
+    """Orange scores at 8 s after a touch at 7 s; blue, at y = -1000, is 4120 uu from its goal."""
+    match, blue, orange = parsed_match(conn, make, store, tmp_path)
+    key = f"events/{match}.json"
+    document = json.loads(store.objects[key])
+    document["touches"] = [
+        {
+            "frame": 7,
+            "time_s": 7.0,
+            "player_idx": 1,
+            "team": 1,
+            "ball_speed_change": 900.0,
+            "kind": None,
+            "height_band": None,
+            "surface": None,
+            "contested": False,
+        }
+    ]
+    document["goals"] = [
+        {
+            "frame": 8,
+            "time_s": 8.0,
+            "team": 1,
+            "player_idx": 1,
+            "score_blue": 0,
+            "score_orange": 1,
+        }
+    ]
+    store.objects[key] = json.dumps(document).encode()
+    run_job(worker_conn, store, match)
+    row = conn.execute(
+        "SELECT team, player_ids, tags, details FROM match_situations "
+        "WHERE match_id = %s AND kind = 'goal_context'",
+        (match,),
+    ).fetchone()
+    assert row is not None
+    team, players, tags, details = row
+    assert (team, players, tags) == (0, [blue], ["last_back_far"])
+    assert details["last_touch"] == {"player": orange, "team": 1}
+    assert details["defenders"] == [
+        {
+            "player": blue,
+            "goal_distance": 4120.0,
+            "boost": 40.0,
+            "demolished": False,
+            "last_back": True,
+        }
+    ]

@@ -113,7 +113,8 @@ def _write_situations(
             situation.clock_s,
             situation.team,
             [ids[player] for player in situation.players if player in ids],
-            Jsonb(situation.details),
+            list(situation.tags),
+            Jsonb(situations.with_ids(situation.details, ids)),
             ANALYSIS_VERSION,
         )
         for situation in found or []
@@ -121,7 +122,7 @@ def _write_situations(
     with connection.cursor() as cursor:
         cursor.executemany(
             "INSERT INTO match_situations (match_id, kind, time_s, game_time_s, team, player_ids, "
-            "details, analysis_version) VALUES (%s, %s, %s, %s, %s, %s, %s, %s)",
+            "tags, details, analysis_version) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s)",
             rows,
         )
     return len(rows)

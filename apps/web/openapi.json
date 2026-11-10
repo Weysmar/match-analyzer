@@ -572,6 +572,13 @@
             "title": "Players",
             "type": "array"
           },
+          "situations": {
+            "items": {
+              "$ref": "#/components/schemas/Situation"
+            },
+            "title": "Situations",
+            "type": "array"
+          },
           "team_metrics": {
             "additionalProperties": {
               "additionalProperties": {
@@ -596,6 +603,7 @@
           "goals",
           "metrics",
           "team_metrics",
+          "situations",
           "me",
           "needs_identity"
         ],
@@ -809,6 +817,86 @@
         ],
         "title": "Score",
         "type": "object"
+      },
+      "Situation": {
+        "description": "What a detection found (annex G of docs/PLAN-V2.md). Players are `match_player_id`, in\n`players` and wherever `details` names one (`player`); `details` keeps only the facts its kind\nhas, never a platform id.",
+        "properties": {
+          "details": {
+            "additionalProperties": true,
+            "title": "Details",
+            "type": "object"
+          },
+          "game_time_s": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Game Time S"
+          },
+          "id": {
+            "title": "Id",
+            "type": "integer"
+          },
+          "kind": {
+            "$ref": "#/components/schemas/SituationKind"
+          },
+          "players": {
+            "items": {
+              "type": "integer"
+            },
+            "title": "Players",
+            "type": "array"
+          },
+          "tags": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Tags",
+            "type": "array"
+          },
+          "team": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Team"
+          },
+          "time_s": {
+            "title": "Time S",
+            "type": "number"
+          }
+        },
+        "required": [
+          "id",
+          "kind",
+          "time_s",
+          "game_time_s",
+          "team",
+          "players",
+          "tags",
+          "details"
+        ],
+        "title": "Situation",
+        "type": "object"
+      },
+      "SituationKind": {
+        "enum": [
+          "turnover",
+          "kickoff",
+          "fifty_fifty",
+          "double_commit",
+          "overcommit",
+          "goal_context"
+        ],
+        "type": "string"
       },
       "Stats": {
         "properties": {

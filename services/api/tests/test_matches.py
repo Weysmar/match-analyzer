@@ -246,6 +246,88 @@ def test_someone_elses_match_does_not_exist_for_me(
         assert response.json()["error"]["code"] == "not_found"
 
 
+def test_the_situations_of_a_match_show_only_the_facts_of_their_kind(
+    browser: TestClient, conn: Connection, make: Factory
+) -> None:
+    """Annex G of docs/PLAN-V2.md: in time order, players as match_player_id, and `details` cut to
+    what each kind has: whatever else the row holds, a platform id above all, never comes out."""
+    user = signed_in(browser, conn, make)
+    match = make.match()
+    me = make.player(match, team=0, name="Me")
+    them = make.player(match, team=1, name="Them")
+    make.user_match(match, user_id=user, match_player_id=me, identity_source="claimed")
+    defenders = [
+        {
+            "player": me,
+            "goal_distance": 2500.0,
+            "boost": 12.0,
+            "demolished": False,
+            "last_back": True,
+        }
+    ]
+    goal_context = make.situation(
+        match,
+        "goal_context",
+        40.0,
+        game_time_s=35.5,
+        team=0,
+        player_ids=[me],
+        tags=["last_back_far", "last_back_low_boost"],
+        details={
+            "window_s": 10.0,
+            "shot_clock_s": 34.8,
+            "last_touch": {"player": them, "team": 1},
+            "lost_ball": None,
+            "defenders": defenders,
+            "platform_id": "76561190000000000",
+        },
+    )
+    turnover = make.situation(
+        match, "turnover", 12.0, team=1, player_ids=[them, me], details={"platform_id": "x"}
+    )
+
+    body = browser.get(f"{MATCHES}/{match}").json()
+    assert body["situations"] == [
+        {
+            "id": turnover,
+            "kind": "turnover",
+            "time_s": 12.0,
+            "game_time_s": None,
+            "team": 1,
+            "players": [them, me],
+            "tags": [],
+            "details": {},
+        },
+        {
+            "id": goal_context,
+            "kind": "goal_context",
+            "time_s": 40.0,
+            "game_time_s": 35.5,
+            "team": 0,
+            "players": [me],
+            "tags": ["last_back_far", "last_back_low_boost"],
+            "details": {
+                "window_s": 10.0,
+                "shot_clock_s": 34.8,
+                "last_touch": {"player": them, "team": 1},
+                "lost_ball": None,
+                "defenders": defenders,
+            },
+        },
+    ]
+    assert "76561190000000000" not in browser.get(f"{MATCHES}/{match}").text
+
+
+def test_a_match_without_analysis_has_no_situation(
+    browser: TestClient, conn: Connection, make: Factory
+) -> None:
+    user = signed_in(browser, conn, make)
+    match = make.match()
+    me = make.player(match, team=0, name="Me")
+    make.user_match(match, user_id=user, match_player_id=me, identity_source="claimed")
+    assert browser.get(f"{MATCHES}/{match}").json()["situations"] == []
+
+
 def test_a_bad_match_id_is_invalid(browser: TestClient, conn: Connection, make: Factory) -> None:
     signed_in(browser, conn, make)
     assert browser.get(f"{MATCHES}/not-an-id").status_code == 400

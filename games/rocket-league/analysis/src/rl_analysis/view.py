@@ -228,5 +228,7 @@ def build(match: Match, ids: Mapping[int, int]) -> dict[str, Any]:
                 "players": [ids[player] for player in situation.players if player in ids],
             }
             for situation in found
+            # Goals are on the cursor already; their context is the match sheet's (step 16).
+            if situation.kind != "goal_context"
         ],
     }

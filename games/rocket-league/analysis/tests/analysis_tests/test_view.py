@@ -211,3 +211,18 @@ def test_no_turnover_is_no_situation() -> None:
 def test_holes_in_the_frames_do_not_break_the_document(missing: str) -> None:
     rows = [given | {missing: None} if given["frame"] == 2 else given for given in two_cars()]
     assert problems("match2d", built(*rows)) == []
+
+
+def test_a_goal_context_stays_out_of_the_view() -> None:
+    """Goals are marked on the cursor already; their context is for the match sheet."""
+    goal = {
+        "frame": 3,
+        "time_s": 3.0,
+        "team": 1,
+        "player_idx": 1,
+        "score_blue": 0,
+        "score_orange": 1,
+    }
+    document = built(*two_cars(), touches=[touched(2, 1)], goals=[goal])
+    assert problems("match2d", document) == []
+    assert document["situations"] == []
