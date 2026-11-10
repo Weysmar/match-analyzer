@@ -258,6 +258,7 @@
         "boost": "Boost",
         "move": "Mouvement",
         "pos": "Positionnement",
+        "rot": "Rotations",
         "touch": "Touches de balle",
         "poss": "Possession",
         "kick": "Kickoffs",
@@ -388,6 +389,11 @@
       "count": "Duels disputés",
       "won_pct": "Duels gagnés",
       "beaten": "Devancé sur la balle"
+    },
+    "rot": {
+      "pct_first": "Temps en 1er homme",
+      "pct_second": "Temps en 2e homme",
+      "pct_third": "Temps en 3e homme"
     },
     "event": {
       "demos_inflicted": "Démolitions infligées",

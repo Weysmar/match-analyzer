@@ -10,8 +10,8 @@ import {
 } from "../../src/lib/matches/metrics";
 
 describe("the catalog of metrics", () => {
-  it("holds the 34 player metrics, each in a known group", () => {
-    expect(METRICS).toHaveLength(34);
+  it("holds the 37 player metrics, each in a known group", () => {
+    expect(METRICS).toHaveLength(37);
     for (const metric of METRICS) expect(GROUPS).toContain(metric.group);
   });
 

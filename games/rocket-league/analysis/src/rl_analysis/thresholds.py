@@ -39,6 +39,21 @@ KICKOFF_TOUCH_MAX = Threshold(
     "measured on the corpus, first touches of each team after the countdown: 99.6 % within 6 s",
 )
 
+# The first man is the closest to the ball only by more than this, on the ground plane: closer
+# than that, who goes is ambiguous.
+FIRST_MAN_MARGIN = Threshold(
+    250.0,
+    "uu",
+    "subtr-actor 1.5.1, stats/calculators/rotation.rs, DEFAULT_FIRST_MAN_AMBIGUITY_MARGIN",
+)
+
+# A new first man only takes the role after holding it this long.
+FIRST_MAN_DEBOUNCE = Threshold(
+    0.35,
+    "s",
+    "subtr-actor 1.5.1, stats/calculators/rotation.rs, DEFAULT_FIRST_MAN_DEBOUNCE_SECONDS",
+)
+
 # How far apart a team's touches may be and still make one possession: the follow-up that confirms
 # a loose ball taken, a possession kept, or a turnover. subtr-actor ties it to its loose-ball
 # timeout, so that a player's possession never outlasts the team's.
