@@ -155,7 +155,7 @@ BOUNDS = {
     "touch.pct_hard": (0.0, 0.0),
     "touch.pct_aerial": (0.0, 0.0),
     # Its PossessionResolver, ported (B7): 0.002 point at the median, 1.24 at the 95th
-    # percentile on the whole local corpus, 1.53 on the 26 public replays of the CI. The gaps are
+    # percentile on the whole local corpus, 1.53 on the 26 public replays alone. The gaps are
     # all the last segment of a replay that ends in live play, which its statistics count as a
     # loose ball, its events give to the holder up to the end, and we stop at the last touch (B10):
     # up to 8.9 points on a long final possession.
@@ -373,7 +373,7 @@ def test_the_altitude_bands_add_up_to_the_whole_time(corpus: Corpus) -> None:
 
 
 def test_the_cache_names_the_subtr_actor_in_use() -> None:
-    """The cache's folder, and the CI's cache key through tests/fixtures/oracle.py, name
+    """The cache's folder, and tests/fixtures/oracle.py, which builds it, name
     subtr-actor's version and rl-oracle's output format: a new one has to start afresh."""
     cargo = (ROOT / "games/rocket-league/parser/Cargo.toml").read_text(encoding="utf-8")
     oracle = (ROOT / "tests/fixtures/oracle.py").read_text(encoding="utf-8")

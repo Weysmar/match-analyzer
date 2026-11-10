@@ -129,97 +129,22 @@ jobs:
       - run: docker compose -f compose.dev.yaml logs
         if: failure()
 
-  # Public replays only; they are cached, never committed. Personal replays are checked locally.
-  replays:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v7
-      - uses: astral-sh/setup-uv@v10.3.3
-        with:
-          version: ${{ env.UV_VERSION }}
-      - uses: actions/cache@v6
-        with:
-          path: tests/fixtures/replays/public
-          key: replays-${{ hashFiles('tests/fixtures/manifest.toml') }}
-      - uses: actions/cache@v6
-        with:
-          path: |
-            ~/.cargo/registry
-            games/rocket-league/parser/target
-          key: rust-release-${{ hashFiles('rust-toolchain.toml', 'games/rocket-league/parser/Cargo.lock') }}
-          # A new lock file still reuses what did not change.
-          restore-keys: rust-release-
-      - run: uv sync --all-packages --locked
-      - run: uv run python tests/fixtures/corpus.py fetch
-      - run: uv run python tests/fixtures/corpus.py check
-      - run: cargo build --release --locked --manifest-path games/rocket-league/parser/Cargo.toml
-      - run: cargo test --release --locked --manifest-path games/rocket-league/parser/Cargo.toml --test corpus -- --include-ignored --test-threads=4
-      # subtr-actor is slow on long replays: its statistics are cached like the replays.
-      - uses: actions/cache@v6
-        with:
-          path: tests/fixtures/oracle
-          key: oracle-${{ hashFiles('tests/fixtures/manifest.toml', 'tests/fixtures/oracle.py', 'games/rocket-league/parser/src/bin/rl-oracle.rs') }}
-      - run: uv run python tests/fixtures/oracle.py build
-      - run: uv run pytest -m replays
-      # Real replays, from the API to the database. Public ones only here, personal ones locally.
-      - run: cp .env.example .env
-      - run: docker compose -f compose.dev.yaml up -d --wait
-      - name: Pipeline
-        run: |
-          set -a; . ./.env; set +a
-          uv run python scripts/s3_init.py
-          uv run pytest -m pipeline
-      - run: docker compose -f compose.dev.yaml logs
-        if: failure()
-
-  # The whole journey in a browser (end of step 8): FR and EN at 375 px, Steam simulated (A70).
-  # Nothing is uploaded on failure: Playwright's output would hold the players' names.
-  e2e:
-    runs-on: ubuntu-latest
-    env:
-      NEXT_TELEMETRY_DISABLED: "1"
-    steps:
-      - uses: actions/checkout@v7
-      - uses: astral-sh/setup-uv@v10.3.3
-        with:
-          version: ${{ env.UV_VERSION }}
-      - uses: pnpm/action-setup@v6
-      - uses: actions/setup-node@v7
-        with:
-          node-version: 22
-          cache: pnpm
-      - uses: actions/cache@v6
-        with:
-          path: tests/fixtures/replays/public
-          key: replays-${{ hashFiles('tests/fixtures/manifest.toml') }}
-      - uses: actions/cache@v6
-        with:
-          path: |
-            ~/.cargo/registry
-            games/rocket-league/parser/target
-          key: rust-release-${{ hashFiles('rust-toolchain.toml', 'games/rocket-league/parser/Cargo.lock') }}
-          restore-keys: rust-release-
-      - run: uv sync --all-packages --locked
-      - run: uv run python tests/fixtures/corpus.py fetch
-      - run: cargo build --release --locked --manifest-path games/rocket-league/parser/Cargo.toml
-      - run: pnpm install --frozen-lockfile
-      - run: pnpm --filter @match-analyzer/web exec playwright install --with-deps chromium
-      - run: cp .env.example .env
-      - run: docker compose -f compose.dev.yaml up -d --wait
-      - name: Stack ready
-        run: |
-          set -a; . ./.env; set +a
-          uv run python scripts/s3_init.py
-          uv run ma-db upgrade
-      - run: scripts/e2e.sh
-      - name: Service logs
-        if: failure()
-        # The API and worker logs name no player; the site's build log neither.
-        run: tail -n 40 /tmp/ma-e2e/api.log /tmp/ma-e2e/worker.log /tmp/ma-e2e/build.log
-
+  # The production image of the parser builds and runs. Its layers are cached by GitHub
+  # Actions: a change that leaves the parser alone reuses the compiled binary.
   parser-image:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v7
-      - run: docker build -t rl-parse games/rocket-league/parser
+      - uses: docker/setup-buildx-action@v3
+      - uses: docker/build-push-action@v6
+        with:
+          context: games/rocket-league/parser
+          tags: rl-parse
+          load: true
+          cache-from: type=gha,scope=parser-image
+          cache-to: type=gha,scope=parser-image,mode=max
       - run: docker run --rm rl-parse --version
+
+  # No replay here, ever: the repository is public and replays hold other players' names. The
+  # checks on real replays run locally, on demand: `just test-replays`, `just test-pipeline`
+  # and `just test-e2e`, whose journey uploads one.
