@@ -28,7 +28,13 @@ export interface TimedEvent {
   t: number;
 }
 
-export const SITUATION_KINDS = ["turnover", "kickoff", "fifty_fifty", "double_commit"] as const;
+export const SITUATION_KINDS = [
+  "turnover",
+  "kickoff",
+  "fifty_fifty",
+  "double_commit",
+  "overcommit",
+] as const;
 export type SituationKind = (typeof SITUATION_KINDS)[number];
 
 /** What a detection found (`situations` of match2d): turnovers, kickoffs, duels, double commits. */

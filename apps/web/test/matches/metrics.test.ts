@@ -19,6 +19,7 @@ describe("the catalog of metrics", () => {
     expect(TEAM_METRICS.map((metric) => metric.id)).toEqual([
       "poss.team_pct",
       "kick.goals_conceded",
+      "rot.overcommits",
     ]);
     expect(METRICS.map((metric) => metric.id)).not.toContain("poss.team_pct");
   });

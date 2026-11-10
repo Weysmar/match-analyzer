@@ -25,12 +25,14 @@ const SITUATION_COLORS = {
   fifty_fifty: "fill-violet-500",
   turnover: "fill-emerald-500",
   double_commit: "fill-rose-500",
+  overcommit: "fill-sky-400",
 } as const;
 const LEGEND_COLORS = {
   kickoff: "bg-slate-400",
   fifty_fifty: "bg-violet-500",
   turnover: "bg-emerald-500",
   double_commit: "bg-rose-500",
+  overcommit: "bg-sky-400",
 } as const;
 
 // The field never takes more than this share of the window's height.

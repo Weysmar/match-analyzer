@@ -50,6 +50,9 @@ export function LabelQueue({ matchId, players }: { matchId: string; players: Vie
         ? t("turnoverWinner", { won: name(first) })
         : t("turnoverPlayers", { won: name(first), lost: name(second) });
     }
+    if (situation.detector === "overcommit") {
+      return t("overcommitPlayers", { players: situation.players.map(name).join(", ") });
+    }
     if (situation.detector === "double_commit") {
       return t("doubleCommitPlayers", { players: situation.players.map(name).join(", ") });
     }

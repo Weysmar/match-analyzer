@@ -10,6 +10,8 @@ asks about them; the worker stores them in `match_situations` for the match shee
   has the ball afterwards, if any; its players are blue's, then orange's.
 - `double_commit`: two teammates engaged on the ball together (`commits`), when they first were;
   its team is theirs; its players are them.
+- `overcommit`: the whole team ahead of the ball while the opponents hold it (`overcommits`), when
+  it got there; its team is the one caught; its players are all of it.
 
 Players are `player_idx` here; the callers turn them into `match_player_id`. No name ever.
 """
@@ -19,10 +21,10 @@ from dataclasses import dataclass, field
 
 import polars as pl
 
-from rl_analysis import clock, commits, kickoffs, possession
+from rl_analysis import clock, commits, kickoffs, overcommits, possession
 from rl_analysis.match import Match
 
-KINDS = ("turnover", "kickoff", "fifty_fifty", "double_commit")
+KINDS = ("turnover", "kickoff", "fifty_fifty", "double_commit", "overcommit")
 
 
 @dataclass(frozen=True)
@@ -101,6 +103,17 @@ def detect(match: Match) -> list[Situation] | None:
                 commit.team,
                 commit.players,
                 {"punished": commit.punished},
+            )
+        )
+    for overcommit in overcommits.resolve(match) or []:
+        found.append(
+            Situation(
+                "overcommit",
+                overcommit.time_s,
+                clock_at(overcommit.time_s),
+                overcommit.team,
+                overcommit.players,
+                {"duration_s": round(overcommit.duration_s, 2)},
             )
         )
     return sorted(found, key=lambda situation: (situation.time_s, KINDS.index(situation.kind)))
