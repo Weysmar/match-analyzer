@@ -96,3 +96,25 @@ POSSESSION_WINDOW = Threshold(
     "s",
     "subtr-actor 1.5.1, stats/calculators/possession.rs, POSSESSION_RESOLUTION_WINDOW_SECONDS",
 )
+
+# Goals conceded (T15.1, T15.2): the plan's starting values, to calibrate at step 17. The context of
+# a goal covers this much of the game clock before it...
+GOAL_CONTEXT_WINDOW = Threshold(
+    10.0, "s", "convention of the plan, section 5.5: the play before a goal, on the game clock"
+)
+# ...a defender beaten to the ball this long before the shot counts...
+BEATEN_BEFORE_SHOT = Threshold(
+    3.0, "s", "convention of the plan, section 5.5: beaten to the ball before the shot"
+)
+# ...the last defender is far from the goal beyond this, at the shot, on the ground plane...
+LAST_BACK_FAR = Threshold(
+    2000.0, "uu", "convention of the plan, section 5.5: the last defender far from the goal"
+)
+# ...and short of boost under this, on the 0 to 100 scale of rl-parse...
+LAST_BACK_LOW_BOOST = Threshold(
+    20.0, "boost", "convention of the plan, section 5.5: the last defender short of boost"
+)
+# ...and a demolished defender counts this long before the goal.
+DEMOLISHED_BEFORE_GOAL = Threshold(
+    3.0, "s", "convention of the plan, section 5.5: a defender demolished before the goal"
+)
