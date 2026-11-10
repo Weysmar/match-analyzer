@@ -282,7 +282,14 @@
       "none": "Pas de vue 2D pour ce match.",
       "empty": "Aucune situation détectée dans ce match.",
       "progress": "Situation {current} sur {total} · {done} jugées",
-      "kind": { "turnover": "Perte de balle à {clock} de jeu" },
+      "kind": {
+        "turnover": "Perte de balle à {clock} de jeu",
+        "kickoff": "Kickoff à {clock} de jeu",
+        "fifty_fifty": "Duel à {clock} de jeu"
+      },
+      "kickoffTakers": "Preneurs : {takers}",
+      "kickoffNoTaker": "Personne n'a touché la balle dans les 6 s",
+      "duelPlayers": "{blue} contre {orange}",
       "turnoverPlayers": "{won} prend la balle à {lost}",
       "turnoverWinner": "{won} prend la balle",
       "unknownPlayer": "joueur inconnu",
@@ -311,6 +318,11 @@
       "intoOvertime": "+{clock} en prolongation",
       "keys": "Clavier : Espace pour lecture ou pause, flèches pour avancer ou reculer de 5 s.",
       "you": "toi",
+      "situations": {
+        "kickoff": "{count, plural, =0 {Aucun kickoff} one {# kickoff} other {# kickoffs}}",
+        "fifty_fifty": "{count, plural, =0 {Aucun duel} one {# duel} other {# duels}}",
+        "turnover": "{count, plural, =0 {Aucune perte de balle} one {# perte de balle} other {# pertes de balle}}"
+      },
       "unknownPlayer": "Joueur inconnu"
     },
     "timeline": {

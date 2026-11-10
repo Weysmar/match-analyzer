@@ -9,6 +9,7 @@ import {
   lerp,
   lerpAngle,
   positionAt,
+  situationMarkers,
   timeAtClock,
   timeOfSample,
 } from "../../src/lib/view2d/time";
@@ -68,6 +69,18 @@ describe("the game clock", () => {
     const [marker] = goalMarkers(view);
     expect(marker?.team).toBe(0);
     expect(marker?.left).toBeCloseTo((100 * 2.5) / 3);
+  });
+
+  it("places situations along the cursor by their clock, kind by kind", () => {
+    const markers = situationMarkers(view);
+    expect(markers.map((marker) => marker.kind)).toEqual([
+      "turnover",
+      "turnover",
+      "kickoff",
+      "fifty_fifty",
+    ]);
+    // The kickoff at 1 s of the player's time, when the clock starts.
+    expect(markers[2]?.left).toBe(0);
   });
 
   it("puts a replay time on the player's time", () => {

@@ -282,7 +282,14 @@
       "none": "No 2D view for this match.",
       "empty": "No situation detected in this match.",
       "progress": "Situation {current} of {total} · {done} judged",
-      "kind": { "turnover": "Turnover at {clock} of play" },
+      "kind": {
+        "turnover": "Turnover at {clock} of play",
+        "kickoff": "Kickoff at {clock} of play",
+        "fifty_fifty": "Duel at {clock} of play"
+      },
+      "kickoffTakers": "Takers: {takers}",
+      "kickoffNoTaker": "Nobody touched the ball within 6 s",
+      "duelPlayers": "{blue} against {orange}",
       "turnoverPlayers": "{won} takes the ball from {lost}",
       "turnoverWinner": "{won} takes the ball",
       "unknownPlayer": "unknown player",
@@ -311,6 +318,11 @@
       "intoOvertime": "+{clock} in overtime",
       "keys": "Keyboard: Space to play or pause, arrows to move 5 s forward or back.",
       "you": "you",
+      "situations": {
+        "kickoff": "{count, plural, =0 {No kickoff} one {# kickoff} other {# kickoffs}}",
+        "fifty_fifty": "{count, plural, =0 {No duel} one {# duel} other {# duels}}",
+        "turnover": "{count, plural, =0 {No turnover} one {# turnover} other {# turnovers}}"
+      },
       "unknownPlayer": "Unknown player"
     },
     "timeline": {

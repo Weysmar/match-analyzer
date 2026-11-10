@@ -78,6 +78,18 @@ export function goalMarkers(view: Match2d): { left: number; team: 0 | 1 | null }
   }));
 }
 
+/** Where each situation sits along the cursor, from 0 to 100, with its kind (T13.4). */
+export function situationMarkers(
+  view: Match2d,
+): { left: number; kind: NonNullable<Match2d["situations"]>[number]["kind"] }[] {
+  const last = view.clockS[view.clockS.length - 1] ?? 0;
+  if (last <= 0 || view.situations === null) return [];
+  return view.situations.map((situation) => ({
+    left: Math.min(100, Math.max(0, (100 * clockAt(view, situation.t)) / last)),
+    kind: situation.kind,
+  }));
+}
+
 /** A replay time, such as a goal's on the match sheet, as the player's time. */
 export function fromReplayTime(view: Pick<Match2d, "startS">, replayS: number): number {
   return replayS - view.startS;
