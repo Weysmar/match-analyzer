@@ -191,9 +191,11 @@ web:
 web-build:
     pnpm --filter @match-analyzer/web build
 
-# What the labels of tests/fixtures/labels/ say of each V2 detector (T12.7): counts only
-v2-report:
-    uv run python scripts/v2_report.py
+# What the labels of tests/fixtures/labels/ say of each V2 detector (T12.7), and with
+# `--sensitivity`, how their counts move at ±20 % of each threshold (T14.5): counts only
+v2-report *args:
+    cargo build --release --manifest-path {{parser}}
+    uv run python scripts/v2_report.py {{args}}
 
 # The API's description and the site's types, regenerated from the API's code
 openapi:
