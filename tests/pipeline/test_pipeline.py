@@ -55,7 +55,7 @@ def all_replays() -> list[Path]:
 
 
 def a_replay() -> Path:
-    """The smallest public one that is parsed for sure: it runs in CI too."""
+    """A public one of middle size, parsed for sure."""
     candidates = sorted(PUBLIC.glob("*.replay"), key=lambda path: path.stat().st_size)
     assert candidates, "run `just corpus-fetch`"
     return candidates[len(candidates) // 2]
