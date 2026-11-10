@@ -13,7 +13,7 @@
       "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$"
     },
     "detector": {
-      "enum": ["turnover", "kickoff", "fifty_fifty"],
+      "enum": ["turnover", "kickoff", "fifty_fifty", "double_commit"],
       "description": "A situation kind of match2d."
     },
     "labeled_at": { "type": "string", "format": "date-time" },

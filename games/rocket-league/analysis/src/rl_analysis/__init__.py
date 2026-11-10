@@ -12,4 +12,5 @@ __version__ = "0.0.0"
 # 7: duel metrics, from its fifty_fifties and beaten_to_ball (T13.3).
 # 8: kickoffs and duels become situations, in the view and in match_situations (T13.4).
 # 9: rotation roles, first, second and third man (T14.1).
-ANALYSIS_VERSION = "9"
+# 10: engaged players and double commits, a metric and a situation (T14.2, T14.3).
+ANALYSIS_VERSION = "10"

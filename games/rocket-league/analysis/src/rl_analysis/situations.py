@@ -8,6 +8,8 @@ asks about them; the worker stores them in `match_situations` for the match shee
   are the takers, blue's first.
 - `fifty_fifty`: a duel (subtr-actor's 50/50, read from the parser), at its first touch; its team
   has the ball afterwards, if any; its players are blue's, then orange's.
+- `double_commit`: two teammates engaged on the ball together (`commits`), when they first were;
+  its team is theirs; its players are them.
 
 Players are `player_idx` here; the callers turn them into `match_player_id`. No name ever.
 """
@@ -17,10 +19,10 @@ from dataclasses import dataclass, field
 
 import polars as pl
 
-from rl_analysis import clock, kickoffs, possession
+from rl_analysis import clock, commits, kickoffs, possession
 from rl_analysis.match import Match
 
-KINDS = ("turnover", "kickoff", "fifty_fifty")
+KINDS = ("turnover", "kickoff", "fifty_fifty", "double_commit")
 
 
 @dataclass(frozen=True)
@@ -88,6 +90,17 @@ def detect(match: Match) -> list[Situation] | None:
                     p for p in (duel["blue_player_idx"], duel["orange_player_idx"]) if p is not None
                 ),
                 {"is_kickoff": duel["is_kickoff"], "contact_winner": duel["winner_team"]},
+            )
+        )
+    for commit in commits.resolve(match) or []:
+        found.append(
+            Situation(
+                "double_commit",
+                commit.time_s,
+                clock_at(commit.time_s),
+                commit.team,
+                commit.players,
+                {"punished": commit.punished},
             )
         )
     return sorted(found, key=lambda situation: (situation.time_s, KINDS.index(situation.kind)))

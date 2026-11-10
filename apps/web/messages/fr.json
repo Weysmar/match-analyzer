@@ -286,10 +286,12 @@
       "kind": {
         "turnover": "Perte de balle à {clock} de jeu",
         "kickoff": "Kickoff à {clock} de jeu",
-        "fifty_fifty": "Duel à {clock} de jeu"
+        "fifty_fifty": "Duel à {clock} de jeu",
+        "double_commit": "Double commit à {clock} de jeu"
       },
       "kickoffTakers": "Preneurs : {takers}",
       "kickoffNoTaker": "Personne n'a touché la balle dans les 6 s",
+      "doubleCommitPlayers": "Engagés ensemble : {players}",
       "duelPlayers": "{blue} contre {orange}",
       "turnoverPlayers": "{won} prend la balle à {lost}",
       "turnoverWinner": "{won} prend la balle",
@@ -322,7 +324,8 @@
       "situations": {
         "kickoff": "{count, plural, =0 {Aucun kickoff} one {# kickoff} other {# kickoffs}}",
         "fifty_fifty": "{count, plural, =0 {Aucun duel} one {# duel} other {# duels}}",
-        "turnover": "{count, plural, =0 {Aucune perte de balle} one {# perte de balle} other {# pertes de balle}}"
+        "turnover": "{count, plural, =0 {Aucune perte de balle} one {# perte de balle} other {# pertes de balle}}",
+        "double_commit": "{count, plural, =0 {Aucun double commit} one {# double commit} other {# double commits}}"
       },
       "unknownPlayer": "Joueur inconnu"
     },
@@ -393,7 +396,8 @@
     "rot": {
       "pct_first": "Temps en 1er homme",
       "pct_second": "Temps en 2e homme",
-      "pct_third": "Temps en 3e homme"
+      "pct_third": "Temps en 3e homme",
+      "double_commits": "Double commits"
     },
     "event": {
       "demos_inflicted": "Démolitions infligées",

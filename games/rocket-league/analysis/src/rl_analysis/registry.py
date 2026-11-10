@@ -8,6 +8,7 @@ from dataclasses import dataclass
 
 from rl_analysis import (
     boost,
+    commits,
     duels,
     kickoffs,
     movement,
@@ -71,6 +72,7 @@ METRICS: tuple[Metric, ...] = (
     Metric("rot.pct_first", "%", rotation.first_share),
     Metric("rot.pct_second", "%", rotation.second_share),
     Metric("rot.pct_third", "%", rotation.third_share),
+    Metric("rot.double_commits", "count", commits.count),
 )
 
 

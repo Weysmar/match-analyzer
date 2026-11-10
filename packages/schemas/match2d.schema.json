@@ -139,8 +139,8 @@
         "required": ["kind", "time_s", "team", "players"],
         "properties": {
           "kind": {
-            "enum": ["turnover", "kickoff", "fifty_fifty"],
-            "description": "turnover: a possession lost on an opponent's touch, at the winner's first touch; kickoff: at the end of the countdown; fifty_fifty: a duel, at its first touch."
+            "enum": ["turnover", "kickoff", "fifty_fifty", "double_commit"],
+            "description": "turnover: a possession lost on an opponent's touch, at the winner's first touch; kickoff: at the end of the countdown; fifty_fifty: a duel, at its first touch; double_commit: two teammates engaged on the ball together, when they first were."
           },
           "time_s": { "$ref": "#/$defs/time" },
           "team": {
