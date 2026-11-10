@@ -17,6 +17,7 @@ TABLES = {
     "match_events",
     "match_files",
     "match_players",
+    "match_situations",
     "matches",
     "player_claims",
     "player_match_metrics",

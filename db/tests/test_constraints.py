@@ -206,3 +206,16 @@ def test_a_metric_can_be_undefined(conn: Connection, make: Factory) -> None:
 def test_job_kinds_and_statuses_are_checked(conn: Connection) -> None:
     refuses(conn, CHECK, "INSERT INTO jobs (kind) VALUES ('mine_bitcoin')")
     refuses(conn, CHECK, "INSERT INTO jobs (kind, status) VALUES ('parse', 'lost')")
+
+
+@pytest.mark.parametrize(
+    ("column", "value"),
+    [("kind", "'a_guess'"), ("team", "2"), ("time_s", "-1")],
+)
+def test_a_situation_keeps_to_its_kinds_teams_and_times(
+    conn: Connection, make: Factory, column: str, value: str
+) -> None:
+    match = make.match()
+    make.situation(match)
+    # Column and value come from this test file.
+    refuses(conn, CHECK, f"UPDATE match_situations SET {column} = {value}")
