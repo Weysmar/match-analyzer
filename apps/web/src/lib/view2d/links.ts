@@ -14,6 +14,16 @@ export function viewLink(clockS: number): string {
   return `?t=${tenths}#${VIEW_ANCHOR}`;
 }
 
+/**
+ * The same link, keeping the rest of the address's query (`search`, as `location.search` has it):
+ * the labeling mode's own `mode` stays.
+ */
+export function viewLinkKeeping(clockS: number, search: string): string {
+  const query = new URLSearchParams(search);
+  query.set("t", String(Math.round(Math.max(0, clockS) * 10) / 10));
+  return `?${query.toString()}#${VIEW_ANCHOR}`;
+}
+
 /** The link to the moment just before a goal scored at `clockS` seconds of play. */
 export function goalLink(clockS: number): string {
   return viewLink(clockS - LEAD_S);

@@ -48,11 +48,14 @@ export function MatchView({
   players,
   gameLengthS,
   overtimeFromS,
+  markSituations = true,
 }: {
   matchId: string;
   players: ViewPlayer[];
   gameLengthS: number | null;
   overtimeFromS: number | null;
+  /** False for a blind review (T15.4, T17.1): no tick nor legend gives the detections away. */
+  markSituations?: boolean;
 }) {
   const t = useTranslations("match.view");
   const format = useFormatter();
@@ -235,7 +238,7 @@ export function MatchView({
         </svg>
         {/* The situations, under the cursor: thin ticks, coloured by kind. */}
         <svg aria-hidden="true" className="h-2 w-full overflow-visible">
-          {situationMarkers(view).map((marker, index) => (
+          {(markSituations ? situationMarkers(view) : []).map((marker, index) => (
             <rect
               // biome-ignore lint/suspicious/noArrayIndexKey: situations keep their order.
               key={index}
@@ -260,7 +263,7 @@ export function MatchView({
           className="w-full accent-sky-600"
         />
       </label>
-      {view.situations && view.situations.length > 0 ? (
+      {markSituations && view.situations && view.situations.length > 0 ? (
         <ul className="flex flex-wrap gap-x-4 gap-y-1 text-xs text-slate-600 dark:text-slate-400">
           {(Object.keys(LEGEND_COLORS) as (keyof typeof LEGEND_COLORS)[]).map((kind) => (
             <li key={kind} className="flex items-center gap-1.5">

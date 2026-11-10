@@ -2,37 +2,143 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://match-analyzer.local/schemas/labels.schema.json",
   "title": "labels",
-  "description": "Verdicts on the detected situations of one match, written by the 2D view's labeling mode in development (T12.7 of docs/PLAN-V2.md) into tests/fixtures/labels/, never versioned. Read by `just v2-report` to measure each detector's precision (section 4). No name, no platform id.",
-  "type": "object",
-  "additionalProperties": false,
-  "required": ["version", "match_id", "detector", "labeled_at", "labels"],
-  "properties": {
-    "version": { "const": 1 },
-    "match_id": {
+  "description": "Verdicts on one match, written by the 2D view's labeling mode in development (T12.7, T15.4 and T17.1 of docs/PLAN-V2.md) into tests/fixtures/labels/, never versioned. Read by `just v2-report`: the precision of each detector, the precision and recall of each tag of a goal conceded, the recall of each detector over windows of play (section 4). Three kinds of file: verdicts on the detections of one detector (no `kind`), a blind review of the goals conceded (`goals`), and windows of play (`windows`). No name, no platform id.",
+  "oneOf": [
+    { "$ref": "#/$defs/detections" },
+    { "$ref": "#/$defs/goals" },
+    { "$ref": "#/$defs/windows" }
+  ],
+  "$defs": {
+    "matchId": {
       "type": "string",
       "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$"
     },
-    "detector": {
-      "enum": ["turnover", "kickoff", "fifty_fifty", "double_commit", "overcommit"],
-      "description": "A situation kind of match2d."
+    "verdict": {
+      "enum": ["true", "false", "uncertain"],
+      "description": "Uncertain verdicts stay out of every measure (section 4, rule 4). For a goal's tag or a window, true means the thing was there."
     },
-    "labeled_at": { "type": "string", "format": "date-time" },
-    "labels": {
-      "type": "array",
-      "items": {
-        "type": "object",
-        "additionalProperties": false,
-        "required": ["time_s", "clock_s", "verdict"],
-        "properties": {
-          "time_s": {
-            "type": "number",
-            "minimum": 0,
-            "description": "The situation's replay time, as in match2d: it names the situation."
-          },
-          "clock_s": { "type": "number", "minimum": 0, "description": "Seconds of play." },
-          "verdict": {
-            "enum": ["true", "false", "uncertain"],
-            "description": "Uncertain verdicts stay out of the precision (section 4, rule 4)."
+    "tag": {
+      "enum": [
+        "double_commit",
+        "overcommit",
+        "turnover_own_half",
+        "beaten_to_ball",
+        "last_back_far",
+        "last_back_low_boost",
+        "defender_demolished",
+        "kickoff_goal",
+        "own_touch_last"
+      ]
+    },
+    "detections": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["version", "match_id", "detector", "labeled_at", "labels"],
+      "properties": {
+        "version": { "const": 1 },
+        "match_id": { "$ref": "#/$defs/matchId" },
+        "detector": {
+          "enum": ["turnover", "kickoff", "fifty_fifty", "double_commit", "overcommit"],
+          "description": "A situation kind of match2d."
+        },
+        "labeled_at": { "type": "string", "format": "date-time" },
+        "labels": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["time_s", "clock_s", "verdict"],
+            "properties": {
+              "time_s": {
+                "type": "number",
+                "minimum": 0,
+                "description": "The situation's replay time, as in match2d: it names the situation."
+              },
+              "clock_s": { "type": "number", "minimum": 0, "description": "Seconds of play." },
+              "verdict": { "$ref": "#/$defs/verdict" }
+            }
+          }
+        }
+      }
+    },
+    "goals": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["version", "match_id", "kind", "labeled_at", "goals"],
+      "properties": {
+        "version": { "const": 1 },
+        "match_id": { "$ref": "#/$defs/matchId" },
+        "kind": { "const": "goals" },
+        "labeled_at": { "type": "string", "format": "date-time" },
+        "goals": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["time_s", "clock_s", "detected", "verdicts"],
+            "properties": {
+              "time_s": {
+                "type": "number",
+                "minimum": 0,
+                "description": "The goal's replay time: it names the goal."
+              },
+              "clock_s": { "type": "number", "minimum": 0, "description": "Seconds of play." },
+              "detected": {
+                "type": "array",
+                "items": { "$ref": "#/$defs/tag" },
+                "uniqueItems": true,
+                "description": "The tags the analysis gave the goal when it was reviewed, never shown during the review."
+              },
+              "verdicts": {
+                "type": "object",
+                "propertyNames": { "$ref": "#/$defs/tag" },
+                "additionalProperties": { "$ref": "#/$defs/verdict" },
+                "description": "For each tag judged: was that cause there?"
+              }
+            }
+          }
+        }
+      }
+    },
+    "windows": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["version", "match_id", "kind", "labeled_at", "windows"],
+      "properties": {
+        "version": { "const": 1 },
+        "match_id": { "$ref": "#/$defs/matchId" },
+        "kind": { "const": "windows" },
+        "labeled_at": { "type": "string", "format": "date-time" },
+        "windows": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["start_clock_s", "end_clock_s", "source", "detected", "verdicts"],
+            "properties": {
+              "start_clock_s": {
+                "type": "number",
+                "minimum": 0,
+                "description": "Seconds of play where the window starts: it names the window."
+              },
+              "end_clock_s": { "type": "number", "minimum": 0 },
+              "source": {
+                "enum": ["before_goal", "random"],
+                "description": "The 10 s before a goal, or drawn at random in the play."
+              },
+              "detected": {
+                "type": "object",
+                "propertyNames": { "enum": ["turnover", "double_commit", "overcommit"] },
+                "additionalProperties": { "type": "boolean" },
+                "description": "Whether the detector found one in the window, never shown during the review."
+              },
+              "verdicts": {
+                "type": "object",
+                "propertyNames": { "enum": ["turnover", "double_commit", "overcommit"] },
+                "additionalProperties": { "$ref": "#/$defs/verdict" },
+                "description": "For each detector judged: did one happen in the window?"
+              }
+            }
           }
         }
       }

@@ -389,7 +389,35 @@
       "export": "Exporter",
       "exported": "Enregistré dans tests/fixtures/labels/ : {files}",
       "nothing": "Aucun verdict à exporter.",
-      "exportError": "L'export a échoué : le site tourne-t-il avec next dev ?"
+      "exportError": "L'export a échoué : le site tourne-t-il avec next dev ?",
+      "modes": {
+        "label": "Mode d'étiquetage",
+        "detections": "Détections",
+        "goals": "Buts encaissés",
+        "windows": "Fenêtres de jeu"
+      },
+      "review": {
+        "progress": "{current} sur {total} · {done} jugés",
+        "empty": "Rien à juger dans ce match.",
+        "answer": {
+          "true": "Oui",
+          "false": "Non",
+          "uncertain": "Incertain"
+        }
+      },
+      "goals": {
+        "title": "Revue des buts encaissés",
+        "intro": "À l'aveugle : pour chaque but, la vue part du début de son contexte. Dis pour chaque cause si elle était là. Ce que l'analyse a trouvé n'est pas montré.",
+        "heading": "But à {clock} de jeu · contexte de {window} s"
+      },
+      "windows": {
+        "title": "Fenêtres de jeu",
+        "intro": "À l'aveugle : 10 s de jeu, avant un but ou tirées au hasard, sans les marques des détections. Dis si chaque situation s'y est produite.",
+        "heading": {
+          "before_goal": "Avant un but : de {start} à {end} de jeu",
+          "random": "Au hasard : de {start} à {end} de jeu"
+        }
+      }
     },
     "view": {
       "title": "Revoir le match",
