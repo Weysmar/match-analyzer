@@ -19,6 +19,14 @@ export function goalLink(clockS: number): string {
   return viewLink(clockS - LEAD_S);
 }
 
+/** How long before a situation its link opens the view: enough to see it start. */
+export const SITUATION_LEAD_S = 2;
+
+/** The link to the moment just before a situation at `clockS` seconds of play. */
+export function situationLink(clockS: number): string {
+  return viewLink(clockS - SITUATION_LEAD_S);
+}
+
 /** The `t` of the address, in seconds of play, or null when there is none or it is not a time. */
 export function parseT(value: string | null | undefined): number | null {
   if (value === null || value === undefined || value.trim() === "") return null;

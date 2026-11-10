@@ -275,6 +275,36 @@
       "kickoffGoals": "Goals conceded within 12 s of a kickoff: Blue {blue} · Orange {orange}",
       "how": "A team has the ball when it touches it again within 3 seconds. The rest of the play time, the ball is loose."
     },
+    "analysis": {
+      "title": "Analysis",
+      "teams": {
+        "blue": "Blue",
+        "orange": "Orange"
+      },
+      "kickoffs": "{count, plural, one {# kickoff} other {# kickoffs}}: {blue} won by Blue, {orange} by Orange, {neutral} neutral.",
+      "duels": "{count, plural, one {# duel} other {# duels}}: the ball went to Blue {blue} times, to Orange {orange} times, and stayed loose {loose} times.",
+      "situations": "Situations",
+      "situationsHow": "“Replay” opens the 2D view 2 seconds before the situation.",
+      "kinds": {
+        "double_commit": "Double commit",
+        "overcommit": "Overcommit",
+        "turnover": "Turnover",
+        "kickoff": "Kickoff",
+        "fifty_fifty": "Duel"
+      },
+      "item": {
+        "turnover": "{won} takes the ball from {lost}",
+        "turnoverWinner": "{won} takes the ball",
+        "kickoffWon": "Won by {team}",
+        "kickoffNeutral": "Neutral",
+        "kickoffGoal": "goal within 12 s",
+        "duelAfter": "{team}'s ball afterwards",
+        "duelLoose": "loose ball afterwards",
+        "punished": "punished by an opponent shot or goal",
+        "overcommit": "{team} ahead of the ball for {seconds} s"
+      },
+      "replaySituation": "{kind}, {clock}"
+    },
     "labels": {
       "open": "Label the situations (development)",
       "back": "Back to the match",
@@ -299,7 +329,11 @@
       "turnoverPlayers": "{won} takes the ball from {lost}",
       "turnoverWinner": "{won} takes the ball",
       "unknownPlayer": "unknown player",
-      "verdict": { "true": "True", "false": "False", "uncertain": "Uncertain" },
+      "verdict": {
+        "true": "True",
+        "false": "False",
+        "uncertain": "Uncertain"
+      },
       "previous": "Previous",
       "next": "Next",
       "export": "Export",

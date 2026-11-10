@@ -275,6 +275,36 @@
       "kickoffGoals": "Buts encaissés dans les 12 s après un kickoff : Bleus {blue} · Orange {orange}",
       "how": "Une équipe a la balle quand elle la touche à nouveau dans les 3 secondes. Le reste du temps de jeu, la balle est libre."
     },
+    "analysis": {
+      "title": "Analyse",
+      "teams": {
+        "blue": "Bleus",
+        "orange": "Orange"
+      },
+      "kickoffs": "{count, plural, one {# kickoff} other {# kickoffs}} : {blue} gagnés par les Bleus, {orange} par les Orange, {neutral} neutres.",
+      "duels": "{count, plural, one {# duel} other {# duels}} : la balle revient {blue} fois aux Bleus, {orange} fois aux Orange, et reste libre {loose} fois.",
+      "situations": "Situations",
+      "situationsHow": "« Revoir » ouvre la vue 2D 2 secondes avant la situation.",
+      "kinds": {
+        "double_commit": "Double commit",
+        "overcommit": "Overcommit",
+        "turnover": "Perte de balle",
+        "kickoff": "Kickoff",
+        "fifty_fifty": "Duel"
+      },
+      "item": {
+        "turnover": "{won} prend la balle à {lost}",
+        "turnoverWinner": "{won} prend la balle",
+        "kickoffWon": "Gagné par les {team}",
+        "kickoffNeutral": "Neutre",
+        "kickoffGoal": "but dans les 12 s",
+        "duelAfter": "balle aux {team} ensuite",
+        "duelLoose": "balle libre ensuite",
+        "punished": "puni par un tir ou un but adverse",
+        "overcommit": "{team} devant la balle pendant {seconds} s"
+      },
+      "replaySituation": "{kind}, {clock}"
+    },
     "labels": {
       "open": "Étiqueter les situations (développement)",
       "back": "Retour au match",
@@ -299,7 +329,11 @@
       "turnoverPlayers": "{won} prend la balle à {lost}",
       "turnoverWinner": "{won} prend la balle",
       "unknownPlayer": "joueur inconnu",
-      "verdict": { "true": "Vrai", "false": "Faux", "uncertain": "Incertain" },
+      "verdict": {
+        "true": "Vrai",
+        "false": "Faux",
+        "uncertain": "Incertain"
+      },
       "previous": "Précédente",
       "next": "Suivante",
       "export": "Exporter",
