@@ -4,6 +4,7 @@ import { getFormatter, getTranslations } from "next-intl/server";
 import { SignInPrompt } from "@/components/account/SignInPrompt";
 import { Analysis } from "@/components/match/Analysis";
 import { AutoRefresh } from "@/components/match/AutoRefresh";
+import { ConcededGoals } from "@/components/match/ConcededGoals";
 import { GoalTimeline } from "@/components/match/GoalTimeline";
 import { IdentityPicker } from "@/components/match/IdentityPicker";
 import { MetricsTable } from "@/components/match/MetricsTable";
@@ -127,6 +128,7 @@ export default async function MatchPage({ params }: { params: Promise<{ id: stri
         </Link>
       ) : null}
       <Analysis sheet={data} viewable={match.status === "ready"} />
+      <ConcededGoals sheet={data} viewable={match.status === "ready"} />
       <MetricsTable players={data.players} metrics={data.metrics} />
     </div>
   );

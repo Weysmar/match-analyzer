@@ -21,6 +21,7 @@ const WORDS = {
     you: "(toi)",
     metrics: "Statistiques détaillées",
     analysis: "Analyse",
+    conceded: "Buts encaissés",
     replay: /^Revoir le but/,
     steam: "Se connecter avec Steam",
     signedIn: "Connecté : Player",
@@ -38,6 +39,7 @@ const WORDS = {
     you: "(you)",
     metrics: "Detailed stats",
     analysis: "Analysis",
+    conceded: "Goals conceded",
     replay: /^Replay the goal/,
     steam: "Sign in through Steam",
     signedIn: "Signed in: Player",
@@ -82,6 +84,7 @@ test("from a replay to my stats, then the account erased", async ({ page }, info
   await expect(page.getByText(w.you, { exact: true }).first()).toBeVisible();
   await expect(page.getByRole("heading", { name: w.metrics })).toBeVisible();
   await expect(page.getByRole("heading", { name: w.analysis, exact: true })).toBeVisible();
+  await expect(page.getByRole("heading", { name: w.conceded })).toBeVisible();
 
   // A goal of the timeline opens the 2D view 5 s before it, paused (T12.5).
   const goal = page.getByRole("link", { name: w.replay }).first();
