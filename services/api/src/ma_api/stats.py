@@ -59,6 +59,10 @@ METRIC_IDS = frozenset(
         "duel.count",
         "duel.won_pct",
         "duel.beaten",
+        # T14.1.
+        "rot.pct_first",
+        "rot.pct_second",
+        "rot.pct_third",
     }
 )
 

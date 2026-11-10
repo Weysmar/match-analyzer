@@ -170,6 +170,21 @@
     "scope": "player"
   },
   {
+    "id": "rot.pct_first",
+    "unit": "%",
+    "scope": "player"
+  },
+  {
+    "id": "rot.pct_second",
+    "unit": "%",
+    "scope": "player"
+  },
+  {
+    "id": "rot.pct_third",
+    "unit": "%",
+    "scope": "player"
+  },
+  {
     "id": "poss.team_pct",
     "unit": "%",
     "scope": "team"
