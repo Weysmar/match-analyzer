@@ -25,3 +25,5 @@ playwright-report/
 tests/fixtures/oracle/
 # The labeling mode's verdicts (T12.7): about matches of real players.
 tests/fixtures/labels/
+# The replays' parsed output, cached by v2-report: derived from them.
+tests/fixtures/parsed/
