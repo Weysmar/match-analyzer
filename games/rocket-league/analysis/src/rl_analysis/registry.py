@@ -6,7 +6,7 @@ metric for the team ones."""
 from collections.abc import Callable
 from dataclasses import dataclass
 
-from rl_analysis import boost, kickoffs, movement, positioning, possession, touches
+from rl_analysis import boost, duels, kickoffs, movement, positioning, possession, touches
 from rl_analysis.frames import PerPlayer
 from rl_analysis.match import Match
 from rl_analysis.possession import TEAMS, PerTeam
@@ -56,6 +56,9 @@ METRICS: tuple[Metric, ...] = (
     Metric("kick.taken", "count", kickoffs.taken),
     Metric("kick.won_pct", "%", kickoffs.won_share),
     Metric("kick.time_to_ball", "s", kickoffs.time_to_ball),
+    Metric("duel.count", "count", duels.count),
+    Metric("duel.won_pct", "%", duels.won_share),
+    Metric("duel.beaten", "count", duels.beaten),
 )
 
 

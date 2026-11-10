@@ -6,8 +6,17 @@
 import catalog from "../../../metrics.json";
 
 export type Unit = "%" | "%/min" | "/min" | "count" | "uu/s" | "uu" | "s";
-export type Group = "boost" | "move" | "pos" | "touch" | "poss" | "kick" | "event";
-export const GROUPS: readonly Group[] = ["boost", "move", "pos", "touch", "poss", "kick", "event"];
+export type Group = "boost" | "move" | "pos" | "touch" | "poss" | "kick" | "duel" | "event";
+export const GROUPS: readonly Group[] = [
+  "boost",
+  "move",
+  "pos",
+  "touch",
+  "poss",
+  "kick",
+  "duel",
+  "event",
+];
 
 export interface MetricDefinition {
   id: string;

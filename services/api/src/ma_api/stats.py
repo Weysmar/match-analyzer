@@ -55,6 +55,10 @@ METRIC_IDS = frozenset(
         "kick.taken",
         "kick.won_pct",
         "kick.time_to_ball",
+        # T13.3.
+        "duel.count",
+        "duel.won_pct",
+        "duel.beaten",
     }
 )
 

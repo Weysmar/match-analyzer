@@ -155,6 +155,21 @@
     "scope": "player"
   },
   {
+    "id": "duel.count",
+    "unit": "count",
+    "scope": "player"
+  },
+  {
+    "id": "duel.won_pct",
+    "unit": "%",
+    "scope": "player"
+  },
+  {
+    "id": "duel.beaten",
+    "unit": "count",
+    "scope": "player"
+  },
+  {
     "id": "poss.team_pct",
     "unit": "%",
     "scope": "team"

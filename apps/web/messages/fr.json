@@ -261,6 +261,7 @@
         "touch": "Touches de balle",
         "poss": "Possession",
         "kick": "Kickoffs",
+        "duel": "Duels",
         "event": "Événements"
       }
     },
@@ -370,6 +371,11 @@
       "won_pct": "Kickoffs gagnés",
       "time_to_ball": "Temps jusqu'à la balle",
       "goals_conceded": "Buts encaissés après un kickoff"
+    },
+    "duel": {
+      "count": "Duels disputés",
+      "won_pct": "Duels gagnés",
+      "beaten": "Devancé sur la balle"
     },
     "event": {
       "demos_inflicted": "Démolitions infligées",
