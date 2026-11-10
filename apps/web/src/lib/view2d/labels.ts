@@ -60,6 +60,16 @@ function random(seed: number): () => number {
   };
 }
 
+/** The items in a random order, the same for the same seed. */
+export function shuffled<T>(items: T[], seed: string): T[] {
+  const next = random(hash(seed));
+  for (let index = items.length - 1; index > 0; index -= 1) {
+    const other = Math.floor(next() * (index + 1));
+    [items[index], items[other]] = [items[other] as T, items[index] as T];
+  }
+  return items;
+}
+
 /**
  * The match's situations to judge, shuffled (section 4: detections drawn at random, so that one
  * situation does not colour the judgment of the next), the same order on every visit.
@@ -73,12 +83,7 @@ export function labelQueue(view: Match2d, seed: string): QueueItem[] {
     team: situation.team,
     players: situation.players,
   }));
-  const next = random(hash(seed));
-  for (let index = items.length - 1; index > 0; index -= 1) {
-    const other = Math.floor(next() * (index + 1));
-    [items[index], items[other]] = [items[other] as QueueItem, items[index] as QueueItem];
-  }
-  return items;
+  return shuffled(items, seed);
 }
 
 /** The file of one detector's verdicts on this match: only the situations judged. */

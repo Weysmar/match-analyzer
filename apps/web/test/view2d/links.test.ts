@@ -7,6 +7,7 @@ import {
   SITUATION_LEAD_S,
   situationLink,
   viewLink,
+  viewLinkKeeping,
 } from "../../src/lib/view2d/links";
 
 describe("links into the view", () => {
@@ -23,6 +24,11 @@ describe("links into the view", () => {
   it(`open a situation ${SITUATION_LEAD_S} s before it, never before the start`, () => {
     expect(situationLink(61.27)).toBe("?t=59.3#view");
     expect(situationLink(1)).toBe("?t=0#view");
+  });
+
+  it("keep the rest of the query when asked, replacing only the time", () => {
+    expect(viewLinkKeeping(84.66, "?mode=goals&t=3")).toBe("?mode=goals&t=84.7#view");
+    expect(viewLinkKeeping(-1, "")).toBe("?t=0#view");
   });
 
   it("read the time of the address, and nothing else", () => {

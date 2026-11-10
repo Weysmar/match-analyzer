@@ -389,7 +389,35 @@
       "export": "Export",
       "exported": "Saved in tests/fixtures/labels/: {files}",
       "nothing": "No verdict to export.",
-      "exportError": "The export failed: is the site running with next dev?"
+      "exportError": "The export failed: is the site running with next dev?",
+      "modes": {
+        "label": "Labeling mode",
+        "detections": "Detections",
+        "goals": "Goals conceded",
+        "windows": "Windows of play"
+      },
+      "review": {
+        "progress": "{current} of {total} · {done} judged",
+        "empty": "Nothing to judge in this match.",
+        "answer": {
+          "true": "Yes",
+          "false": "No",
+          "uncertain": "Uncertain"
+        }
+      },
+      "goals": {
+        "title": "Review of the goals conceded",
+        "intro": "Blind: for each goal, the view starts at the beginning of its context. Say for each cause whether it was there. What the analysis found is not shown.",
+        "heading": "Goal at {clock} of play · {window} s of context"
+      },
+      "windows": {
+        "title": "Windows of play",
+        "intro": "Blind: 10 s of play, before a goal or drawn at random, without the detections' marks. Say whether each situation happened in it.",
+        "heading": {
+          "before_goal": "Before a goal: from {start} to {end} of play",
+          "random": "At random: from {start} to {end} of play"
+        }
+      }
     },
     "view": {
       "title": "Replay the match",

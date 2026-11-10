@@ -72,7 +72,13 @@ def main() -> int:
     except labels.InvalidLabelsError as error:
         print(error, file=sys.stderr)
         return 1
-    print(labels.render(labels.report(documents)))
+    print(
+        labels.render(
+            labels.report(documents),
+            labels.tag_report(documents),
+            labels.window_report(documents),
+        )
+    )
     if options.sensitivity:
         matches = corpus(options.matches)
         print()
