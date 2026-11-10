@@ -172,6 +172,13 @@ class Factory:
             (match_id, team, metric_id, value),
         )
 
+    def situation(self, match_id: object, kind: str = "kickoff", time_s: float = 1.0) -> None:
+        self.connection.execute(
+            "INSERT INTO match_situations (match_id, kind, time_s, analysis_version) "
+            "VALUES (%s, %s, %s, '1')",
+            (match_id, kind, time_s),
+        )
+
 
 def count(connection: Connection, query: str, *parameters: object) -> int:
     row = connection.execute(query.encode(), parameters).fetchone()

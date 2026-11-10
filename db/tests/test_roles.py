@@ -33,6 +33,7 @@ def denied(connection: Connection, role: str, query: str, *args: object) -> None
         "DELETE FROM match_players",
         "UPDATE player_match_metrics SET value = 0",
         "UPDATE team_match_metrics SET value = 0",
+        "DELETE FROM match_situations",
         "SELECT * FROM match_files",
         "SELECT * FROM jobs",
         "UPDATE jobs SET status = 'dead'",
@@ -71,6 +72,7 @@ def test_the_api_does_its_job(conn: Connection, make: Factory) -> None:
     as_role(conn, "ma_api", "INSERT INTO users (display_name) VALUES ('x')")
     as_role(conn, "ma_api", "SELECT * FROM matches, match_players, match_events")
     as_role(conn, "ma_api", "SELECT * FROM player_match_metrics, team_match_metrics")
+    as_role(conn, "ma_api", "SELECT * FROM match_situations")
     as_role(conn, "ma_api", "INSERT INTO jobs (kind) VALUES ('parse')")
     as_role(
         conn,
