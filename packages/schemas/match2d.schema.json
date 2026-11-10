@@ -139,16 +139,16 @@
         "required": ["kind", "time_s", "team", "players"],
         "properties": {
           "kind": {
-            "enum": ["turnover"],
-            "description": "turnover: a possession lost on an opponent's touch, at the winner's first touch."
+            "enum": ["turnover", "kickoff", "fifty_fifty"],
+            "description": "turnover: a possession lost on an opponent's touch, at the winner's first touch; kickoff: at the end of the countdown; fifty_fifty: a duel, at its first touch."
           },
           "time_s": { "$ref": "#/$defs/time" },
           "team": {
             "enum": [0, 1, null],
-            "description": "The team the situation is about: for a turnover, the one that won the ball."
+            "description": "The team the situation is about: for a turnover, the one that won the ball; for a kickoff, its winner; for a duel, the one with the ball afterwards."
           },
           "players": {
-            "description": "match_players.id, the one who acted first: for a turnover, who took the ball, then who lost it.",
+            "description": "match_players.id: for a turnover, who took the ball, then who lost it; for a kickoff, the takers; for a duel, blue's player, then orange's.",
             "type": "array",
             "items": { "type": "integer", "minimum": 1 }
           }

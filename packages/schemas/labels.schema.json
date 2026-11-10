@@ -12,7 +12,10 @@
       "type": "string",
       "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$"
     },
-    "detector": { "enum": ["turnover"], "description": "A situation kind of match2d." },
+    "detector": {
+      "enum": ["turnover", "kickoff", "fifty_fifty"],
+      "description": "A situation kind of match2d."
+    },
     "labeled_at": { "type": "string", "format": "date-time" },
     "labels": {
       "type": "array",

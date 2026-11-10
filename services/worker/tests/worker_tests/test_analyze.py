@@ -341,3 +341,51 @@ def test_a_new_run_writes_the_view_over_the_old_one(
     run_job(worker_conn, store, match)
     assert gzip.decompress(store.objects[analyze.view_key(match)]).startswith(b"{")
     assert sum(key.startswith("views/") for key in store.objects) == 1
+
+
+def test_situations_are_written_in_place_of_the_previous_runs(
+    conn: Connection, worker_conn: Connection, make: Factory, store: MemoryStore, tmp_path: Path
+) -> None:
+    """Without detected touches there is none to tell: the previous run's go all the same."""
+    match, _, _ = parsed_match(conn, make, store, tmp_path)
+    make.situation(match, "turnover")
+    run_job(worker_conn, store, match)
+    assert count(conn, "SELECT count(*) FROM match_situations WHERE match_id = %s", match) == 0
+
+
+def test_a_situation_names_its_players_by_match_player_id(
+    conn: Connection, worker_conn: Connection, make: Factory, store: MemoryStore, tmp_path: Path
+) -> None:
+    match, blue, orange = parsed_match(conn, make, store, tmp_path)
+    key = f"events/{match}.json"
+    document = json.loads(store.objects[key])
+    document["touches"] = []
+    document["fifty_fifties"] = [
+        {
+            "start_frame": 2,
+            "start_time_s": 2.0,
+            "resolve_frame": 3,
+            "resolve_time_s": 2.4,
+            "is_kickoff": False,
+            "blue_player_idx": 0,
+            "orange_player_idx": 1,
+            "winner_team": 0,
+            "possession_team": 1,
+        }
+    ]
+    store.objects[key] = json.dumps(document).encode()
+    run_job(worker_conn, store, match)
+    rows = conn.execute(
+        "SELECT kind, team, player_ids, details, analysis_version FROM match_situations "
+        "WHERE match_id = %s",
+        (match,),
+    ).fetchall()
+    assert rows == [
+        (
+            "fifty_fifty",
+            1,
+            [blue, orange],
+            {"is_kickoff": False, "contact_winner": 0},
+            ANALYSIS_VERSION,
+        )
+    ]
