@@ -54,6 +54,29 @@ FIRST_MAN_DEBOUNCE = Threshold(
     "subtr-actor 1.5.1, stats/calculators/rotation.rs, DEFAULT_FIRST_MAN_DEBOUNCE_SECONDS",
 )
 
+# The engaged player (T14.2): subtr-actor's commitment gates, from its beaten-to-ball detector.
+_beaten = "subtr-actor 1.5.1, stats/calculators/beaten_to_ball.rs, BEATEN_TO_BALL_"
+ENGAGE_LOOKBACK = Threshold(1.0, "s", _beaten + "LOOKBACK_SECONDS")
+ENGAGE_MIN_CLOSING = Threshold(200.0, "uu", _beaten + "MIN_DISTANCE_DECREASE")
+ENGAGE_CLOSING_SHARE = Threshold(0.7, "share", _beaten + "MIN_CLOSING_FRACTION")
+ENGAGE_MIN_ALIGNMENT = Threshold(0.45, "cosine", _beaten + "MIN_VELOCITY_ALIGNMENT")
+ENGAGE_MIN_SPEED = Threshold(400.0, "uu/s", _beaten + "MIN_APPROACH_SPEED")
+ENGAGE_MAX_DISTANCE = Threshold(1200.0, "uu", _beaten + "MAX_DISTANCE_AT_TOUCH")
+
+# Double commits (T14.3): the plan's starting values, to calibrate at step 17.
+DOUBLE_COMMIT_MIN_OVERLAP = Threshold(
+    0.25, "s", "convention of the plan, section 5.4: two engaged together at least this long"
+)
+DOUBLE_COMMIT_RESOLVE = Threshold(
+    1.5, "s", "convention of the plan, section 5.4: a touch ends the sequence within this"
+)
+DOUBLE_COMMIT_PUNISH = Threshold(
+    5.0, "s", "convention of the plan, section 5.4: an opponent shot or goal within this punishes"
+)
+KICKOFF_SCRAMBLE = Threshold(
+    2.0, "s", "convention of the plan, section 5.4: going in two after a kickoff is a choice"
+)
+
 # How far apart a team's touches may be and still make one possession: the follow-up that confirms
 # a loose ball taken, a possession kept, or a turnover. subtr-actor ties it to its loose-ball
 # timeout, so that a player's possession never outlasts the team's.
