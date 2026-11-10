@@ -17,6 +17,7 @@ A 1v1 has no roles, and a 2v2 no third man: those metrics are None.
 
 import math
 from collections import defaultdict
+from collections.abc import Iterable
 from dataclasses import dataclass, field
 from enum import Enum
 from itertools import groupby
@@ -62,11 +63,13 @@ class _FirstMan:
 
 @dataclass
 class Roles:
-    """Seconds of live play each player spent in each role."""
+    """Seconds of live play each player spent in each role, and, at each moment asked for, the roles
+    of the last frame at or before it (empty out of live play)."""
 
     seconds: dict[int, dict[Role, float]] = field(
         default_factory=lambda: defaultdict(lambda: dict.fromkeys(Role, 0.0))
     )
+    at: dict[float, dict[int, Role]] = field(default_factory=dict)
 
 
 def assign(distances: dict[int, float], tracker: _FirstMan, dt_s: float) -> dict[int, Role]:
@@ -86,21 +89,27 @@ def assign(distances: dict[int, float], tracker: _FirstMan, dt_s: float) -> dict
 
 _COLUMNS = (
     "frame", "dt_s", "phase", "ball_x", "ball_y", "player_idx", "team", "present", "demolished",
-    "x", "y",
+    "x", "y", "time_s",
 )  # fmt: skip
 
 
-def resolve(match: Match) -> Roles:
-    """Each player's time in each role, frame by frame, weighted by `dt_s`. One pass over the rows
-    in plain Python: a polars filter per frame and team would cost seconds a match."""
+def resolve(match: Match, at: Iterable[float] = ()) -> Roles:
+    """Each player's time in each role, frame by frame, weighted by `dt_s`, and the roles at each
+    moment of `at`. One pass over the rows in plain Python: a polars filter per frame and team would
+    cost seconds a match."""
     rows = match.frames.select(_COLUMNS).sort("frame", "player_idx").iter_rows()
     trackers = {0: _FirstMan(), 1: _FirstMan()}
     roles = Roles()
+    moments = sorted(set(at))
+    latest: dict[int, Role] = {}
     for _, grouped in groupby(rows, key=lambda row: row[0]):
         players = list(grouped)
         _, dt_s, phase, ball_x, ball_y = players[0][:5]
+        while moments and moments[0] < players[0][11]:
+            roles.at[moments.pop(0)] = dict(latest)
         if dt_s <= 0:
             continue
+        latest = {}
         if phase != Phase.ACTIVE or ball_x is None or ball_y is None:
             for tracker in trackers.values():
                 tracker.reset()
@@ -116,6 +125,9 @@ def resolve(match: Match) -> Roles:
             }
             for player, role in assign(distances, tracker, float(dt_s)).items():
                 roles.seconds[player][role] += float(dt_s)
+                latest[player] = role
+    for moment in moments:
+        roles.at[moment] = dict(latest)
     return roles
 
 

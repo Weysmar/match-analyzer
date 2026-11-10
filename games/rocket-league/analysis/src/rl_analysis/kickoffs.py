@@ -19,6 +19,7 @@ from dataclasses import dataclass
 
 import polars as pl
 
+from ma_schemas.types import Goal
 from ma_schemas.types import Kickoff as KickoffEvent
 from rl_analysis.constants import Phase
 from rl_analysis.frames import PerPlayer
@@ -46,6 +47,8 @@ class Kickoff:
     winner_team: int | None
     goal_team: int | None
     takers: tuple[Taker, ...]
+    # The kickoff goal's `time_s`, as `events["goals"]` has it: None without one.
+    goal_s: float | None = None
 
 
 def _timeline(match: Match) -> tuple[list[float], list[int]]:
@@ -90,26 +93,28 @@ def resolve(match: Match) -> list[Kickoff] | None:
                 takers[touch["team"]] = Taker(
                     touch["player_idx"], touch["team"], touch["time_s"] - go_s
                 )
+        goal = _goal(match, kickoff)
         resolved.append(
             Kickoff(
                 go_s=go_s,
                 kind=kickoff["kickoff_type"],
                 winner_team=kickoff["winner_team"],
-                goal_team=_goal_team(match, kickoff),
+                goal_team=None if goal is None else goal["team"],
                 takers=tuple(takers[team] for team in sorted(takers)),
+                goal_s=None if goal is None else goal["time_s"],
             )
         )
     return resolved
 
 
-def _goal_team(match: Match, kickoff: KickoffEvent) -> int | None:
-    """The team that scored the kickoff's goal, found among the match's goals by its time."""
+def _goal(match: Match, kickoff: KickoffEvent) -> Goal | None:
+    """The kickoff's goal, found among the match's goals by its time."""
     if not kickoff["goal"] or kickoff["time_to_goal_s"] is None:
         return None
     since = kickoff["first_touch_time_s"] or kickoff["end_time_s"]
     at = since + kickoff["time_to_goal_s"]
     near = [goal for goal in match.events["goals"] if abs(goal["time_s"] - at) <= _GOAL_MATCH_S]
-    return near[0]["team"] if near else None
+    return near[0] if near else None
 
 
 def _per_player(match: Match) -> dict[int, list[tuple[Kickoff, Taker]]] | None:
