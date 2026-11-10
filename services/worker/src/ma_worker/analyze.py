@@ -12,12 +12,14 @@ import tempfile
 import uuid
 from pathlib import Path
 
+from psycopg.types.json import Jsonb
+
 from ma_schemas import InvalidDocumentError
 from ma_worker.queue import Connection, Job
 from ma_worker.runner import PermanentError
 from ma_worker.settings import Settings
 from ma_worker.store import ObjectStore
-from rl_analysis import ANALYSIS_VERSION, clock, view
+from rl_analysis import ANALYSIS_VERSION, clock, situations, view
 from rl_analysis.frames import InvalidFramesError
 from rl_analysis.match import load
 from rl_analysis.registry import METRICS, TEAM_METRICS, compute, compute_teams
@@ -95,6 +97,36 @@ def _write_teams(
     return len(rows)
 
 
+def _write_situations(
+    connection: Connection,
+    match_id: uuid.UUID,
+    found: list[situations.Situation] | None,
+    ids: dict[int, int],
+) -> int:
+    """The match's situations, in place of the previous run's. Returns how many."""
+    connection.execute("DELETE FROM match_situations WHERE match_id = %s", (match_id,))
+    rows = [
+        (
+            match_id,
+            situation.kind,
+            situation.time_s,
+            situation.clock_s,
+            situation.team,
+            [ids[player] for player in situation.players if player in ids],
+            Jsonb(situation.details),
+            ANALYSIS_VERSION,
+        )
+        for situation in found or []
+    ]
+    with connection.cursor() as cursor:
+        cursor.executemany(
+            "INSERT INTO match_situations (match_id, kind, time_s, game_time_s, team, player_ids, "
+            "details, analysis_version) VALUES (%s, %s, %s, %s, %s, %s, %s, %s)",
+            rows,
+        )
+    return len(rows)
+
+
 def view_key(match_id: uuid.UUID) -> str:
     return f"views/{match_id}.json.gz"
 
@@ -162,13 +194,14 @@ def handle(connection: Connection, job: Job, store: ObjectStore, settings: Setti
         results = compute(match)
         team_results = compute_teams(match)
         game_clock = clock.compute(match)
+        ids = _player_ids(connection, match_id)
+        found = situations.detect(match)
         # Files first: if the database then fails, the next run writes the same key again.
-        stored_view = _store_view(
-            store, match_id, view.build(match, _player_ids(connection, match_id)), Path(folder)
-        )
+        stored_view = _store_view(store, match_id, view.build(match, ids), Path(folder))
     with connection.transaction():
         written = _write(connection, match_id, results)
         written += _write_teams(connection, match_id, team_results)
+        written += _write_situations(connection, match_id, found, ids)
         _write_clock(
             connection, match_id, game_clock, [goal["frame"] for goal in match.events["goals"]]
         )

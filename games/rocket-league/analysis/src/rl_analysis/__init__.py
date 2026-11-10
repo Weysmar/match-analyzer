@@ -10,4 +10,5 @@ __version__ = "0.0.0"
 # 5: the 2D view's document gets its situations, turnovers first (T12.7).
 # 6: kickoff metrics, from rl-parse 0.2.0's kickoffs (T13.1 and T13.2).
 # 7: duel metrics, from its fifty_fifties and beaten_to_ball (T13.3).
-ANALYSIS_VERSION = "7"
+# 8: kickoffs and duels become situations, in the view and in match_situations (T13.4).
+ANALYSIS_VERSION = "8"
