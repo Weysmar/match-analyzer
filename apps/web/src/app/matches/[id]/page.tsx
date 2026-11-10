@@ -2,12 +2,12 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { getFormatter, getTranslations } from "next-intl/server";
 import { SignInPrompt } from "@/components/account/SignInPrompt";
+import { Analysis } from "@/components/match/Analysis";
 import { AutoRefresh } from "@/components/match/AutoRefresh";
 import { GoalTimeline } from "@/components/match/GoalTimeline";
 import { IdentityPicker } from "@/components/match/IdentityPicker";
 import { MetricsTable } from "@/components/match/MetricsTable";
 import { PlayersTable } from "@/components/match/PlayersTable";
-import { TeamPossession } from "@/components/match/TeamPossession";
 import { MatchView } from "@/components/view2d/MatchView";
 import { serverGet } from "@/lib/api/server";
 import { claimable, duration, inProgress, playlistKind, teamSize } from "@/lib/matches/describe";
@@ -126,7 +126,7 @@ export default async function MatchPage({ params }: { params: Promise<{ id: stri
           {t("labels.open")}
         </Link>
       ) : null}
-      <TeamPossession teamMetrics={data.team_metrics} />
+      <Analysis sheet={data} viewable={match.status === "ready"} />
       <MetricsTable players={data.players} metrics={data.metrics} />
     </div>
   );

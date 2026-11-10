@@ -1,6 +1,13 @@
 import { describe, expect, it } from "vitest";
 import { placeGoals } from "../../src/lib/matches/timeline";
-import { goalLink, LEAD_S, parseT, viewLink } from "../../src/lib/view2d/links";
+import {
+  goalLink,
+  LEAD_S,
+  parseT,
+  SITUATION_LEAD_S,
+  situationLink,
+  viewLink,
+} from "../../src/lib/view2d/links";
 
 describe("links into the view", () => {
   it("point at seconds of play, to the tenth, on the player's anchor", () => {
@@ -11,6 +18,11 @@ describe("links into the view", () => {
   it(`open a goal ${LEAD_S} s before it, never before the start`, () => {
     expect(goalLink(100)).toBe("?t=95#view");
     expect(goalLink(3)).toBe("?t=0#view");
+  });
+
+  it(`open a situation ${SITUATION_LEAD_S} s before it, never before the start`, () => {
+    expect(situationLink(61.27)).toBe("?t=59.3#view");
+    expect(situationLink(1)).toBe("?t=0#view");
   });
 
   it("read the time of the address, and nothing else", () => {

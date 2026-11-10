@@ -20,6 +20,7 @@ const WORDS = {
     question: "Lequel de ces joueurs es-tu ?",
     you: "(toi)",
     metrics: "Statistiques détaillées",
+    analysis: "Analyse",
     replay: /^Revoir le but/,
     steam: "Se connecter avec Steam",
     signedIn: "Connecté : Player",
@@ -36,6 +37,7 @@ const WORDS = {
     question: "Which of these players are you?",
     you: "(you)",
     metrics: "Detailed stats",
+    analysis: "Analysis",
     replay: /^Replay the goal/,
     steam: "Sign in through Steam",
     signedIn: "Signed in: Player",
@@ -79,6 +81,7 @@ test("from a replay to my stats, then the account erased", async ({ page }, info
   await page.locator("section[aria-labelledby=identity-question] li button").first().click();
   await expect(page.getByText(w.you, { exact: true }).first()).toBeVisible();
   await expect(page.getByRole("heading", { name: w.metrics })).toBeVisible();
+  await expect(page.getByRole("heading", { name: w.analysis, exact: true })).toBeVisible();
 
   // A goal of the timeline opens the 2D view 5 s before it, paused (T12.5).
   const goal = page.getByRole("link", { name: w.replay }).first();
