@@ -1,0 +1,24 @@
+# The production stack, checked by the CI and on a workstation (step 9): compose.yaml, plus an S3
+# emulator in place of R2 and ports published on the loopback to reach the API and the site.
+# Usage: docker compose -f compose.yaml -f .github/compose.ci.yaml --env-file .github/ci.env up
+services:
+  s3:
+    image: rustfs/rustfs:1.0.4
+    environment:
+      RUSTFS_ACCESS_KEY: ${S3_ACCESS_KEY_ID}
+      RUSTFS_SECRET_KEY: ${S3_SECRET_ACCESS_KEY}
+    expose: ["9000"]
+
+  api:
+    ports: ["127.0.0.1:8000:8000"]
+    depends_on:
+      s3:
+        condition: service_started
+
+  worker:
+    depends_on:
+      s3:
+        condition: service_started
+
+  web:
+    ports: ["127.0.0.1:3000:3000"]

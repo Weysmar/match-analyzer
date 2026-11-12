@@ -3,6 +3,7 @@
 Nom de code provisoire. Plateforme web qui analyse les fichiers de replay (`.replay`) d'un joueur : statistiques détaillées, situations de jeu (pertes de balle, kickoffs, duels, double commits, overcommits), contexte de chaque but encaissé et vue 2D du match.
 
 Références : `CLAUDE.md` (le projet et ses règles), `docs/PLAN.md` (V1) et `docs/PLAN-V2.md` (V2), avec toutes les décisions prises en route.
+La production et son déploiement : `docs/operations.md`.
 
 ---
 
