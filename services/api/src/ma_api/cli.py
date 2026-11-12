@@ -1,8 +1,11 @@
 """`ma-api`: serves the API. It stays behind the site's reverse proxy."""
 
 import argparse
+import os
 
 import uvicorn
+
+from ma_api import logs
 
 
 def main() -> None:
@@ -18,6 +21,9 @@ def main() -> None:
         port=arguments.port,
         proxy_headers=False,
         server_header=False,
+        log_config=logs.uvicorn_config(
+            os.environ.get("LOG_LEVEL", "INFO"), os.environ.get("LOG_FORMAT", "text")
+        ),
     )
 
 

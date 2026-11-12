@@ -102,7 +102,12 @@ def _reject(connection: Connection, store: ObjectStore, upload: Upload, code: st
         (code, upload.id),
     )
     store.delete(upload.key)
-    log.info("upload %s rejected: %s", upload.id, code)
+    log.info(
+        "upload %s rejected: %s",
+        upload.id,
+        code,
+        extra={"event": "upload_rejected", "upload_id": upload.id, "code": code},
+    )
 
 
 def _attach_to_known_match(
@@ -161,7 +166,13 @@ def _run_header(
         return None
     # Corrupt, or the parser panicked, ran out of memory or of time on a header, which takes well
     # under a second. Either way, this file gives no header and would do the same again.
-    log.warning("upload %s: parser ended with %s", upload.id, "timeout" if code is None else code)
+    ended = "timeout" if code is None else code
+    log.warning(
+        "upload %s: parser ended with %s",
+        upload.id,
+        ended,
+        extra={"event": "header_unreadable", "upload_id": upload.id, "code": ended},
+    )
     _reject(connection, store, upload, "corrupt")
     return None
 
@@ -291,9 +302,31 @@ def _process(
     store.delete(upload.key)
     # The build goes to the log either way: this is how a breaking patch shows up.
     if frames is None:
-        log.warning("match %s from build %s: %s", match_id, header["game_build"], error_code)
+        log.warning(
+            "match %s from build %s: %s",
+            match_id,
+            header["game_build"],
+            error_code,
+            extra={
+                "event": "parsed",
+                "match_id": match_id,
+                "build": header["game_build"],
+                "status": "header_only",
+                "code": error_code,
+            },
+        )
     else:
-        log.info("match %s from build %s", match_id, header["game_build"])
+        log.info(
+            "match %s from build %s",
+            match_id,
+            header["game_build"],
+            extra={
+                "event": "parsed",
+                "match_id": match_id,
+                "build": header["game_build"],
+                "status": "parsed",
+            },
+        )
 
 
 def handle(connection: Connection, job: Job, store: ObjectStore, settings: Settings) -> None:

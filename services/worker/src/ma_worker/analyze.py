@@ -211,4 +211,10 @@ def handle(connection: Connection, job: Job, store: ObjectStore, settings: Setti
             "view_key = %s WHERE id = %s",
             (ANALYSIS_VERSION, stored_view, match_id),
         )
-    log.info("match %s analyzed: %d values, version %s", match_id, written, ANALYSIS_VERSION)
+    log.info(
+        "match %s analyzed: %d values, version %s",
+        match_id,
+        written,
+        ANALYSIS_VERSION,
+        extra={"event": "analyzed", "match_id": match_id, "status": "ready"},
+    )

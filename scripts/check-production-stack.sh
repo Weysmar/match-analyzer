@@ -45,6 +45,17 @@ for service in api worker web backup; do
 done
 echo "ok: no service runs as root"
 
+# The API's and the worker's logs are JSON objects, one per line (T9.9).
+for service in api worker; do
+  lines=$("${compose[@]}" logs --no-log-prefix --no-color "$service")
+  [[ -n $lines ]] || { echo "$service: no log line" >&2; exit 1; }
+  if grep -qv '^{"time": ' <<<"$lines"; then
+    echo "$service: a log line is not JSON" >&2
+    exit 1
+  fi
+done
+echo "ok: the API and the worker log JSON"
+
 # A backup, then its restore into a blank database: every table has the same rows (T9.7).
 sql() { "${compose[@]}" exec -T db psql -U ma_owner -At -c "$2" "$1"; }
 sql match_analyzer "INSERT INTO anonymous_sessions (token_hash, expires_at)

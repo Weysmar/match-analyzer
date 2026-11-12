@@ -41,4 +41,4 @@ def handle(connection: Connection, job: Job, store: ObjectStore) -> None:
             if key is not None:
                 store.delete(key)
         connection.execute("DELETE FROM matches WHERE id = %s", (match_id,))
-    log.info("match %s erased", match_id)
+    log.info("match %s erased", match_id, extra={"event": "erased", "match_id": match_id})

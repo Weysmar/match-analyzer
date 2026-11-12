@@ -1,12 +1,12 @@
 """`ma-worker`: runs the jobs, or says how the queue is doing."""
 
 import argparse
-import logging
 import multiprocessing
 import os
 import shutil
 import signal
 import socket
+import sys
 import threading
 from collections.abc import Mapping
 from dataclasses import replace
@@ -16,7 +16,7 @@ from typing import Any
 
 import psycopg
 
-from ma_worker import analyze, erase, parse, purge, queue, reparse, reprocess
+from ma_worker import analyze, builds, erase, logs, parse, purge, queue, reparse, reprocess
 from ma_worker.queue import Connection
 from ma_worker.runner import Handler, Runner
 from ma_worker.settings import Settings, SettingsError
@@ -52,8 +52,12 @@ def _connect(settings: Settings) -> Connection:
     return connection
 
 
+def _configure_logs() -> None:
+    logs.configure(os.environ.get("LOG_LEVEL", "INFO"), os.environ.get("LOG_FORMAT", "text"))
+
+
 def _serve(settings: Settings, index: int) -> None:
-    logging.basicConfig(level=os.environ.get("LOG_LEVEL", "INFO"))
+    _configure_logs()
     stop = threading.Event()
     for name in (signal.SIGTERM, signal.SIGINT):
         signal.signal(name, lambda *_: stop.set())
@@ -132,6 +136,14 @@ def parser() -> argparse.ArgumentParser:
     again.add_argument("--build-to", type=int, help="the game's BuildID, inclusive")
     again.add_argument("--dry-run", action="store_true", help="say what would be queued")
     commands.add_parser("purge", help="one pass of the purge, which `run` also does every hour")
+    report = commands.add_parser("builds", help="how each game build fares with the parser")
+    report.add_argument("--days", type=int, default=30, help="how far back to look")
+    report.add_argument(
+        "--threshold", type=float, default=0.5, help="the header-only share that flags a build"
+    )
+    report.add_argument(
+        "--minimum", type=int, default=3, help="the matches a build needs to be judged"
+    )
     return command_line
 
 
@@ -142,8 +154,15 @@ def main(argv: list[str] | None = None) -> None:
         run(resolve_parser(settings))
     elif arguments.command == "status":
         status(settings)
+    elif arguments.command == "builds":
+        with _connect(settings) as connection:
+            lines = builds.fetch(connection, arguments.days)
+        print(builds.render(lines, arguments.threshold, arguments.minimum, arguments.days))
+        # Non-zero when a build looks broken, for a scheduled check to alert on.
+        if any(line.flagged(arguments.threshold, arguments.minimum) for line in lines):
+            sys.exit(1)
     elif arguments.command == "purge":
-        logging.basicConfig(level=os.environ.get("LOG_LEVEL", "INFO"))
+        _configure_logs()
         with _connect(settings) as connection:
             print(_purge(settings, connection))
     else:
