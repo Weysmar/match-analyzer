@@ -201,3 +201,8 @@ v2-report *args:
 openapi:
     uv run python scripts/openapi.py
     pnpm --filter @match-analyzer/api-types gen
+
+# Build the production images and check that the production stack starts (T9.1, T9.2)
+production-check:
+    docker compose -f compose.yaml -f .github/compose.ci.yaml --env-file .github/ci.env build
+    scripts/check-production-stack.sh

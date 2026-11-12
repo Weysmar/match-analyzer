@@ -1,0 +1,142 @@
+# Production (step 9 of docs/PLAN.md): a Dokploy application of the "Docker Compose" type. The
+# images come from GHCR, built by GitHub Actions (.github/workflows/release.yml); `build` stays for
+# `docker compose build` and the CI. The object store is Cloudflare R2, outside this file.
+#
+# Only `web` is reached from outside, through Dokploy's domain (Traefik and TLS): every service
+# `expose`s its port to the compose network, none publishes one. Each service gets its own
+# variables only, set in Dokploy's environment: docs/operations.md lists them.
+name: match-analyzer
+
+x-hardened: &hardened
+  restart: unless-stopped
+  read_only: true
+  cap_drop: [ALL]
+  security_opt: ["no-new-privileges:true"]
+  tmpfs: ["/tmp"]
+
+x-s3: &s3
+  S3_ENDPOINT: ${S3_ENDPOINT:?}
+  S3_REGION: ${S3_REGION:-auto}
+  S3_BUCKET: ${S3_BUCKET:?}
+  S3_ACCESS_KEY_ID: ${S3_ACCESS_KEY_ID:?}
+  S3_SECRET_ACCESS_KEY: ${S3_SECRET_ACCESS_KEY:?}
+
+services:
+  db:
+    image: postgres:16.15
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-ma_owner}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?}
+      POSTGRES_DB: ${POSTGRES_DB:-match_analyzer}
+    volumes:
+      - db-data:/var/lib/postgresql/data
+    expose: ["5432"]
+    healthcheck:
+      test: ["CMD-SHELL", 'pg_isready -U "$${POSTGRES_USER}"']
+      interval: 5s
+      timeout: 3s
+      retries: 30
+
+  # The schema and the roles' passwords, once, before the services: the owner's connection stays
+  # here, the API and the worker connect with their own restricted roles.
+  migrate:
+    <<: *hardened
+    image: ghcr.io/weysmar/match-analyzer-api:${IMAGE_TAG:-main}
+    build:
+      context: .
+      dockerfile: services/api/Dockerfile
+    restart: "no"
+    command: ["ma-db", "upgrade"]
+    environment:
+      DATABASE_URL: postgresql://${POSTGRES_USER:-ma_owner}:${POSTGRES_PASSWORD:?}@db:5432/${POSTGRES_DB:-match_analyzer}
+      API_DB_PASSWORD: ${API_DB_PASSWORD:?}
+      WORKER_DB_PASSWORD: ${WORKER_DB_PASSWORD:?}
+    depends_on:
+      db:
+        condition: service_healthy
+
+  api:
+    <<: *hardened
+    image: ghcr.io/weysmar/match-analyzer-api:${IMAGE_TAG:-main}
+    build:
+      context: .
+      dockerfile: services/api/Dockerfile
+    expose: ["8000"]
+    environment:
+      <<: *s3
+      APP_ENV: production
+      SITE_URL: ${SITE_URL:?}
+      API_DATABASE_URL: postgresql://ma_api:${API_DB_PASSWORD:?}@db:5432/${POSTGRES_DB:-match_analyzer}
+      SESSION_SECRET: ${SESSION_SECRET:?}
+      SESSION_TTL_DAYS: ${SESSION_TTL_DAYS:-30}
+      ANON_SESSION_TTL_DAYS: ${ANON_SESSION_TTL_DAYS:-30}
+      S3_PUBLIC_ENDPOINT: ${S3_PUBLIC_ENDPOINT:-}
+      UPLOAD_MAX_BYTES: ${UPLOAD_MAX_BYTES:-20971520}
+      UPLOAD_MAX_FILES_PER_BATCH: ${UPLOAD_MAX_FILES_PER_BATCH:-50}
+      UPLOAD_URL_TTL_S: ${UPLOAD_URL_TTL_S:-600}
+      VIEW_URL_TTL_S: ${VIEW_URL_TTL_S:-600}
+      RATE_UPLOAD_ANON_PER_DAY: ${RATE_UPLOAD_ANON_PER_DAY:-100}
+      RATE_UPLOAD_IP_PER_DAY: ${RATE_UPLOAD_IP_PER_DAY:-200}
+      RATE_UPLOAD_USER_PER_DAY: ${RATE_UPLOAD_USER_PER_DAY:-500}
+      RATE_AUTH_IP_PER_MIN: ${RATE_AUTH_IP_PER_MIN:-20}
+      # Traefik, then the site's relay.
+      TRUSTED_PROXY_COUNT: ${TRUSTED_PROXY_COUNT:-2}
+      FEATURE_EPIC_LOGIN: ${FEATURE_EPIC_LOGIN:-false}
+      EPIC_CLIENT_ID: ${EPIC_CLIENT_ID:-}
+      EPIC_CLIENT_SECRET: ${EPIC_CLIENT_SECRET:-}
+      EPIC_REDIRECT_URI: ${EPIC_REDIRECT_URI:-}
+    depends_on:
+      migrate:
+        condition: service_completed_successfully
+
+  # Parses hostile files (section 10 of CLAUDE.md): read-only, no capability, bounded memory and
+  # processes, on top of the sandbox it gives rl-parse (timeout and address space).
+  worker:
+    <<: *hardened
+    image: ghcr.io/weysmar/match-analyzer-worker:${IMAGE_TAG:-main}
+    build:
+      context: .
+      dockerfile: services/worker/Dockerfile
+    environment:
+      <<: *s3
+      WORKER_DATABASE_URL: postgresql://ma_worker:${WORKER_DB_PASSWORD:?}@db:5432/${POSTGRES_DB:-match_analyzer}
+      UPLOAD_MAX_BYTES: ${UPLOAD_MAX_BYTES:-20971520}
+      PARSER_TIMEOUT_S: ${PARSER_TIMEOUT_S:-30}
+      PARSER_MEMORY_MB: ${PARSER_MEMORY_MB:-512}
+      PARSER_MAX_FPS: ${PARSER_MAX_FPS:-}
+      WORKER_CONCURRENCY: ${WORKER_CONCURRENCY:-1}
+      WORKER_JOB_TIMEOUT_S: ${WORKER_JOB_TIMEOUT_S:-600}
+      RAW_RETENTION_DAYS: ${RAW_RETENTION_DAYS:-30}
+      RAW_RETENTION_HEADER_ONLY_DAYS: ${RAW_RETENTION_HEADER_ONLY_DAYS:-180}
+      PURGE_EVERY_S: ${PURGE_EVERY_S:-3600}
+      LOG_LEVEL: ${LOG_LEVEL:-INFO}
+    # A replay and its outputs are written to /tmp while a job runs.
+    tmpfs: ["/tmp:size=1g"]
+    mem_limit: ${WORKER_MEMORY_LIMIT:-1536m}
+    pids_limit: 256
+    depends_on:
+      migrate:
+        condition: service_completed_successfully
+
+  web:
+    <<: *hardened
+    image: ghcr.io/weysmar/match-analyzer-web:${IMAGE_TAG:-main}
+    build:
+      context: .
+      dockerfile: apps/web/Dockerfile
+      args:
+        API_INTERNAL_URL: http://api:8000
+    expose: ["3000"]
+    # Next.js keeps its cache there: the only place it writes.
+    tmpfs: ["/tmp", "/app/apps/web/.next/cache:uid=1000,gid=1000"]
+    environment:
+      SITE_URL: ${SITE_URL:?}
+      API_INTERNAL_URL: http://api:8000
+      S3_ENDPOINT: ${S3_ENDPOINT:?}
+      S3_PUBLIC_ENDPOINT: ${S3_PUBLIC_ENDPOINT:-}
+    depends_on:
+      - api
+
+volumes:
+  db-data:

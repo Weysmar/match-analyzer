@@ -1,0 +1,22 @@
+# What the production images are built from (step 9 of docs/PLAN.md): the sources only. Replays
+# and anything derived from them never enter a build context, nor do secrets or local builds.
+.git
+.github
+.env
+.env.*
+!.env.example
+tests/
+spikes/
+docs/
+**/tests/
+**/test-results/
+**/node_modules/
+**/.next/
+**/target/
+**/.venv/
+**/__pycache__/
+**/*.replay
+**/.mypy_cache/
+**/.pytest_cache/
+**/.ruff_cache/
+apps/web/e2e/

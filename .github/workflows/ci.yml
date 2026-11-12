@@ -129,21 +129,51 @@ jobs:
       - run: docker compose -f compose.dev.yaml logs
         if: failure()
 
-  # The production image of the parser builds and runs. Its layers are cached by GitHub
-  # Actions: a change that leaves the parser alone reuses the compiled binary.
-  parser-image:
+  # The production images build, and the production stack starts (T9.1, T9.2): compose.yaml with an
+  # S3 emulator in place of R2. The layers are cached by GitHub Actions, shared with the release:
+  # a change that leaves the parser alone reuses the compiled binary.
+  images:
     runs-on: ubuntu-latest
+    strategy:
+      fail-fast: true
     steps:
       - uses: actions/checkout@v7
       - uses: docker/setup-buildx-action@v3
-      - uses: docker/build-push-action@v6
+      - name: API and migrations
+        uses: docker/build-push-action@v6
         with:
-          context: games/rocket-league/parser
-          tags: rl-parse
+          context: .
+          file: services/api/Dockerfile
+          tags: ghcr.io/weysmar/match-analyzer-api:ci
           load: true
-          cache-from: type=gha,scope=parser-image
-          cache-to: type=gha,scope=parser-image,mode=max
-      - run: docker run --rm rl-parse --version
+          cache-from: type=gha,scope=api
+          cache-to: type=gha,scope=api,mode=max
+      - name: Worker and parser
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: services/worker/Dockerfile
+          tags: ghcr.io/weysmar/match-analyzer-worker:ci
+          load: true
+          cache-from: type=gha,scope=worker
+          cache-to: type=gha,scope=worker,mode=max
+      - name: Site
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: apps/web/Dockerfile
+          build-args: API_INTERNAL_URL=http://api:8000
+          tags: ghcr.io/weysmar/match-analyzer-web:ci
+          load: true
+          cache-from: type=gha,scope=web
+          cache-to: type=gha,scope=web,mode=max
+      - run: docker run --rm --entrypoint rl-parse ghcr.io/weysmar/match-analyzer-worker:ci --version
+      - name: The stack starts
+        run: scripts/check-production-stack.sh
+      - name: Service logs
+        if: failure()
+        # Nothing here names a player: the stack has seen no replay.
+        run: docker compose -f compose.yaml -f .github/compose.ci.yaml --env-file .github/ci.env logs --tail 60
 
   # No replay here, ever: the repository is public and replays hold other players' names. The
   # checks on real replays run locally, on demand: `just test-replays`, `just test-pipeline`
