@@ -59,13 +59,30 @@ class Runner:
         try:
             self._handlers[job.kind](connection, job)
         except PermanentError as failure:
-            log.warning("job %d (%s) failed for good: %s", job.id, job.kind, failure.code)
+            log.warning(
+                "job %d (%s) failed for good: %s",
+                job.id,
+                job.kind,
+                failure.code,
+                extra={
+                    "event": "job_dead",
+                    "job_id": job.id,
+                    "job_kind": job.kind,
+                    "code": failure.code,
+                },
+            )
             queue.fail(connection, job, self._worker, failure.code, retry=False)
         except psycopg.OperationalError:
             raise
         except Exception as error:
             code = type(error).__name__
-            log.warning("job %d (%s) failed: %s", job.id, job.kind, code)
+            log.warning(
+                "job %d (%s) failed: %s",
+                job.id,
+                job.kind,
+                code,
+                extra={"event": "job_failed", "job_id": job.id, "job_kind": job.kind, "code": code},
+            )
             queue.fail(connection, job, self._worker, code)
         else:
             if not queue.finish(connection, job, self._worker):

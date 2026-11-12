@@ -123,6 +123,10 @@ worker:
 worker-status:
     uv run ma-worker status
 
+# How each game build fares with the parser: a breaking patch shows up here (T9.9)
+ops-builds *args:
+    uv run ma-worker builds {{args}}
+
 # Stop them; the data volumes are kept
 dev-down:
     docker compose -f compose.dev.yaml down

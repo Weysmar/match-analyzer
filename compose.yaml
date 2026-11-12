@@ -110,6 +110,9 @@ services:
       EPIC_CLIENT_ID: ${EPIC_CLIENT_ID:-}
       EPIC_CLIENT_SECRET: ${EPIC_CLIENT_SECRET:-}
       EPIC_REDIRECT_URI: ${EPIC_REDIRECT_URI:-}
+      # One JSON object per line, for the host to collect (docs/operations.md).
+      LOG_FORMAT: json
+      LOG_LEVEL: ${LOG_LEVEL:-INFO}
     depends_on:
       migrate:
         condition: service_completed_successfully
@@ -135,6 +138,7 @@ services:
       RAW_RETENTION_HEADER_ONLY_DAYS: ${RAW_RETENTION_HEADER_ONLY_DAYS:-180}
       PURGE_EVERY_S: ${PURGE_EVERY_S:-3600}
       LOG_LEVEL: ${LOG_LEVEL:-INFO}
+      LOG_FORMAT: json
     # A replay and its outputs are written to /tmp while a job runs.
     tmpfs: ["/tmp:size=1g"]
     mem_limit: ${WORKER_MEMORY_LIMIT:-1536m}

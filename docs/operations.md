@@ -107,6 +107,20 @@ docker compose exec backup ma-db backups
 
 La vérification de la pile (ci-dessous, et à chaque PR en CI) fait cet aller-retour à chaque fois : une sauvegarde, sa restauration dans une base vierge, puis la comparaison du nombre de lignes de chaque table.
 
+## Journaux et suivi des versions du jeu
+
+L'API et le worker écrivent leurs journaux en **JSON**, un objet par ligne (`LOG_FORMAT=json` dans `compose.yaml`), sur la sortie standard : Dokploy les montre dans l'onglet **Logs** de chaque service, et un collecteur peut les lire tels quels. Chaque ligne a `time`, `level`, `logger` et `message`, plus les champs de l'événement quand il y en a : `event`, `match_id`, `job_id`, `job_kind`, `upload_id`, `build`, `status`, `code`.
+
+Aucune donnée personnelle n'y figure (section 11 de `CLAUDE.md`). Les matchs, jobs et uploads y sont désignés par leurs identifiants, jamais par un pseudo. Une erreur est donnée par son type, pas par son texte. Le journal d'accès de l'API garde la méthode, le chemin et le statut, mais **ni l'adresse du client ni la chaîne de requête**, où le retour de connexion Steam porte le SteamID.
+
+**Une version du jeu qui casse le parser** se voit par version (`build`) : ses matchs finissent `header_only`, l'en-tête lu mais pas le network stream. Le rapport le compte :
+
+```bash
+docker compose exec worker ma-worker builds
+```
+
+En local, c'est `just ops-builds`. Pour chaque version vue sur les 30 derniers jours (`--days`), il donne le nombre de matchs dont le network stream a été tenté et la part restée `header_only`. Une version est marquée **BROKEN?** dès 3 matchs (`--minimum`) et 50 % (`--threshold`). La commande finit alors avec le code 1 : une tâche planifiée Dokploy qui la lance chaque jour peut alerter sur ce code. Une version cassée se répare en mettant à jour `boxcars` et `subtr-actor` dans le parser, puis en relançant `reprocess --parser-outdated` : les matchs `header_only` sont gardés pour ça, 180 jours.
+
 ## Vérifier la pile sur un poste
 
 La CI le fait à chaque PR (job `images`) ; en local :
@@ -115,11 +129,10 @@ La CI le fait à chaque PR (job `images`) ; en local :
 just production-check
 ```
 
-Cette recette construit les trois images, démarre `compose.yaml` avec un émulateur S3 à la place de R2 et des valeurs de test (`.github/ci.env`, pas des secrets), vérifie que les migrations passent, que l'API joint la base, que le site répond et relaie vers l'API, que le worker reste lancé et qu'aucun service ne tourne en root, puis fait une sauvegarde et la restaure dans une base vierge, et enfin arrête et supprime tout, volumes compris.
+Cette recette construit les trois images, démarre `compose.yaml` avec un émulateur S3 à la place de R2 et des valeurs de test (`.github/ci.env`, pas des secrets), vérifie que les migrations passent, que l'API joint la base, que le site répond et relaie vers l'API, que le worker reste lancé, qu'aucun service ne tourne en root et que les journaux sont du JSON, puis fait une sauvegarde et la restaure dans une base vierge, et enfin arrête et supprime tout, volumes compris.
 
 ## Reste à faire
 
 - T9.4 👤 : buckets R2 (celui de l'application et celui des sauvegardes), CORS, un jeton par bucket, cycles de vie, test du `Content-Length` signé.
 - T9.5 👤 : VPS dans l'UE et Dokploy.
 - T9.6 👤 : déploiement sur le domaine.
-- T9.9 : journaux structurés et suivi des builds du jeu qui cassent le parser.
