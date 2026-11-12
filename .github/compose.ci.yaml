@@ -1,5 +1,6 @@
 # The production stack, checked by the CI and on a workstation (step 9): compose.yaml, plus an S3
-# emulator in place of R2 and ports published on the loopback to reach the API and the site.
+# emulator in place of R2, its two buckets, and ports published on the loopback to reach the API
+# and the site.
 # Usage: docker compose -f compose.yaml -f .github/compose.ci.yaml --env-file .github/ci.env up
 services:
   s3:
@@ -9,16 +10,50 @@ services:
       RUSTFS_SECRET_KEY: ${S3_SECRET_ACCESS_KEY}
     expose: ["9000"]
 
-  api:
-    ports: ["127.0.0.1:8000:8000"]
+  # The application's bucket and the backups', which R2 has from the start (T9.4).
+  s3-init:
+    image: ghcr.io/weysmar/match-analyzer-db:${IMAGE_TAG:-main}
+    restart: "no"
+    environment:
+      S3_ENDPOINT: ${S3_ENDPOINT}
+      S3_ACCESS_KEY_ID: ${S3_ACCESS_KEY_ID}
+      S3_SECRET_ACCESS_KEY: ${S3_SECRET_ACCESS_KEY}
+      BUCKETS: ${S3_BUCKET} ${BACKUP_S3_BUCKET}
+    entrypoint: ["python", "-c"]
+    command:
+      - |
+        import os, time, boto3
+        s3 = boto3.client("s3", endpoint_url=os.environ["S3_ENDPOINT"], region_name="us-east-1",
+                          aws_access_key_id=os.environ["S3_ACCESS_KEY_ID"],
+                          aws_secret_access_key=os.environ["S3_SECRET_ACCESS_KEY"])
+        for attempt in range(60):
+            try:
+                s3.list_buckets()
+                break
+            except Exception:
+                time.sleep(1)
+        for bucket in os.environ["BUCKETS"].split():
+            s3.create_bucket(Bucket=bucket)
+            print("bucket", bucket)
     depends_on:
       s3:
         condition: service_started
 
+  api:
+    ports: ["127.0.0.1:8000:8000"]
+    depends_on:
+      s3-init:
+        condition: service_completed_successfully
+
   worker:
     depends_on:
-      s3:
-        condition: service_started
+      s3-init:
+        condition: service_completed_successfully
+
+  backup:
+    depends_on:
+      s3-init:
+        condition: service_completed_successfully
 
   web:
     ports: ["127.0.0.1:3000:3000"]

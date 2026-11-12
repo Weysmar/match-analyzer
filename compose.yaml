@@ -42,10 +42,10 @@ services:
   # here, the API and the worker connect with their own restricted roles.
   migrate:
     <<: *hardened
-    image: ghcr.io/weysmar/match-analyzer-api:${IMAGE_TAG:-main}
+    image: ghcr.io/weysmar/match-analyzer-db:${IMAGE_TAG:-main}
     build:
       context: .
-      dockerfile: services/api/Dockerfile
+      dockerfile: db/Dockerfile
     restart: "no"
     command: ["ma-db", "upgrade"]
     environment:
@@ -55,6 +55,30 @@ services:
     depends_on:
       db:
         condition: service_healthy
+
+  # A backup at start, then one every BACKUP_EVERY_S, to a bucket of their own (T9.7): its own
+  # token, out of the API's and the worker's reach. `ma-db restore` brings one back into an empty
+  # database (docs/operations.md).
+  backup:
+    <<: *hardened
+    image: ghcr.io/weysmar/match-analyzer-db:${IMAGE_TAG:-main}
+    build:
+      context: .
+      dockerfile: db/Dockerfile
+    command: ["ma-db", "backup", "--every", "${BACKUP_EVERY_S:-86400}"]
+    tmpfs: ["/tmp:size=2g"]
+    environment:
+      DATABASE_URL: postgresql://${POSTGRES_USER:-ma_owner}:${POSTGRES_PASSWORD:?}@db:5432/${POSTGRES_DB:-match_analyzer}
+      BACKUP_S3_ENDPOINT: ${BACKUP_S3_ENDPOINT:-${S3_ENDPOINT}}
+      BACKUP_S3_REGION: ${BACKUP_S3_REGION:-${S3_REGION:-auto}}
+      BACKUP_S3_BUCKET: ${BACKUP_S3_BUCKET:?}
+      BACKUP_S3_ACCESS_KEY_ID: ${BACKUP_S3_ACCESS_KEY_ID:?}
+      BACKUP_S3_SECRET_ACCESS_KEY: ${BACKUP_S3_SECRET_ACCESS_KEY:?}
+      BACKUP_KEEP: ${BACKUP_KEEP:-14}
+      LOG_LEVEL: ${LOG_LEVEL:-INFO}
+    depends_on:
+      migrate:
+        condition: service_completed_successfully
 
   api:
     <<: *hardened

@@ -7,7 +7,7 @@ name = "ma-db"
 version = "0.0.0"
 description = "Database migrations."
 requires-python = ">=3.14"
-dependencies = ["alembic==1.20.1", "psycopg[binary]==3.3.8"]
+dependencies = ["alembic==1.20.1", "boto3==1.43.126", "psycopg[binary]==3.3.8"]
 
 [project.scripts]
 ma-db = "ma_db.cli:main"
