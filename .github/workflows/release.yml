@@ -24,6 +24,7 @@ jobs:
       matrix:
         image:
           - { name: api, dockerfile: services/api/Dockerfile }
+          - { name: db, dockerfile: db/Dockerfile }
           - { name: worker, dockerfile: services/worker/Dockerfile }
           - { name: web, dockerfile: apps/web/Dockerfile }
     steps:

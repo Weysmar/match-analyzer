@@ -139,7 +139,16 @@ jobs:
     steps:
       - uses: actions/checkout@v7
       - uses: docker/setup-buildx-action@v3
-      - name: API and migrations
+      - name: Migrations and backups
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: db/Dockerfile
+          tags: ghcr.io/weysmar/match-analyzer-db:ci
+          load: true
+          cache-from: type=gha,scope=db
+          cache-to: type=gha,scope=db,mode=max
+      - name: API
         uses: docker/build-push-action@v6
         with:
           context: .
